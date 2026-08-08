@@ -27,7 +27,9 @@ Oorspronkelijke wens: refresh in de orde van **4–6 uur**.
 1. **Doel-cadans:** periodieke her-indexering (streef 4–6 uur of dagelijks, operationeel te kiezen).
 2. **Handmatige trigger blijft:** beheerder kan force re-ingest via UI/API (met token) of CLI.
 3. **Idempotent upsert:** zelfde URL/chunk-id → update (geen blinde duplicate-explosie).
-4. **Logging:** status van laatste run (progress, fouten, counts) is zichtbaar.
+4. **Incrementeel (default, `reset=false`):** sitemap vergelijken met URLs in Chroma; alleen **nieuwe** pagina's of pagina's met **nieuwere sitemap-lastmod** scrapen/embedden. Al bekende URLs zonder wijzigingssignaal worden overgeslagen (geen HTTP-fetch).
+5. **Volledig (`reset=true`):** collectie wissen, daarna alle pagina's opnieuw ophalen en indexeren.
+6. **Logging:** status van laatste run (progress, fouten, counts, skipped) is zichtbaar.
 
 **Hoe** de job procesmatig draait (niet in de request-thread van de chat-API) staat in **[ADR-010](10-ADR-async-ingestion-worker.md)**.
 
@@ -36,9 +38,10 @@ Oorspronkelijke wens: refresh in de orde van **4–6 uur**.
 | Besluit | Werkelijkheid |
 |---------|----------------|
 | 4–6 uur geautomatiseerd | ❌ nog niet (geen cron) |
-| Handmatige / UI-ingest | ✅ met token |
+| Handmatige / UI-ingest | ✅ met token (ADR-011) |
 | Idempotent upsert | ✅ Chroma ids op url+chunk |
-| Status in UI | ✅ in-process state (blokkeert API — zie ADR-010) |
+| Incrementeel (skip known) | ✅ sitemap + known URL/lastmod (v0.8.1+) |
+| Status in UI | ✅ shared status file + worker (ADR-010) |
 
 ## Consequences
 ### Positief

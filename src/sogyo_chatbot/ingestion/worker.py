@@ -31,6 +31,7 @@ from sogyo_chatbot.ingestion.vector_store import (
     _get_collection_name,
     get_chroma_client,
     get_chroma_store,
+    get_indexed_page_index,
     query_collection,
 )
 
@@ -95,8 +96,11 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
         )
 
         coll_name = _get_collection_name()
+        incremental = not reset
+        known_pages: dict = {}
+
         if reset:
-            _update(progress=8, message="Bestaande index wissen…")
+            _update(progress=8, message="Bestaande index wissen (volledige herindexering)…")
             client = get_chroma_client()
             try:
                 client.delete_collection(coll_name)
@@ -107,6 +111,24 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
             vs._collection = None
             get_chroma_store()
             time.sleep(0.2)
+        else:
+            _update(
+                progress=6,
+                message="Bestaande index laden (alleen nieuw/gewijzigd)…",
+                incremental=True,
+            )
+            try:
+                known_pages = get_indexed_page_index()
+            except Exception as exc:
+                print(f"Could not load index for incremental skip: {exc}", file=sys.stderr)
+                known_pages = {}
+            _update(
+                message=(
+                    f"Incrementeel: {len(known_pages)} bekende URL's — "
+                    "sitemap check op nieuw/gewijzigd…"
+                ),
+                pages_skipped=0,
+            )
 
         if _check_stop():
             return 0
@@ -114,8 +136,10 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
         sources = settings.sources
         total_inserted = 0
         total_pages = 0
+        total_skipped = 0
         batch_size = settings.ingest_batch_size
         n_sources = max(1, len(sources))
+        crawl_stats: dict[str, int] = {"skipped": 0, "extracted": 0}
 
         def index_batch(domain: str, docs: list) -> None:
             nonlocal total_inserted, total_pages
@@ -126,6 +150,7 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
                 message=f"Indexeren batch {domain} ({len(docs)} pagina's)…",
                 current_source=domain,
                 pages_scraped=total_pages,
+                pages_skipped=total_skipped,
             )
             chunked = chunk_documents(docs)
             if not chunked:
@@ -148,6 +173,7 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
             domain = start_url.replace("https://", "").replace("http://", "").rstrip("/")
             base_pct = 10 + int((idx / n_sources) * 80)
             pages_before = total_pages
+            mode_label = "incrementeel" if incremental else "volledig"
 
             def progress_cb(
                 d_domain: str,
@@ -169,9 +195,10 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
                     cur = f"{_domain} — {current_url[:80]}"
                 _update(
                     progress=live,
-                    message=f"Scrapen {_domain}… ({scraped_count} artikelen)",
+                    message=f"Scrapen {_domain} ({mode_label})… ({scraped_count} nieuw)",
                     current_source=cur,
                     pages_scraped=_before + scraped_count,
+                    pages_skipped=total_skipped + crawl_stats.get("skipped", 0),
                 )
 
             def batch_cb(docs: list, *, _domain=domain) -> None:
@@ -181,8 +208,9 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
 
             _update(
                 progress=base_pct,
-                message=f"Bron {idx + 1}/{n_sources}: {domain}",
+                message=f"Bron {idx + 1}/{n_sources}: {domain} ({mode_label})",
                 current_source=domain,
+                incremental=incremental,
             )
             if _check_stop():
                 return 0
@@ -193,20 +221,32 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
                 progress_callback=progress_cb,
                 batch_callback=batch_cb,
                 batch_size=batch_size,
+                known_pages=known_pages if incremental else None,
+                incremental=incremental,
+                stats_out=crawl_stats,
             )
-            # Re-sync total_pages from status if batches ran
+            total_skipped = crawl_stats.get("skipped", 0)
+            _update(pages_skipped=total_skipped)
             if _check_stop():
                 return 0
             time.sleep(0.3)
             gc.collect()
 
         if total_pages == 0 and total_inserted == 0:
+            msg = (
+                f"Geen nieuwe of gewijzigde pagina's "
+                f"({total_skipped} al geïndexeerd overgeslagen)."
+                if incremental and total_skipped
+                else "Geen documenten gevonden."
+            )
             _update(
                 status="completed",
                 progress=100,
-                message="Geen documenten gevonden.",
+                message=msg,
                 finished_at=utc_now_iso(),
                 current_source=None,
+                pages_skipped=total_skipped,
+                incremental=incremental,
             )
             return 0
 
@@ -219,23 +259,32 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
         if _check_stop():
             return 0
 
+        if incremental:
+            done_msg = (
+                f"Klaar (incrementeel)! {total_pages} pagina's bijgewerkt, "
+                f"{total_inserted} chunks, {total_skipped} overgeslagen."
+            )
+        else:
+            done_msg = (
+                f"Klaar (volledige herindexering)! {total_pages} pagina's gescraped, "
+                f"{total_inserted} chunks geïndexeerd."
+            )
         _update(
             status="completed",
             progress=100,
-            message=(
-                f"Klaar! {total_pages} pagina's gescraped, "
-                f"{total_inserted} chunks geïndexeerd."
-            ),
+            message=done_msg,
             finished_at=utc_now_iso(),
             current_source=None,
             pages_scraped=total_pages,
+            pages_skipped=total_skipped,
             chunks_indexed=total_inserted,
             stop_requested=False,
+            incremental=incremental,
         )
         clear_stop_flag()
         print(
-            f"Ingestion complete: {total_pages} pages, {total_inserted} chunks "
-            f"(run_id={run_id})"
+            f"Ingestion complete: pages={total_pages} chunks={total_inserted} "
+            f"skipped={total_skipped} incremental={incremental} run_id={run_id}"
         )
         return 0
 

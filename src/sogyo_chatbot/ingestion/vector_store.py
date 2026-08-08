@@ -52,6 +52,44 @@ def _make_id(doc: Dict[str, Any]) -> str:
     return f"{url}::chunk-{chunk_id}"
 
 
+def get_indexed_page_index() -> Dict[str, Dict[str, str]]:
+    """Return map of cleaned URL → {lastmod, source} for incremental ingest.
+
+    One entry per unique page URL already present in Chroma (any chunk).
+    lastmod prefers stored lastmod, else article_date.
+    """
+    from urllib.parse import urlparse
+
+    def _clean(url: str) -> str:
+        parsed = urlparse(url)
+        if parsed.scheme == "http":
+            parsed = parsed._replace(scheme="https")
+        return parsed._replace(fragment="").geturl().rstrip("/")
+
+    collection = get_chroma_store()
+    try:
+        res = collection.get(include=["metadatas"])
+    except Exception:
+        return {}
+
+    index: Dict[str, Dict[str, str]] = {}
+    for m in res.get("metadatas") or []:
+        if not m:
+            continue
+        raw_url = m.get("url")
+        if not raw_url:
+            continue
+        url = _clean(str(raw_url))
+        lm = (m.get("lastmod") or m.get("article_date") or "").strip()
+        src = (m.get("source") or "").strip()
+        prev = index.get(url)
+        if prev is None:
+            index[url] = {"lastmod": lm, "source": src}
+        elif lm and (not prev.get("lastmod") or lm > prev["lastmod"]):
+            index[url] = {"lastmod": lm, "source": src or prev.get("source", "")}
+    return index
+
+
 def upsert_chunks(chunk_docs: List[Dict[str, Any]], embeddings: List[List[float]]) -> int:
     """
     Upsert chunk documents + their embeddings into Chroma.
