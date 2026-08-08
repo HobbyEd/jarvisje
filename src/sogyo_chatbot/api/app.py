@@ -238,22 +238,34 @@ async def sources():
     except Exception:
         configured = []
 
+    from sogyo_chatbot.config import settings as _settings
+
     return {
         "sources": sources_list,
         "total_unique_pages": sum(s["page_count"] for s in sources_list),
         "configured_sources": configured,
         "ingest_requires_token": True,
+        "ingest_token_configured": _settings.ingest_token_configured,
     }
 
 
 
-def _check_ingest_token(token: str | None) -> bool:
+def _check_ingest_token(token: str | None) -> tuple[bool, str | None]:
+    """Validate client token against server secret (ADR-011: env/.env only).
+
+    Returns (ok, error_message_if_not_ok).
+    """
     from sogyo_chatbot.config import settings
 
     expected = (settings.ingest_token or "").strip()
     if not expected:
-        return False
-    return (token or "").strip() == expected
+        return False, (
+            "Indexeringstoken is op de server niet geconfigureerd. "
+            "Zet INGEST_TOKEN in de host-.env (ADR-011) en herstart de app."
+        )
+    if (token or "").strip() != expected:
+        return False, "Ongeldig of ontbrekend indexeringstoken."
+    return True, None
 
 
 def _spawn_ingest_worker(max_pages: int | None, reset: bool) -> subprocess.Popen:
@@ -297,13 +309,11 @@ async def start_ingest(req: IngestStartRequest):
         write_status,
     )
 
-    if not _check_ingest_token(req.token):
+    ok, err = _check_ingest_token(req.token)
+    if not ok:
         return JSONResponse(
             status_code=401,
-            content={
-                "status": "error",
-                "message": "Ongeldig of ontbrekend indexeringstoken.",
-            },
+            content={"status": "error", "message": err},
         )
 
     if is_worker_running():
@@ -360,13 +370,11 @@ async def stop_ingest(req: IngestStopRequest):
     """Ask the worker to stop (stop flag on data volume)."""
     from sogyo_chatbot.ingestion.status import is_worker_running, request_stop
 
-    if not _check_ingest_token(req.token):
+    ok, err = _check_ingest_token(req.token)
+    if not ok:
         return JSONResponse(
             status_code=401,
-            content={
-                "status": "error",
-                "message": "Ongeldig of ontbrekend indexeringstoken.",
-            },
+            content={"status": "error", "message": err},
         )
 
     if not is_worker_running():

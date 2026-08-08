@@ -13,3 +13,4 @@
 * [ADR 08 Citations grounding](decisions/08-ADR-citations-grounding.md)
 * [ADR 09 Image compose deployment](decisions/09-ADR-image-compose-deployment.md)
 * [ADR 10 Async ingestion worker](decisions/10-ADR-async-ingestion-worker.md)
+* [ADR 11 Secrets handling](decisions/11-ADR-secrets-handling.md)
