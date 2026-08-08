@@ -27,7 +27,7 @@ Repeat for **each** discrete change (code, docs, infra, UI):
      # $env:PYTHONPATH="src"; python -m sogyo_chatbot.designer.cli
      ```
    - **Projections** — update `context-space/projections/output/` when architecture, start instructions, or platform overview change (see `context-space/projections/generation-rules.md`).  
-   - **UI version** — bump badge in `web/index.html` (semver: patch/minor/major as appropriate; current line is like `v0.7.0`).
+   - **UI version** — bump badge in `web/index.html` (semver: patch/minor/major as appropriate; current line is like `v0.8.0`).
    - **ADR check** — if architecture, deployment, guardrails, inference, or fundamentals change: create or update an ADR under `context-space/core-domain/02-architectural/decisions/`.
 
 If you skip any of these, say so explicitly to the user and offer to catch up.
@@ -45,7 +45,7 @@ If you skip any of these, say so explicitly to the user and offer to catch up.
 - Lightweight: pure Python where possible; no unnecessary frameworks.  
 - Structured LLM output via Pydantic.  
 - Production host: `192.168.165.15` — see `infra/runbooks/infrastructure.md` and `README.md`.  
-- Do not commit secrets (tokens, passwords). Prefer env vars / root-only host files.
+- **Secrets (ADR-011):** never hardcode tokens/passwords in source, docs, or commits. Use gitignored `.env` (`INGEST_TOKEN=…` for indexering). Ship host-`.env` via deploy, not the Docker image. See `.env.example` and `decisions/11-ADR-secrets-handling.md`.
 
 ## Quick pointers
 

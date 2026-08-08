@@ -60,6 +60,11 @@ python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
+# Secrets (ADR-011) — never commit .env
+cp .env.example .env
+# Zet in .env:  INGEST_TOKEN=<lang-willekeurig-secret>
+# Nodig om indexering via UI/API te starten.
+
 # LLM: productieserver Ollama of andere OpenAI-compatible endpoint
 export LLM_BASE_URL=http://192.168.165.15:11434/v1
 export LLM_MODEL=gemma3:4b
@@ -69,9 +74,10 @@ python scripts/run_api.py
 # → http://localhost:8001
 ```
 
-Volledige dev-cyclus: [development-setup.md](development-setup.md).
+Volledige dev-cyclus: [development-setup.md](development-setup.md).  
+Secrets-beleid: [ADR-011](context-space/core-domain/02-architectural/decisions/11-ADR-secrets-handling.md).
 
-**UI:** tab **Bronnen & Meta-data** voor indexering (voortgang live).
+**UI:** tab **Bronnen & Meta-data** voor indexering (voortgang live). Vul het **zelfde** token als `INGEST_TOKEN` in `.env`.
 
 ## AI-agents & werkwijze
 

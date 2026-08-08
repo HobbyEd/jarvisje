@@ -68,7 +68,7 @@ Vanaf de repo-root (Mac/Linux, SSH-key, geen sudo):
 ```bash
 ./scripts/deploy-to-15.sh
 # of met tag:
-./scripts/deploy-to-15.sh 0.7.0
+./scripts/deploy-to-15.sh 0.8.0
 ```
 
 Dit rsync’t bronnen, bouwt op de server en herstart alleen de app-container.
@@ -98,12 +98,28 @@ docker exec sogyo-ollama ollama list
 
 ---
 
+## Secrets / `.env` (ADR-011)
+
+**Nooit** tokens in git of in de Docker image.
+
+1. Lokaal in de repo: `cp .env.example .env` en vul:
+
+   ```bash
+   INGEST_TOKEN=<lang-willekeurig-secret>
+   ```
+
+2. `./scripts/deploy-to-15.sh` kopieert `.env` naar **`~/sogyo-chatbot/.env`** op de host (`chmod 600`) en **niet** naar de build-context.
+3. Compose laadt die file via `env_file: .env` op de `app`-service.
+4. UI: zelfde token invullen bij “Indexeringstoken”.
+
+Zonder `INGEST_TOKEN` weigert de API start/stop van indexering.
+
 ## Ingest worker (ADR-010)
 
 Indexering draait **buiten** de chat request-thread:
 
-- **UI / API**: `POST /ingest/start` spawnt `python -m sogyo_chatbot.ingestion.worker` in de app-container; status op volume `ingest_status.json`.
-- **CLI op server (zelfde image, one-shot)**:
+- **UI / API**: `POST /ingest/start` (token = `INGEST_TOKEN`) spawnt `python -m sogyo_chatbot.ingestion.worker` in de app-container; status op volume `ingest_status.json`.
+- **CLI op server (zelfde image, one-shot)** — geen HTTP-token nodig:
 
 ```bash
 cd ~/sogyo-chatbot

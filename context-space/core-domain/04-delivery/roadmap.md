@@ -20,7 +20,7 @@ traces_to:
 | Publiek | https://jarvisje.com (Cloudflare Tunnel) |
 | LLM | Ollama `gemma3:4b` (GPU, lokaal) |
 | Embeddings | BGE-M3 (CPU tot Blackwell/torch-support) |
-| Indexering | ADR-010 async worker; sitemap-first + batches; token-protected UI/API |
+| Indexering | ADR-010 async worker; ADR-011 `INGEST_TOKEN` via `.env`; sitemap-first |
 | Deploy | Docker Compose + systemd (`sogyo-ollama`, `sogyo-chatbot`, `cloudflared`) |
 | UI-versie | zie badge in `web/index.html` |
 

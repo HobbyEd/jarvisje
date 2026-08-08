@@ -17,6 +17,12 @@ python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
+# Secrets (ADR-011) — .env is gitignored
+cp .env.example .env
+# Verplicht voor UI/API-indexering:
+#   INGEST_TOKEN=<jouw-geheime-token>
+# Optionele alias: INDEX_TOKEN=...
+
 # Productie-Ollama op .15 (LAN)
 export LLM_BASE_URL=http://192.168.165.15:11434/v1
 export LLM_MODEL=gemma3:4b
@@ -27,6 +33,8 @@ python scripts/run_api.py
 ```
 
 Open http://localhost:8001
+
+De app laadt `.env` via `python-dotenv` (`config.py`). Zet **geen** tokens in broncode.
 
 **Alternatief — LLM op je eigen machine** (als je lokaal Ollama draait):
 
@@ -54,11 +62,12 @@ Stop: Ctrl+C of `docker rm -f sogyo-test`.
 
 ### Indexering via de web UI
 
-1. Start app (lokaal of productie).
-2. Tab **Bronnen & Meta-data**.
-3. Max pagina’s / Reset naar wens.
-4. **Start indexering** — progress live.
-5. Tabel ververst na afronding.
+1. Zorg dat `INGEST_TOKEN` in `.env` staat (lokaal) of op de host (productie).
+2. Start app (lokaal of productie).
+3. Tab **Bronnen & Meta-data**.
+4. Vul het **indexeringstoken** in (zelfde waarde als `INGEST_TOKEN`).
+5. Max pagina’s / Reset naar wens.
+6. **Start indexering** — progress live; chat blijft beschikbaar (ADR-010).
 
 ### Wanneer image rebuilden + deployen?
 

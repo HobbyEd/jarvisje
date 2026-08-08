@@ -45,6 +45,10 @@ services:
       - "8080:8001"
     volumes:
       - /home/evdillen/sogyo-chatbot-data:/app/data
+    # ADR-011: secrets from host file next to this compose (never baked into image).
+    # Deploy places /home/evdillen/sogyo-chatbot/.env (mode 600) with INGEST_TOKEN=.
+    env_file:
+      - .env
     environment:
       - LLM_BASE_URL=http://ollama:11434/v1
       - LLM_MODEL=gemma3:4b
