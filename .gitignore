@@ -1,0 +1,105 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.pyc
+pip-wheel-metadata/
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.pyo
+
+# === Virtual environments ===
+.venv/
+venv/
+ENV/
+env/
+.env/
+.python-version
+
+# === Local data & runtime (never commit) ===
+data/
+!data/.gitkeep
+
+# === Deploy artifacts (multi-GB images) — ignore whole directory ===
+deploy-artifacts/
+*.tar.gz
+*.tar
+*.img
+*.iso
+
+# === Secrets / env ===
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+id_rsa*
+credentials*
+
+# === Logs & caches ===
+*.log
+logs/
+.cache/
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+**/.DS_Store
+
+# === IDE / editor ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.code-workspace
+
+# === Agent / session noise ===
+terminals/
+.grok/
+.cursor/
+*.session
+
+# === Designer agent generated findings ===
+context-space/harnessing/findings/
+!context-space/harnessing/findings/.gitkeep
+
+# === HuggingFace / model caches if ever under repo ===
+.huggingface/
+**/huggingface/
+**/.cache/huggingface/
+models/
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# === OS / cloud sync clutter ===
+Icon?
+.Spotlight-V100
+.Trashes
+desktop.ini
