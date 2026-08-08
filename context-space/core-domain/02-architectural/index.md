@@ -12,3 +12,4 @@
 * [ADR 07 Ingestion cadence](decisions/07-ADR-ingestion-cadence.md)
 * [ADR 08 Citations grounding](decisions/08-ADR-citations-grounding.md)
 * [ADR 09 Image compose deployment](decisions/09-ADR-image-compose-deployment.md)
+* [ADR 10 Async ingestion worker](decisions/10-ADR-async-ingestion-worker.md)

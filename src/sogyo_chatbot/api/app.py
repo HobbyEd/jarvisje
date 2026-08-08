@@ -2,20 +2,21 @@
 from __future__ import annotations
 
 import json
-from typing import List, Dict, AsyncGenerator
-
-from fastapi import FastAPI, Request, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import StreamingResponse, JSONResponse, FileResponse
-from pathlib import Path
-from pydantic import BaseModel
-from datetime import datetime
-import asyncio
+import os
+import subprocess
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import AsyncGenerator, Dict, List
 
-from ..chat.orchestrator import ChatOrchestrator, ChatResponse
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
 from ..chat.models import Citation
+from ..chat.orchestrator import ChatOrchestrator, ChatResponse
 
 
 @asynccontextmanager
@@ -51,20 +52,6 @@ app.add_middleware(
 
 # In-memory sessions for MVP (simple)
 _sessions: Dict[str, ChatOrchestrator] = {}
-
-# Simple in-memory state for ingestion progress (MVP)
-_ingest_state: dict = {
-    "status": "idle",           # idle | running | stopping | stopped | completed | error
-    "progress": 0,              # 0-100
-    "message": "Geen indexering actief",
-    "started_at": None,
-    "finished_at": None,
-    "current_source": None,
-    "error": None,
-    "stop_requested": False,
-    "pages_scraped": 0,
-    "chunks_indexed": 0,
-}
 
 
 class ChatRequest(BaseModel):
@@ -259,221 +246,56 @@ async def sources():
     }
 
 
-def _update_ingest_state(**kwargs):
-    """Helper to safely update the shared ingest state."""
-    global _ingest_state
-    _ingest_state.update(kwargs)
-
 
 def _check_ingest_token(token: str | None) -> bool:
     from sogyo_chatbot.config import settings
+
     expected = (settings.ingest_token or "").strip()
     if not expected:
         return False
     return (token or "").strip() == expected
 
 
-async def _run_ingestion_task(max_pages: int | None, reset: bool):
-    """Background task: sitemap-first scrape + batched embed/upsert per domain."""
-    global _ingest_state
+def _spawn_ingest_worker(max_pages: int | None, reset: bool) -> subprocess.Popen:
+    """Start ADR-010 worker in a separate process (same image/code)."""
+    cmd = [sys.executable, "-m", "sogyo_chatbot.ingestion.worker"]
+    if max_pages is not None:
+        cmd.extend(["--max-pages", str(max_pages)])
+    if reset:
+        cmd.append("--reset")
 
-    def _check_stop() -> bool:
-        if _ingest_state.get("stop_requested"):
-            _update_ingest_state(
-                status="stopped",
-                message="Indexering gestopt door gebruiker.",
-                finished_at=datetime.utcnow().isoformat(),
-                current_source=None,
-                stop_requested=False,
-            )
-            return True
-        return False
+    env = os.environ.copy()
+    src = str(Path(__file__).resolve().parents[2])  # .../src
+    prev = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = src if not prev else f"{src}{os.pathsep}{prev}"
 
-    try:
-        _update_ingest_state(
-            status="running",
-            progress=5,
-            message="Indexering gestart — sitemap-first crawl…",
-            started_at=datetime.utcnow().isoformat(),
-            finished_at=None,
-            current_source=None,
-            error=None,
-            stop_requested=False,
-            pages_scraped=0,
-            chunks_indexed=0,
-        )
+    from sogyo_chatbot.config import settings
 
-        from sogyo_chatbot.ingestion.vector_store import (
-            get_chroma_client,
-            _get_collection_name,
-            get_chroma_store,
-        )
-        from sogyo_chatbot.ingestion import chunk_documents, embed_chunks, upsert_chunks
-        from sogyo_chatbot.ingestion.scraper import scrape_domain
-        from sogyo_chatbot.config import settings
+    settings.ensure_dirs()
+    log_path = Path(settings.data_dir) / "ingest_worker.log"
+    log_f = open(log_path, "a", encoding="utf-8")  # noqa: SIM115 — owned by Popen
+    log_f.write(f"\n--- spawn {' '.join(cmd)} ---\n")
+    log_f.flush()
 
-        import gc as _gc
-        import time as _time
-
-        coll_name = _get_collection_name()
-
-        if reset:
-            _update_ingest_state(progress=8, message="Bestaande index wissen…")
-            client = get_chroma_client()
-            try:
-                client.delete_collection(coll_name)
-            except Exception:
-                pass
-            import sogyo_chatbot.ingestion.vector_store as vs
-
-            vs._collection = None
-            get_chroma_store()
-            await asyncio.sleep(0.3)
-
-        if _check_stop():
-            return
-
-        sources = settings.sources
-        total_inserted = 0
-        total_pages = 0
-        batch_size = settings.ingest_batch_size
-
-        def _index_docs_batch(domain: str, docs: list, d_idx: int) -> int:
-            """Chunk + embed + upsert one batch; returns chunk count."""
-            nonlocal total_inserted, total_pages
-            if not docs:
-                return 0
-            total_pages += len(docs)
-            _update_ingest_state(
-                message=f"Indexeren batch {domain} ({len(docs)} pagina's)…",
-                current_source=domain,
-                pages_scraped=total_pages,
-            )
-            chunked = chunk_documents(docs)
-            if not chunked:
-                return 0
-            texts = [c["text"] for c in chunked]
-            embeddings = embed_chunks(texts)
-            upsert_bs = 64
-            n_total = 0
-            for b in range(0, len(chunked), upsert_bs):
-                n = upsert_chunks(
-                    chunked[b : b + upsert_bs], embeddings[b : b + upsert_bs]
-                )
-                n_total += n
-                total_inserted += n
-                _update_ingest_state(chunks_indexed=total_inserted)
-                _time.sleep(0.15)
-            _gc.collect()
-            return n_total
-
-        for idx, start_url in enumerate(sources):
-            domain = start_url.replace("https://", "").replace("http://", "").rstrip("/")
-            n_sources = max(1, len(sources))
-            base_pct = 10 + int((idx / n_sources) * 80)
-
-            pages_before_domain = total_pages
-
-            def _make_progress_cb(d_name: str, d_base: int, pages_before: int):
-                def _progress_cb(
-                    d_domain: str, scraped_count: int, current_url: str | None = None
-                ) -> None:
-                    slice_w = max(5, 80 // n_sources)
-                    within = min(
-                        slice_w - 1,
-                        int((scraped_count / max(50, scraped_count + 10)) * slice_w),
-                    )
-                    live = min(92, d_base + within)
-                    cur = d_name
-                    if current_url:
-                        cur = f"{d_name} — {current_url[:80]}"
-                    _update_ingest_state(
-                        progress=live,
-                        message=f"Scrapen {d_name}… ({scraped_count} artikelen op deze bron)",
-                        current_source=cur,
-                        pages_scraped=pages_before + scraped_count,
-                    )
-
-                return _progress_cb
-
-            def _make_batch_cb(d_name: str, d_idx: int):
-                def _batch_cb(docs: list) -> None:
-                    if _ingest_state.get("stop_requested"):
-                        return
-                    _index_docs_batch(d_name, docs, d_idx)
-
-                return _batch_cb
-
-            _update_ingest_state(
-                progress=base_pct,
-                message=f"Bron {idx + 1}/{n_sources}: {domain} (sitemap-first)…",
-                current_source=domain,
-            )
-
-            if _check_stop():
-                return
-
-            # Live batches: scrape callbacks already upsert so UI/table grows
-            scrape_domain(
-                start_url,
-                max_pages=max_pages,
-                progress_callback=_make_progress_cb(domain, base_pct, pages_before_domain),
-                batch_callback=_make_batch_cb(domain, idx),
-                batch_size=batch_size,
-            )
-
-            if _check_stop():
-                return
-            _time.sleep(0.5)
-            _gc.collect()
-
-        if total_pages == 0 and total_inserted == 0:
-            _update_ingest_state(
-                status="completed",
-                progress=100,
-                message="Geen documenten gevonden.",
-                finished_at=datetime.utcnow().isoformat(),
-            )
-            return
-
-        _update_ingest_state(progress=95, message="Validatie query…")
-        try:
-            from sogyo_chatbot.ingestion.vector_store import query_collection
-
-            _ = query_collection("Sogyo traineeship", n_results=1)
-        except Exception:
-            pass
-
-        if _check_stop():
-            return
-
-        _update_ingest_state(
-            status="completed",
-            progress=100,
-            message=(
-                f"Klaar! {total_pages} pagina's gescraped, "
-                f"{total_inserted} chunks geïndexeerd."
-            ),
-            finished_at=datetime.utcnow().isoformat(),
-            current_source=None,
-            pages_scraped=total_pages,
-            chunks_indexed=total_inserted,
-        )
-
-    except Exception as exc:
-        _update_ingest_state(
-            status="error",
-            message=f"Fout tijdens indexering: {str(exc)}",
-            error=str(exc),
-            finished_at=datetime.utcnow().isoformat(),
-        )
-        raise
+    return subprocess.Popen(
+        cmd,
+        env=env,
+        cwd=str(Path.cwd()),
+        start_new_session=True,
+        stdout=log_f,
+        stderr=subprocess.STDOUT,
+    )
 
 
 @app.post("/ingest/start")
-async def start_ingest(req: IngestStartRequest, background_tasks: BackgroundTasks):
-    """Start indexering (token verplicht — ook bij directe API-aanroep)."""
-    global _ingest_state
+async def start_ingest(req: IngestStartRequest):
+    """Start indexering in a separate worker process (ADR-010). Token required."""
+    from sogyo_chatbot.ingestion.status import (
+        clear_stop_flag,
+        is_worker_running,
+        utc_now_iso,
+        write_status,
+    )
 
     if not _check_ingest_token(req.token):
         return JSONResponse(
@@ -484,34 +306,60 @@ async def start_ingest(req: IngestStartRequest, background_tasks: BackgroundTask
             },
         )
 
-    if _ingest_state.get("status") == "running":
+    if is_worker_running():
         return {"status": "error", "message": "Er loopt al een indexering."}
 
-    _update_ingest_state(
-        status="running",
-        progress=1,
-        message="Voorbereiden… (token OK)",
-        stop_requested=False,
-        finished_at=None,
-        error=None,
-        pages_scraped=0,
-        chunks_indexed=0,
-        started_at=datetime.utcnow().isoformat(),
-        current_source=None,
+    clear_stop_flag()
+    write_status(
+        {
+            "status": "running",
+            "progress": 1,
+            "message": "Worker starten… (apart proces)",
+            "started_at": utc_now_iso(),
+            "finished_at": None,
+            "error": None,
+            "stop_requested": False,
+            "pages_scraped": 0,
+            "chunks_indexed": 0,
+            "current_source": None,
+            "pid": None,
+        },
+        merge=False,
     )
 
-    background_tasks.add_task(_run_ingestion_task, req.max_pages, req.reset)
+    try:
+        proc = _spawn_ingest_worker(req.max_pages, req.reset)
+    except Exception as e:
+        write_status(
+            {
+                "status": "error",
+                "message": f"Kon worker niet starten: {e}",
+                "error": str(e),
+                "finished_at": utc_now_iso(),
+            }
+        )
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Kon worker niet starten: {e}"},
+        )
+
+    # Do not write proc.pid into shared status — only the worker sets pid after
+    # acquiring the lock (avoids double-spawn races overwriting the real worker pid).
+    write_status({"message": "Indexering loopt in aparte worker…"})
     return {
         "status": "started",
-        "message": "Indexering gestart in de achtergrond.",
+        "message": "Indexering gestart in een apart proces (chat blijft beschikbaar).",
         "max_pages": req.max_pages,
         "reset": req.reset,
+        "spawn_pid": proc.pid,
     }
 
 
 @app.post("/ingest/stop")
 async def stop_ingest(req: IngestStopRequest):
-    """Stop lopende indexering (zelfde token als start)."""
+    """Ask the worker to stop (stop flag on data volume)."""
+    from sogyo_chatbot.ingestion.status import is_worker_running, request_stop
+
     if not _check_ingest_token(req.token):
         return JSONResponse(
             status_code=401,
@@ -521,18 +369,19 @@ async def stop_ingest(req: IngestStopRequest):
             },
         )
 
-    if _ingest_state.get("status") != "running":
+    if not is_worker_running():
         return {"status": "error", "message": "Geen actieve indexering om te stoppen."}
 
-    _ingest_state["stop_requested"] = True
-    _ingest_state["message"] = "Stoppen aangevraagd, even geduld…"
+    request_stop()
     return {"status": "stop_requested", "message": "Stoppen aangevraagd."}
 
 
 @app.get("/ingest/status")
 async def ingest_status():
-    """Huidige status van de laatste/geactiveerde indexering."""
-    return _ingest_state.copy()
+    """Read-only status from shared status file (ADR-010)."""
+    from sogyo_chatbot.ingestion.status import read_status
+
+    return read_status()
 
 
 # Serve the Sogyo-styled frontend (web/index.html) at root.

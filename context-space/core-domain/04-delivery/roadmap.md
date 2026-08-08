@@ -20,7 +20,7 @@ traces_to:
 | Publiek | https://jarvisje.com (Cloudflare Tunnel) |
 | LLM | Ollama `gemma3:4b` (GPU, lokaal) |
 | Embeddings | BGE-M3 (CPU tot Blackwell/torch-support) |
-| Indexering | Sitemap-first + batches; token-protected UI/API |
+| Indexering | ADR-010 async worker; sitemap-first + batches; token-protected UI/API |
 | Deploy | Docker Compose + systemd (`sogyo-ollama`, `sogyo-chatbot`, `cloudflared`) |
 | UI-versie | zie badge in `web/index.html` |
 
@@ -37,8 +37,9 @@ MVP end-to-end is **operationeel**. Verdere fasen zijn kwaliteit, onderhoud en s
 ## Open / volgende stappen
 
 ### P0 — stabiliteit & operatie
+- [x] **ADR-010**: ingestion worker buiten chat-API-proces + status in UI
 - [ ] Herindexering alle bronnen (hoge max / full crawl) en controleren page counts
-- [ ] Nightly of geplande ingest (cron/systemd timer) i.p.v. alleen handmatig
+- [ ] Geplande ingest (cron/systemd timer) via dezelfde worker-entrypoint
 - [ ] Backup van `sogyo-chatbot-data` documenteren/automatiseren
 
 ### P1 — kwaliteit

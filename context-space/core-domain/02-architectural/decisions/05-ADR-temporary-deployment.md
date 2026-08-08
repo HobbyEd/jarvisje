@@ -12,10 +12,14 @@ traces_to:
 # ADR-005: Temporary Deployment Model (Given Limited Connectivity)
 
 ## Status
-Superseded (Vervangen door [ADR-009](09-ADR-image-compose-deployment.md) — de split tussen API backend en DGX-inferentie is inmiddels volledig geïmplementeerd).
+**Superseded** door [ADR-009](09-ADR-image-compose-deployment.md).
 
 ## Datum
-2026-06-26
+2026-06-26 · reality check 2026-08-08
+
+## Reality check (2026-08)
+
+De “later split API vs DGX” is **niet** de productierichting geworden. Alles (app + Ollama LLM + data + Cloudflare tunnel) draait op **één host `.15`**. Deze ADR blijft als historisch besluit.
 
 ## Context
 De NVIDIA DGX is op dit moment **niet echt bereikbaar** vanuit de Python-hosting omgeving van de website.

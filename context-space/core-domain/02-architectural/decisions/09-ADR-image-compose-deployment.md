@@ -60,6 +60,7 @@ Productie-compose: `infra/ubuntu-x64/docker-compose.prod-local.yaml`.
 - Grote images (torch + BGE-M3).
 - Embeddings tijdelijk op CPU (Blackwell sm_120 vs. torch cu124).
 - Twee compose-services + drie systemd units om te beheren.
+- Ingest in dezelfde app-container blokkeert chat (op te lossen via ADR-010; worker mag apart proces/container zijn).
 
 ## Operationele uitwerking
 

@@ -27,7 +27,7 @@ Repeat for **each** discrete change (code, docs, infra, UI):
      # $env:PYTHONPATH="src"; python -m sogyo_chatbot.designer.cli
      ```
    - **Projections** — update `context-space/projections/output/` when architecture, start instructions, or platform overview change (see `context-space/projections/generation-rules.md`).  
-   - **UI version** — bump badge in `web/index.html` (semver: patch/minor/major as appropriate; current line is like `v0.6.3`).
+   - **UI version** — bump badge in `web/index.html` (semver: patch/minor/major as appropriate; current line is like `v0.7.0`).
    - **ADR check** — if architecture, deployment, guardrails, inference, or fundamentals change: create or update an ADR under `context-space/core-domain/02-architectural/decisions/`.
 
 If you skip any of these, say so explicitly to the user and offer to catch up.

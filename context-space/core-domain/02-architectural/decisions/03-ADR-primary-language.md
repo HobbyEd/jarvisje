@@ -15,7 +15,7 @@ traces_to:
 Accepted
 
 ## Datum
-2026-06-26
+2026-06-26 · reality check 2026-08-08: nog geldig (UI/prompts NL; model gemma3:4b).
 
 ## Context
 De website sogyo.nl is Nederlandstalig. De content op de gekoppelde blogs (jeroenteunisse.nl, edwinvandillen.nl, augmentedorganisation.nl, etc.) is grotendeels of volledig in het Nederlands geschreven.

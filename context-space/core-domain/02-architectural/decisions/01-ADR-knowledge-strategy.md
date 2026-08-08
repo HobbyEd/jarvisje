@@ -15,7 +15,7 @@ traces_to:
 Accepted
 
 ## Datum
-2026-06-26
+2026-06-26 · reality check 2026-08-08: nog geldig (RAG + Chroma + geen fine-tuning in productie).
 
 ## Context
 We willen een chatbot bouwen die sterk verwijst naar bestaande, hoogwaardige content op sogyo.nl, jeroenteunisse.nl, edwinvandillen.nl, augmentedorganisation.nl, intentdriven.nl en augmentedengineering.nl.
