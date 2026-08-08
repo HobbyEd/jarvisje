@@ -15,7 +15,7 @@ traces_to:
 Accepted
 
 ## Datum
-2026-06-26
+2026-06-26 · reality check 2026-08-08: nog geldig (Pydantic ChatResponse + citations in UI).
 
 ## Context
 Een van de belangrijkste doelen is dat de chatbot **actief verwijst naar blogposts en tools**.

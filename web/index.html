@@ -77,7 +77,7 @@
              alt="Sogyo 30 jaar 1996-2026" 
              class="h-10 sm:h-12 w-auto">
       </div>
-      <span class="text-sm font-mono px-2.5 py-0.5 rounded bg-[#2E7D32] text-white font-semibold">v0.6.3</span>
+      <span class="text-sm font-mono px-2.5 py-0.5 rounded bg-[#2E7D32] text-white font-semibold">v0.7.0</span>
     </div>
   </header>
 
@@ -87,6 +87,18 @@
       <button data-tab="chat" class="tab-button px-4 py-2 font-medium text-sm border-b-2 border-[#2E7D32] text-[#2E7D32] active">Chat</button>
       <button data-tab="sources" class="tab-button px-4 py-2 font-medium text-sm text-slate-600 hover:text-slate-800">Bronnen &amp; Meta-data</button>
       <button data-tab="architecture" class="tab-button px-4 py-2 font-medium text-sm text-slate-600 hover:text-slate-800">Chatbot Opbouw</button>
+    </div>
+  </div>
+
+  <!-- Global ingest banner (ADR-010: worker runs outside chat process) -->
+  <div id="ingest-global-banner" class="hidden max-w-5xl mx-auto px-4 md:px-6 pt-3">
+    <div class="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+      <span class="text-lg leading-none" aria-hidden="true">⏳</span>
+      <div class="min-w-0 flex-1">
+        <div class="font-semibold">Indexering draait op de achtergrond</div>
+        <div id="ingest-global-banner-msg" class="text-xs mt-0.5 text-blue-800/90 truncate">Worker is actief — chat blijft beschikbaar.</div>
+      </div>
+      <a href="#" id="ingest-global-banner-link" class="text-xs font-medium text-blue-700 underline shrink-0 whitespace-nowrap">Naar bronnen</a>
     </div>
   </div>
 
@@ -113,8 +125,8 @@
     <div class="mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h3 class="font-semibold text-[#2E7D32]">Indexering starten (MVP)</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Start een handmatige update van de kennisbank. Progressie wordt live getoond. (Indexering vereist uitgaande internettoegang vanuit de Python omgeving.)</p>
+          <h3 class="font-semibold text-[#2E7D32]">Indexering starten</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Draait in een <strong>apart worker-proces</strong> (ADR-010) zodat chat beschikbaar blijft. Zelfde entrypoint is later bruikbaar voor cron. Vereist uitgaande internettoegang.</p>
         </div>
         <button onclick="refreshSources()" 
                 class="text-sm px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg flex items-center gap-1 text-slate-600 active:bg-slate-100">
@@ -342,11 +354,11 @@ flowchart TB
     Embed2 --> Store
       </div>
       <ul class="list-disc pl-5 mt-3 text-sm space-y-0.5">
-        <li>Start via UI → /ingest/start (background task)</li>
-        <li>Per bron: scrape → chunk → embed → upsert</li>
-        <li>Progress live via /ingest/status polling</li>
+        <li>Start via UI → <code>POST /ingest/start</code> spawnt een <strong>apart worker-proces</strong> (ADR-010)</li>
+        <li>Worker: scrape → chunk → embed → upsert; chat-API blijft beschikbaar</li>
+        <li>Status via gedeeld bestand op data-volume; UI pollt <code>GET /ingest/status</code></li>
+        <li>Zelfde entrypoint voor CLI/cron: <code>python -m sogyo_chatbot.ingestion.worker</code></li>
         <li>Data blijft in persistente volume <code>/home/evdillen/sogyo-chatbot-data</code></li>
-        <li>Model wordt bij eerste run (of startup) geladen</li>
       </ul>
     </div>
 
@@ -521,6 +533,7 @@ if (input) {
 window.onload = () => {
   startOnboarding();
   initTabs();
+  ensureGlobalIngestPoll();
 
   // Initialize Mermaid diagrams (lazy render when architecture tab is shown)
   if (window.mermaid) {
@@ -954,27 +967,60 @@ async function updateStatusUI() {
       startBtn.textContent = isRunning ? 'Indexering loopt...' : 'Start indexering';
     }
 
+    // Global banner on all tabs while worker runs
+    const banner = document.getElementById('ingest-global-banner');
+    const bannerMsg = document.getElementById('ingest-global-banner-msg');
+    if (banner) {
+      if (isRunning) {
+        banner.classList.remove('hidden');
+        if (bannerMsg) {
+          const bits = [st.message || 'Indexering actief'];
+          if (st.progress != null) bits.push(st.progress + '%');
+          if (st.pages_scraped) bits.push(st.pages_scraped + ' pagina\'s');
+          bannerMsg.textContent = bits.join(' · ');
+        }
+      } else {
+        banner.classList.add('hidden');
+      }
+    }
+
     if (isDone || isError || isStopped) {
       if (statusPollInterval) {
         clearInterval(statusPollInterval);
         statusPollInterval = null;
       }
 
-      // Auto refresh sources table + show final message clearly
       setTimeout(() => {
         if (!document.getElementById('sources-view').classList.contains('hidden')) {
           refreshSources();
         }
       }, 800);
     } else if (isRunning) {
-      // Aggressively refresh sources table while scraping so you see pages appearing
-      refreshSources();
+      // Refresh sources table occasionally while worker writes to Chroma
+      if (!document.getElementById('sources-view').classList.contains('hidden')) {
+        refreshSources();
+      }
     }
 
   } catch (e) {
     if (msgEl) msgEl.textContent = 'Kan status niet ophalen';
   }
 }
+
+// Keep light global poll so chat-tab shows banner even without sources tab open
+let globalIngestPoll = null;
+function ensureGlobalIngestPoll() {
+  if (globalIngestPoll) return;
+  globalIngestPoll = setInterval(() => {
+    updateStatusUI();
+  }, 4000);
+  updateStatusUI();
+}
+
+document.getElementById('ingest-global-banner-link')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  showTab('sources');
+});
 </script>
 </body>
 </html>

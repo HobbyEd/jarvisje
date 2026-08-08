@@ -76,3 +76,24 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu, compute, utility]
+
+  # ADR-010: one-shot ingest worker (cron/manual). UI spawn uses subprocess inside app.
+  # Example:
+  #   docker compose -f docker-compose.yaml --profile ingest run --rm ingest --max-pages 500
+  ingest:
+    image: sogyo-chatbot:${IMAGE_TAG:-latest}
+    pull_policy: never
+    profiles: ["ingest"]
+    volumes:
+      - /home/evdillen/sogyo-chatbot-data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - EMBEDDING_DEVICE=cpu
+      - CUDA_VISIBLE_DEVICES=
+    restart: "no"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    mem_limit: 8g
+    cpus: "4.0"
+    entrypoint: ["python", "-m", "sogyo_chatbot.ingestion.worker"]

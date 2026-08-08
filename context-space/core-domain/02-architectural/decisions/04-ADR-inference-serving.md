@@ -49,9 +49,13 @@ Sinds 2026-08 draait de **productie-Sogyo-chatbot** op host **`192.168.165.15`**
 - Resource management GPU (Ollama + eventueel andere containers).
 - Embeddings tijdelijk op CPU (torch vs. sm_120).
 
+## Reality check (2026-08)
+
+Productie **draait** op Ollama `gemma3:4b` op `.15`. Structured output werkt via OpenAI-compatible JSON mode + backend parsing. vLLM/DGX is geen runtime-afhankelijkheid meer van de Sogyo-app.
+
 ## Alternatives Considered
-- **Alleen cloud APIs** (OpenAI, Anthropic, Grok, etc.): Verworpen vanwege kosten, controle en het feit dat we de DGX hebben.
-- **Alleen Ollama lokaal**: Goed voor ontwikkeling, maar minder geschikt voor productie-grade throughput en structured output dan vLLM.
+- **Alleen cloud APIs** (OpenAI, Anthropic, Grok, etc.): Verworpen vanwege kosten en controle.
+- **vLLM op DGX als primary**: Geschikt voor zware models; operationeel zwaarder; niet meer de productiestandaard.
 - **Externe inference + RAG lokaal**: Niet gewenst als primaire oplossing.
 
 ## Modelkeuze

@@ -2,6 +2,8 @@
 
 ## 2026-08-08
 
+* **ADR review**: 01–09 reality-check; **ADR-010** async ingestion worker.
+* **ADR-010 implementatie**: `ingestion/worker.py` + status files; API spawn i.p.v. in-process; UI banner; CLI `scripts/ingest.py` → worker; UI **v0.7.0**.
 * **Productie-migratie**: app-host van `.10` naar **`192.168.165.15`** (enterprise); lokaal **Ollama gemma3:4b**; Cloudflare Tunnel **jarvisje.com**; systemd `sogyo-ollama` + `sogyo-chatbot` + `cloudflared`.
 * **Docs**: README, development-setup, infra runbooks, ubuntu-x64 README, ADR-004/009; UI; config → Ollama.
 * **Opschoning**: verwijderd `actualization/`, `infra/dgx-arm64/`, legacy compose, proxy-script, agent-stubs; projecties; UI **v0.6.2**.

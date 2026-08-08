@@ -1,7 +1,7 @@
 ---
 type: ADR
 title: "Conversatiebeheer"
-description: "Client-side history; onboarding; consent stretch."
+description: "Client-side + server session history; geen zware memory-stack."
 status: accepted
 tags: [conversation]
 timestamp: 2026-06-26T00:00:00Z
@@ -12,60 +12,52 @@ traces_to:
 # ADR-006: Conversation Management for Extended Sessions
 
 ## Status
-Accepted
+Accepted (geactualiseerd 2026-08-08)
 
 ## Datum
-2026-06-26
+2026-06-26 · update 2026-08-08
 
 ## Context
-User-specificatie:
-- "Dat mag best lang duren dus een uitgebreide chat sessie worden."
-
-Gesprekken kunnen meerdere turns duren. Gebruikers (vooral bedrijven of geïnteresseerde sollicitanten) willen dieper ingaan op onderwerpen, canvases bespreken, of meerdere gerelateerde vragen stellen.
-
-Tegelijkertijd:
-- We willen guardrails behouden.
-- We willen sterke citations blijven afdwingen.
-- We willen geen onbeperkte context kosten / latency.
+Gesprekken mogen meerdere turns duren. Guardrails en citations moeten blijven gelden zonder onbeperkte contextkosten.
 
 ## Decision
-We ondersteunen **uitgebreide chat-sessies** met de volgende aanpak:
+We ondersteunen **multi-turn chat** met:
 
-1. **Volledige history** wordt meegestuurd zolang het binnen de context window past.
-2. **Context compression / summarization** wordt toegepast wanneer de geschiedenis te lang wordt:
-   - Samenvatting van eerdere delen van het gesprek (door het model zelf of een kleiner model).
-   - Belangrijke feiten en intenties uit de geschiedenis worden geëxtraheerd.
-3. **Session state** wordt beheerd in de backend (in-memory voor dev, later Redis of database).
-4. **Per bericht** wordt de relevante retrieved context meegestuurd (niet alleen de history).
-5. **Optioneel**: Gebruikers kunnen een "nieuw gesprek" starten of een onderwerp resetten.
+1. **History** meegestuurd vanuit client en/of server-sessie (session_id).
+2. **Retrieval per turn** — relevante chunks worden opnieuw opgehaald (niet alleen history).
+3. **In-memory session map** in de FastAPI-proces voor MVP (geen Redis vereist).
+4. Optioneel later: summarization bij zeer lange history, of externe session store.
 
-De backend houdt een `conversation_id` bij met bijbehorende berichten.
+### Niet in scope (MVP)
+- Langetermijn memory over bezoekers
+- Agent-style tools memory
+
+## Reality check (2026-08)
+
+| Besluit | Werkelijkheid |
+|---------|----------------|
+| Multi-turn + session_id | ✅ in API/UI |
+| History in request | ✅ optioneel |
+| In-memory sessions | ✅ `app.py` |
+| Automatische summarization bij N turns | ❌ nog niet |
+| Redis/DB sessions | ❌ nog niet |
 
 ## Consequences
 ### Positief
-- Natuurlijke, diepe gesprekken zijn mogelijk.
-- Past bij de aard van de content (diepgaande onderwerpen).
-- Goede user experience.
+- Voldoende voor demo en productie-MVP.
+- Eenvoudig en lightweight.
 
-### Negatief / Risico's
-- Hogere token kosten / latency bij lange sessies.
-- Risico dat de LLM de oorspronkelijke retrieval context "vergeet" en buiten de bronnen gaat zweven (tegen te gaan met goede prompting + citations).
-- Complexere state management.
+### Negatief
+- Sessions verdwijnen bij container restart.
+- Zeer lange chats kunnen context vullen zonder compressie.
 
 ## Alternatives Considered
-- **Alleen stateless per vraag**: Verworpen — past niet bij "uitgebreide chat sessie".
-- **Volledige history zonder limiet**: Niet realistisch (context window + kosten).
-- **Agent-style memory (langetermijn)**: Te complex voor v1. Wordt later overwogen.
-
-## Implementation Notes
-- Gebruik Pydantic modellen voor messages.
-- Bouw een `ConversationManager` class.
-- Voeg een samenvattingsmechanisme toe wanneer `len(history) > N` (bijv. 15-20 berichten).
-- Test expliciet lange sessies in de evaluatieset.
+- Alleen stateless per vraag: te mager voor “uitgebreide chat”.
+- Volledige unlimited history: niet realistisch.
 
 ## Gerelateerde ADRs
-- ADR-002: Guardrails
-- ADR-008: Citations and Grounding
+- ADR-002 Guardrails
+- ADR-008 Citations
 
 ## Besloten door
 Edwin + architectuur sessie met Grok

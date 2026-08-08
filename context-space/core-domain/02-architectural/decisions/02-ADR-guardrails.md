@@ -15,7 +15,7 @@ traces_to:
 Accepted
 
 ## Datum
-2026-06-26
+2026-06-26 · reality check 2026-08-08: strategie nog geldig; implementatie is vooral system prompt + retrieval-only + structured citations (geen aparte pre-filter-service of post-validator-LLM).
 
 ## Context
 De chatbot moet een natuurlijk gesprek mogelijk maken, maar mag **niet alle kanten op gaan**.

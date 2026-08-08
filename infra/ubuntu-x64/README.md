@@ -68,7 +68,7 @@ Vanaf de repo-root (Mac/Linux, SSH-key, geen sudo):
 ```bash
 ./scripts/deploy-to-15.sh
 # of met tag:
-./scripts/deploy-to-15.sh 0.6.3
+./scripts/deploy-to-15.sh 0.7.0
 ```
 
 Dit rsync’t bronnen, bouwt op de server en herstart alleen de app-container.
@@ -98,11 +98,30 @@ docker exec sogyo-ollama ollama list
 
 ---
 
+## Ingest worker (ADR-010)
+
+Indexering draait **buiten** de chat request-thread:
+
+- **UI / API**: `POST /ingest/start` spawnt `python -m sogyo_chatbot.ingestion.worker` in de app-container; status op volume `ingest_status.json`.
+- **CLI op server (zelfde image, one-shot)**:
+
+```bash
+cd ~/sogyo-chatbot
+docker compose --profile ingest run --rm ingest --max-pages 500
+# eventueel: --reset
+```
+
+- **Log worker (UI-spawn)**: `~/sogyo-chatbot-data/ingest_worker.log`
+
+Chat blijft beschikbaar tijdens indexeren (aparte proces; embeddings CPU).
+
+---
+
 ## Bestanden in deze map
 
 | Bestand | Rol |
 |---------|-----|
-| `docker-compose.prod-local.yaml` | **Productie:** ollama + app (kopieer naar server als `docker-compose.yaml`) |
+| `docker-compose.prod-local.yaml` | **Productie:** ollama + app (+ profile `ingest`) → server: `docker-compose.yaml` |
 | `Dockerfile` | App-image (Python, torch, BGE-M3 preload) |
 | `setup-sogyo-service.sh` | systemd units ollama + chatbot |
 | `server-deploy.sh` | load tarball + compose up (server-side) |
