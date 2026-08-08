@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sogyo Kennis Chatbot - Platform Overzicht</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        :root { --sogyo-blue: #003366; --sogyo-accent: #00A3E0; }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .logo-font { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
+        .sogyo-header { background: linear-gradient(135deg, #003366 0%, #002244 100%); }
+        .section-title { font-weight: 600; color: #003366; }
+        .card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+        .mermaid { background: white; padding: 1rem; border-radius: 0.5rem; }
+        .step-number {
+            background: #003366; color: white; width: 28px; height: 28px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 9999px; font-weight: 600; font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <header class="sogyo-header text-white">
+        <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-x-3">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                    <span class="text-[#003366] font-bold text-2xl logo-font">S</span>
+                </div>
+                <div>
+                    <div class="logo-font text-3xl font-semibold tracking-tight">Sogyo</div>
+                    <div class="text-[10px] text-blue-200 -mt-1">SOFTWARE INNOVATORS</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-x-5 text-sm flex-wrap">
+                <a href="index.html" class="text-white/90 hover:text-white">Docs</a>
+                <a href="technisch-design.html" class="text-white/90 hover:text-white">Technisch design</a>
+                <a href="#overzicht" class="text-white/90 hover:text-white">Overzicht</a>
+                <a href="#architectuur" class="text-white/90 hover:text-white">Architectuur</a>
+                <a href="#starten" class="text-white/90 hover:text-white">Platform starten</a>
+                <a href="#deploy" class="text-white/90 hover:text-white">Deployment</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-6xl mx-auto px-6 py-10">
+        <div class="mb-12 max-w-3xl">
+            <div class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-[#003366] mb-4">
+                MVP · bijgewerkt 2026-08-08 · UI v0.6.3
+            </div>
+            <h1 class="text-5xl font-semibold tracking-tighter text-[#003366] leading-none mb-4">
+                Sogyo Kennis Chatbot<br>
+                <span class="text-slate-600">Platform Overzicht</span>
+            </h1>
+            <p class="text-xl text-slate-600">
+                Domein-specifieke RAG-chatbot. Productie op <strong>192.168.165.15</strong> met lokaal
+                <strong>Ollama gemma3:4b</strong>, publiek via <strong>https://jarvisje.com</strong> (Cloudflare Tunnel).
+            </p>
+        </div>
+
+        <section id="overzicht" class="mb-14">
+            <h2 class="section-title text-3xl mb-2">Globaal overzicht</h2>
+            <p class="text-slate-600 mb-6 max-w-2xl">Eén host: app, embeddings, vector store en LLM. Geen externe cloud-LLM voor de kern.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="card bg-white p-5 rounded-2xl border border-slate-200">
+                    <div class="font-semibold text-[#003366] mb-1">Ingestie</div>
+                    <div class="text-sm text-slate-600">Sitemap-first scraper, BGE-M3 embeddings (CPU), Chroma. 6 bronnen. Indexering met token.</div>
+                </div>
+                <div class="card bg-white p-5 rounded-2xl border border-slate-200">
+                    <div class="font-semibold text-[#003366] mb-1">Chat</div>
+                    <div class="text-sm text-slate-600">Retrieval → orchestrator → Ollama (OpenAI-compatible) → SSE streaming + citations.</div>
+                </div>
+                <div class="card bg-white p-5 rounded-2xl border border-slate-200">
+                    <div class="font-semibold text-[#003366] mb-1">Ops</div>
+                    <div class="text-sm text-slate-600">Docker Compose + systemd + cloudflared. Data in persistent volume.</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="architectuur" class="mb-14">
+            <h2 class="section-title text-3xl mb-6">Architectuur</h2>
+            <div class="bg-white border border-slate-200 rounded-3xl p-8 mb-6">
+                <div class="mermaid">
+flowchart LR
+  Browser[Browser jarvisje.com]
+  CF[cloudflared]
+  App[sogyo-chatbot-app :8080]
+  Chroma[(Chroma volume)]
+  Emb[BGE-M3 CPU]
+  Ollama[Ollama gemma3:4b GPU]
+  Browser --> CF --> App
+  App --> Emb --> Chroma
+  App --> Ollama
+                </div>
+            </div>
+            <p class="text-sm text-slate-600 mb-4">
+                Details: <a class="underline text-[#003366]" href="../../core-domain/02-architectural/decisions/">ADRs</a>,
+                <a class="underline text-[#003366]" href="../../../../infra/runbooks/infrastructure.md">infrastructure runbook</a>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="bg-white border rounded-xl p-4">
+                    <strong>Host enterprise</strong><br>
+                    192.168.165.15 · Ubuntu · RTX 5060 Ti 16GB · Docker + nvidia toolkit
+                </div>
+                <div class="bg-white border rounded-xl p-4">
+                    <strong>Systemd</strong><br>
+                    sogyo-ollama → sogyo-chatbot · cloudflared (naar localhost:8080)
+                </div>
+            </div>
+        </section>
+
+        <section id="starten" class="mb-14">
+            <h2 class="section-title text-3xl mb-2">Platform starten (lokaal dev)</h2>
+            <p class="text-slate-600 mb-6">Zie ook <a class="underline" href="../../../../development-setup.md">development-setup.md</a>.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card bg-white border rounded-2xl p-6">
+                    <div class="flex items-center gap-2 mb-3"><div class="step-number">1</div><h3 class="font-semibold text-lg">LLM (Ollama)</h3></div>
+                    <p class="text-sm text-slate-600 mb-2">Productie: Ollama op .15 poort <code>11434</code>, model <code>gemma3:4b</code>.</p>
+                    <pre class="bg-slate-900 text-emerald-300 p-3 rounded-lg text-xs overflow-auto"><code>export LLM_BASE_URL=http://192.168.165.15:11434/v1
+export LLM_MODEL=gemma3:4b
+export EMBEDDING_DEVICE=cpu</code></pre>
+                </div>
+                <div class="card bg-white border rounded-2xl p-6">
+                    <div class="flex items-center gap-2 mb-3"><div class="step-number">2</div><h3 class="font-semibold text-lg">Python API</h3></div>
+                    <pre class="bg-slate-100 p-3 rounded text-xs overflow-auto"><code>python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python scripts/run_api.py
+# → http://localhost:8001</code></pre>
+                </div>
+                <div class="card bg-white border rounded-2xl p-6 lg:col-span-2">
+                    <div class="flex items-center gap-2 mb-3"><div class="step-number">3</div><h3 class="font-semibold text-lg">Indexering</h3></div>
+                    <p class="text-sm text-slate-600 mb-2">Via UI (tab Bronnen, indexeringstoken) of CLI:</p>
+                    <pre class="bg-slate-100 p-3 rounded text-xs overflow-auto"><code>python scripts/ingest.py --max 500
+# of via UI: max artikelen 500, sitemap-first crawl</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="deploy" class="mb-14">
+            <h2 class="section-title text-3xl mb-2">Deployment (.15)</h2>
+            <ul class="list-disc pl-5 text-sm text-slate-700 space-y-2 mb-4">
+                <li>Compose: <code>infra/ubuntu-x64/docker-compose.prod-local.yaml</code></li>
+                <li>Build bij voorkeur <strong>op de server</strong> (amd64), zonder sudo als user in <code>docker</code>-group</li>
+                <li>Runbooks: <a class="underline" href="../../../../infra/runbooks/deployment.md">deployment.md</a>,
+                    <a class="underline" href="../../../../infra/ubuntu-x64/README.md">ubuntu-x64 README</a></li>
+                <li>Publiek: Cloudflare Tunnel → <code>http://127.0.0.1:8080</code></li>
+            </ul>
+            <pre class="bg-slate-900 text-emerald-300 p-4 rounded-xl text-xs overflow-auto"><code># Vanaf repo-root (Mac/Linux)
+./scripts/deploy-to-15.sh
+# of handmatig op 192.168.165.15 — zie infra/ubuntu-x64/README.md</code></pre>
+        </section>
+
+        <footer class="text-xs text-slate-500 border-t pt-6">
+            Projectie (afgeleid). Bron van waarheid: <code>context-space/core-domain/</code> + <code>infra/runbooks/</code>.
+            Agent-contract: <code>AGENTS.md</code>.
+        </footer>
+    </div>
+    <script>mermaid.initialize({ startOnLoad: true, theme: 'neutral' });</script>
+</body>
+</html>

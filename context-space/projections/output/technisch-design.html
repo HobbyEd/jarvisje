@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technisch Design — Sogyo Kennis-Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        :root { --sogyo-blue: #003366; --sogyo-accent: #00A3E0; }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .logo-font { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
+        .sogyo-header { background: linear-gradient(135deg, #003366 0%, #002244 100%); }
+        .section-title { font-weight: 600; color: #003366; }
+        .mermaid { background: white; padding: 1rem; border-radius: 0.5rem; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<header class="sogyo-header text-white">
+    <div class="max-w-6xl mx-auto px-6 py-5">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-x-3">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                    <span class="text-[#003366] font-bold text-2xl logo-font">S</span>
+                </div>
+                <div>
+                    <div class="logo-font text-3xl font-semibold tracking-tight">Sogyo</div>
+                    <div class="text-[10px] text-blue-200 -mt-1">SOFTWARE INNOVATORS</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-x-4 text-sm flex-wrap">
+                <a href="index.html" class="text-white/90 hover:text-white">Docs</a>
+                <a href="platform-overzicht.html" class="text-white/90 hover:text-white">Platform</a>
+                <a href="#summary" class="text-white/90 hover:text-white">Summary</a>
+                <a href="#logical" class="text-white/90 hover:text-white">Logical</a>
+                <a href="#process" class="text-white/90 hover:text-white">Process</a>
+                <a href="#development" class="text-white/90 hover:text-white">Development</a>
+                <a href="#physical" class="text-white/90 hover:text-white">Physical</a>
+                <a href="#scenarios" class="text-white/90 hover:text-white">Scenarios</a>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="max-w-6xl mx-auto px-6 py-10">
+<div class="mb-8">
+    <div class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-[#003366] mb-4">
+        <span>4+1 Architectuur — v0.3 MVP</span>
+    </div>
+</div>
+
+<h1 class="text-4xl font-semibold text-[#003366] mb-2">Technisch design — Sogyo Kennis-Chatbot (Jarvisje)</h1>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Veld</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Waarde</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Versie</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">0.4 (MVP)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Status</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Productie op 192.168.165.15 — Ollama gemma3:4b + Cloudflare jarvisje.com</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Datum</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">2026-08-08</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Gerelateerde docs</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><a href="platform-overzicht.html" class="text-blue-600 underline">Platform-overzicht</a>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">infra/runbooks/</code></td></tr></tbody></table></div>
+<hr class="my-8 border-slate-200">
+
+<section id="doel" class="mb-14"><h2 class="section-title text-3xl mb-4">Doel en scope</h2>
+<p class="text-slate-600 mb-3">Dit document beschrijft de <strong>applicatie-architectuur</strong> van de Sogyo Kennis-Chatbot: hoe content wordt geïndexeerd in een vector database, hoe embeddings worden berekend, en hoe de web-app een RAG-gesprek voert met de gebruiker.</p>
+<p class="text-slate-600 mb-3">Het document volgt het <strong>4+1 architectuurmodel</strong> van Philippe Kruchten. Dat model splitst architectuur in vier complementaire views plus een scenarioview die alles samenbindt:</p>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">View</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Kernvraag</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Logical</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Welke functionele onderdelen en data bestaan er?</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Process</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Wat draait er tegelijk, synchroon of asynchroon?</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Development</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Hoe is de codebase gestructureerd?</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Physical</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Op welke machines en opslag draait het?</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Scenarios (+1)</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Hoe zien concrete use cases er stap voor stap uit?</td></tr></tbody></table></div>
+<p class="text-slate-600 mb-3"><strong>In scope:</strong> indexering, Chroma, embedding-model, retrieval, chat-orchestratie, FastAPI, web-UI.  </p>
+<p class="text-slate-600 mb-3"><strong>Buiten scope:</strong> deploy-runbooks (zie platform-overzicht), designer-agent tooling, toekomstige Qdrant-migratie (alleen genoemd als evolutiepad).</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">Begrippenlijst</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Term</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Betekenis</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>RAG</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Retrieval-Augmented Generation: eerst relevante bronnen ophalen, dan LLM-antwoord genereren</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Chunk</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Tekstfragment (~800 tekens) uit een webpagina, met metadata</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Embedding</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Float-vector die de semantische betekenis van tekst vastlegt</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Collection</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chroma-logische index; één per embedding-model</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Upsert</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Insert of update: bestaande chunk-id wordt overschreven</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>SSE</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Server-Sent Events: streaming HTTP voor chat-antwoorden</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>top_k</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Aantal meest vergelijkbare chunks bij retrieval (default: 6)</td></tr></tbody></table></div>
+<hr class="my-8 border-slate-200">
+</section>
+<section id="summary" class="mb-14"><h2 class="section-title text-3xl mb-4">Executive summary</h2>
+<p class="text-slate-600 mb-3">De Sogyo Kennis-Chatbot is een <strong>RAG-systeem</strong> dat publieke content van Sogyo en zes partnerdomeinen indexeert en daarover in natuurlijke taal vragen beantwoordt. De kern bestaat uit vijf ketens:</p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><strong>Indexering:</strong> scrape → chunk → embed → Chroma  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Retrieval:</strong> embed gebruikersvraag → similarity search in Chroma  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Generatie:</strong> LLM (Ollama <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">gemma3:4b</code>, OpenAI-compatible) + gestructureerd JSON-antwoord  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>API:</strong> FastAPI levert chat, ingest en metadata-endpoints  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Web-UI:</strong> één HTML-pagina met tabs voor chat, bronnenbeheer en architectuur-uitleg  </li>
+</ul><p class="text-slate-600 mb-3"><strong>Twee hoofd-use cases</strong> (uitgewerkt in <a href="#6-scenarios-1-view" class="text-blue-600 underline">Scenarios</a>):</p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><strong>Indexering bijwerken</strong> — beheerder start via UI of CLI een herindexering</li>
+<li class="text-slate-600 text-sm mb-1"><strong>Gebruiker chat</strong> — bezoeker stelt een vraag en ontvangt antwoord met citaten</li>
+</ul><div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6"><div class="mermaid">flowchart LR
+    subgraph ingest [Indexering]
+        S[Scraper] --> C[Chunker]
+        C --> E[Embedder]
+        E --> V[(Chroma)]
+    end
+
+    subgraph chat [Chat]
+        U[Gebruiker] --> UI[Web UI]
+        UI --> API[FastAPI]
+        API --> R[Retriever]
+        R --> E2[Embedder]
+        R --> V
+        API --> O[Orchestrator]
+        O --> LLM[Ollama gemma3:4b]
+    end</div></div>
+<hr class="my-8 border-slate-200">
+</section>
+<section id="logical" class="mb-14"><h2 class="section-title text-3xl mb-4">1. Logical View</h2>
+<p class="text-slate-600 mb-3">De logical view beschrijft <strong>wat</strong> het systeem doet, los van deployment en bestandsstructuur.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">1.1 Subsystemen</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Subsysteem</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Verantwoordelijkheid</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Kernmodules</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Ingestion</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Webcontent ophalen en indexeren</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">scraper</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">chunker</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">embedder</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">vector_store</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Retrieval</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Semantisch zoeken in de kennisbank</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">retriever</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Chat</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">RAG-pipeline + LLM-aanroep + structured output</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">orchestrator</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">prompts</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">models</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>API</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">HTTP-endpoints, SSE, background ingest</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">api/app.py</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Web UI</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Gebruikersinterface (chat, bronnen, uitleg)</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">web/index.html</code></td></tr></tbody></table></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">1.2 Datamodel</h3>
+<h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Raw document (na scrape)</h4>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Veld</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Type</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Beschrijving</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">url</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">string</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Volledige pagina-URL</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">title</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">string</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Paginatitel (HTML <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">&lt;title&gt;</code> of fallback)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">source</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">string</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Domeinnaam (bijv. <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sogyo.nl</code>)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">text</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">string</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Geëxtraheerde platte tekst</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ingested_at</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">ISO datetime</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Tijdstip van verwerking</td></tr></tbody></table></div>
+<h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Chunk (na chunking)</h4>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Veld</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Type</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Beschrijving</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">url</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">string</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Bron-URL</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">chunk_id</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">int</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Volgnummer binnen de pagina (0, 1, 2, …)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">text</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">string</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chunk-inhoud (~800 tekens)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">title</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">source</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ingested_at</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Overgenomen van parent document</td></tr></tbody></table></div>
+<p class="text-slate-600 mb-3"><strong>Chroma-document-id:</strong> <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">{url}::chunk-{chunk_id}</code> — deterministisch, geschikt voor upsert bij herindexering.</p>
+<h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Embedding</h4>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Model: <strong><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">BAAI/bge-m3</code></strong> (multilingual, geschikt voor Nederlands)</li>
+<li class="text-slate-600 text-sm mb-1">Dimensie: ~1024 (model-afhankelijk)</li>
+<li class="text-slate-600 text-sm mb-1">Normalisatie: <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">normalize_embeddings=True</code> bij encode en query</li>
+<li class="text-slate-600 text-sm mb-1">Afstand in Chroma: <strong>cosine</strong> (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">hnsw:space: cosine</code>)</li>
+</ul><h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Collection</h4>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Naam: <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sogyo_knowledge_{model_safe}</code> — afgeleid van <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">settings.embedding_model</code></li>
+<li class="text-slate-600 text-sm mb-1">Reden voor model-prefix: voorkomt dimensie-mismatch bij wisselen van embedding-model</li>
+<li class="text-slate-600 text-sm mb-1">Metadata op collection-niveau: <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">{&quot;hnsw:space&quot;: &quot;cosine&quot;}</code></li>
+</ul><h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Chat-sessie (logisch)</h4>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Veld</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Beschrijving</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">session_id</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Door client gegenereerd; koppelt aan één <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ChatOrchestrator</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">turns</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Lijst van user/assistant-berichten</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">role</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sollicitant</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">bedrijf</code> of <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">onbekend</code> (keyword-detectie)</td></tr></tbody></table></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">1.3 Embedding-model</h3>
+<p class="text-slate-600 mb-3">Het embedding-model zet tekst om in vectoren voor similarity search.</p>
+<p class="text-slate-600 mb-3"><strong>Implementatie</strong> (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ingestion/embedder.py</code>):</p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><strong>Lokaal (default):</strong> <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sentence-transformers</code> met <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">BAAI/bge-m3</code></li>
+<li class="text-slate-600 text-sm mb-1"><strong>Device:</strong> <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">cuda</code> als beschikbaar, anders <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">cpu</code>; overschrijfbaar via <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">EMBEDDING_DEVICE</code></li>
+<li class="text-slate-600 text-sm mb-1"><strong>Remote (optioneel):</strong> bij <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">EMBEDDING_API_BASE</code> worden embeddings uitbesteed naar een OpenAI-compatible <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/v1/embeddings</code> endpoint (bijv. vLLM op DGX)</li>
+<li class="text-slate-600 text-sm mb-1"><strong>Batching:</strong> GPU-batch tot 128; CPU via <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">embedding_batch_size</code> (default 32)</li>
+<li class="text-slate-600 text-sm mb-1"><strong>Singleton:</strong> <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">get_embedder()</code> laadt het model één keer en hergebruikt de instantie</li>
+</ul><p class="text-slate-600 mb-3"><strong>Preload bij startup:</strong> FastAPI <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">lifespan</code> roept <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">get_embedder()</code> aan tenzij <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">embedding_api_base</code> is gezet. Zonder preload duurt de eerste chat 30–90 seconden (download + laden).</p>
+<p class="text-slate-600 mb-3"><strong>Productie-notitie (.15 / RTX 5060 Ti):</strong> PyTorch 2.6+cu124 ondersteunt sm_120 (Blackwell) nog niet; embeddings op <strong>CPU</strong> (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">EMBEDDING_DEVICE=cpu</code>). LLM via Ollama op GPU.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">1.4 Vector database (Chroma)</h3>
+<p class="text-slate-600 mb-3">Chroma is de <strong>persistente vector store</strong> voor MVP.</p>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Aspect</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Keuze</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Client</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">chromadb.PersistentClient</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Pad</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">data/chroma/</code> (in container: volume <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/app/data</code>)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Schrijven</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">collection.upsert(ids, documents, embeddings, metadatas)</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Lezen</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">collection.query(query_embeddings, n_results, include=[...])</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Reset</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">client.delete_collection(name)</code> + cache invalidatie</td></tr></tbody></table></div>
+<p class="text-slate-600 mb-3"><strong>Opgeslagen metadata per chunk:</strong></p>
+<pre class="bg-slate-900 text-emerald-300 p-4 rounded-lg text-xs overflow-auto mb-4"><code>{
+  &quot;url&quot;: &quot;https://sogyo.nl/traineeship&quot;,
+  &quot;title&quot;: &quot;Traineeship bij Sogyo&quot;,
+  &quot;source&quot;: &quot;sogyo.nl&quot;,
+  &quot;chunk_id&quot;: 0,
+  &quot;ingested_at&quot;: &quot;2026-07-01T12:00:00&quot;
+}</code></pre>
+<p class="text-slate-600 mb-3"><strong>Evolutiepad:</strong> in code staat een migratiepad naar Qdrant gedocumenteerd; MVP blijft bij Chroma vanwege eenvoud en embedded persistent storage.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">1.5 Chunking-strategie</h3>
+<p class="text-slate-600 mb-3">MVP gebruikt <strong>character-based chunking</strong> met overlap (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ingestion/chunker.py</code>):</p>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Parameter</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Default</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Betekenis</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">chunk_size</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">800</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Tekens per chunk</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">chunk_overlap</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">150</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Overlap tussen opeenvolgende chunks</td></tr></tbody></table></div>
+<p class="text-slate-600 mb-3">Korte pagina&#x27;s worden als één chunk opgeslagen. Toekomstige verbetering: heading-aware of token-aware chunking.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">1.6 Bronnen (sources)</h3>
+<p class="text-slate-600 mb-3">Geconfigureerd in <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">config.py</code>:</p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">sogyo.nl</li>
+<li class="text-slate-600 text-sm mb-1">jeroenteunisse.nl</li>
+<li class="text-slate-600 text-sm mb-1">edwinvandillen.nl</li>
+<li class="text-slate-600 text-sm mb-1">augmentedorganisation.nl</li>
+<li class="text-slate-600 text-sm mb-1">intentdriven.nl</li>
+<li class="text-slate-600 text-sm mb-1">augmentedengineering.nl</li>
+</ul><p class="text-slate-600 mb-3"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">max_pages_per_domain</code> (default 50) beperkt crawl-diepte per domein.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">1.7 Chat-logica (RAG + LLM)</h3>
+<p class="text-slate-600 mb-3">De <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ChatOrchestrator</code> voert per bericht uit:</p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><strong>Roldetectie</strong> — keywords (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sollicitant</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">bedrijf</code>, …)  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Retrieval</strong> — <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">retrieve(message, top_k=6)</code>  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Promptbouw</strong> — system prompt met bronfragmenten + user prompt met history  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>LLM-call</strong> — OpenAI-compatible <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST /v1/chat/completions</code> met <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">response_format: json_object</code>  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Parsing</strong> — <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ChatResponse</code> (Pydantic); fallback bij ongeldige JSON  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Sessie-update</strong> — turns bijwerken in memory  </li>
+</ul><p class="text-slate-600 mb-3"><strong>Structured output</strong> (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">chat/models.py</code>):</p>
+<pre class="bg-slate-900 text-emerald-300 p-4 rounded-lg text-xs overflow-auto mb-4"><code>{
+  &quot;answer&quot;: &quot;…&quot;,
+  &quot;citations&quot;: [{&quot;title&quot;: &quot;…&quot;, &quot;url&quot;: &quot;…&quot;, &quot;source&quot;: &quot;…&quot;}],
+  &quot;hints&quot;: [&quot;…&quot;, &quot;…&quot;],
+  &quot;role_context&quot;: &quot;sollicitant&quot;
+}</code></pre>
+<p class="text-slate-600 mb-3">Citaten en hints komen in <strong>één</strong> LLM-call (geen aparte follow-up).</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">1.8 Web-app (logische opbouw)</h3>
+<p class="text-slate-600 mb-3">De web-app is een <strong>single-page application</strong> zonder build-stap (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">web/index.html</code>):</p>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Tab</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Functie</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">API-calls</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Chat</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Gesprek met Jarvisje</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST /chat</code> (SSE)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Bronnen &amp; Meta-data</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Indexering starten/stoppen, bronnentabel</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/ingest/*</code>, <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET /sources</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>Chatbot Opbouw</strong></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Statische uitleg over architectuur</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Geen (of Mermaid inline)</td></tr></tbody></table></div>
+<p class="text-slate-600 mb-3">Technologie: vanilla JavaScript, Tailwind CSS (CDN), Mermaid (CDN). Static assets (logo) via FastAPI mount op <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/static</code>.</p>
+<hr class="my-8 border-slate-200">
+</section>
+<section id="process" class="mb-14"><h2 class="section-title text-3xl mb-4">2. Process View</h2>
+<p class="text-slate-600 mb-3">De process view beschrijft <strong>runtime-gedrag</strong>: processen, threads, async taken en state.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">2.1 Runtime-overzicht</h3>
+<div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6"><div class="mermaid">flowchart TB
+    subgraph container [jarvisje-app container]
+        UV[uvicorn worker]
+        LIFE[lifespan: embedder preload]
+        SESS[in-memory _sessions]
+        ING[_ingest_state + BackgroundTask]
+    end
+
+    UV --> LIFE
+    UV --> SESS
+    UV --> ING</div></div>
+<p class="text-slate-600 mb-3">Er draait <strong>één uvicorn-proces</strong> per container. Geen aparte worker pool of message queue.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">2.2 Startup (lifespan)</h3>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">FastAPI start  </li>
+<li class="text-slate-600 text-sm mb-1"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">lifespan</code> context manager wordt actief  </li>
+<li class="text-slate-600 text-sm mb-1">Als geen <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">EMBEDDING_API_BASE</code>: <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">get_embedder()</code> laadt BGE-M3 (CPU of GPU)  </li>
+<li class="text-slate-600 text-sm mb-1">Server accepteert requests; <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/health</code> wordt groen zodra startup compleet is  </li>
+</ul><h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">2.3 Chat-request (synchroon kernpad)</h3>
+<p class="text-slate-600 mb-3">Hoewel de UI <strong>streaming</strong> ziet, is de zware work <strong>synchroon</strong>:</p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST /chat</code> → <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">_stream_chat</code> generator  </li>
+<li class="text-slate-600 text-sm mb-1"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">orchestrator.chat()</code> — retrieval + LLM (blocking)  </li>
+<li class="text-slate-600 text-sm mb-1">Daarna gesimuleerde streaming: antwoord in stukken van 40 tekens als SSE <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">delta</code> events  </li>
+<li class="text-slate-600 text-sm mb-1">Slot-event: <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">final</code> met volledige <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ChatResponse</code> inclusief citaten  </li>
+</ul><p class="text-slate-600 mb-3"><strong>SSE-events:</strong></p>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Event</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Payload</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">delta</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">{content: &quot;deel van antwoord&quot;}</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">final</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">{answer, citations, hints, role_context}</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">error</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">{message: &quot;…&quot;}</code></td></tr></tbody></table></div>
+<p class="text-slate-600 mb-3">Client gebruikt <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">fetch</code> met <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ReadableStream</code> (geen <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">EventSource</code>, omdat POST nodig is).</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">2.4 Indexering (asynchroon)</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Fase</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Mechanisme</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Start</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST /ingest/start</code> → <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">BackgroundTasks.add_task(_run_ingestion_task)</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Voortgang</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">UI pollt <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET /ingest/status</code> (~elke 2s)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Stop</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST /ingest/stop</code> zet <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">stop_requested=True</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">State</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Globaal <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">_ingest_state</code> dict (verloren bij container-restart)</td></tr></tbody></table></div>
+<p class="text-slate-600 mb-3"><strong>Belangrijk verschil CLI vs UI:</strong></p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">scripts/ingest.py</code>: scrape alle bronnen → chunk alles → embed alles → upsert (batch)</li>
+<li class="text-slate-600 text-sm mb-1"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">_run_ingestion_task</code>: <strong>per domein</strong> scrapen, direct chunken/embedden/upserten (live tabelgroei, minder piekgeheugen)</li>
+</ul><p class="text-slate-600 mb-3">Tussen batches: <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">gc.collect()</code>, korte <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sleep</code>, upsert in batches van 64.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">2.5 Stateful componenten</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Component</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Levensduur</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Impact bij restart</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chroma op disk</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Persistent</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Behouden</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">HuggingFace cache</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Volume/cache dir</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Behouden indien gemount</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">_sessions</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">In-memory</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chat-history weg</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">_ingest_state</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">In-memory</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Lopende ingest-status weg</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Embedder singleton</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Proces-lifetime</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Opnieuw laden bij restart</td></tr></tbody></table></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">2.6 Foutafhandeling</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Situatie</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Gedrag</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">LLM niet bereikbaar</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">SSE <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">error</code>; melding over Ollama / LLM_BASE_URL</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Ongeldige LLM-JSON</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Fallback <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ChatResponse</code> met raw tekst, lege citaten</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Ingest exception</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">_ingest_state.status = &quot;error&quot;</code> + error message</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Lege scrape</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">status=completed</code>, melding &quot;Geen documenten gevonden&quot;</td></tr></tbody></table></div>
+<hr class="my-8 border-slate-200">
+</section>
+<section id="development" class="mb-14"><h2 class="section-title text-3xl mb-4">3. Development View</h2>
+<p class="text-slate-600 mb-3">De development view beschrijft <strong>codestructuur</strong> en waar ontwikkelaars wat vinden.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">3.1 Repository-structuur (relevant deel)</h3>
+<pre class="bg-slate-100 p-3 rounded-lg text-xs overflow-auto mb-4"><code>sogyo-chatbot/
+├── src/sogyo_chatbot/
+│   ├── config.py              # Settings, env vars, paden
+│   ├── ingestion/
+│   │   ├── scraper.py         # crawl per domein
+│   │   ├── chunker.py         # character chunks
+│   │   ├── embedder.py        # BGE-M3 / remote API
+│   │   └── vector_store.py    # Chroma wrapper
+│   ├── retrieval/
+│   │   └── retriever.py       # query → hits
+│   ├── chat/
+│   │   ├── orchestrator.py    # RAG + LLM
+│   │   ├── prompts.py         # system/user prompts
+│   │   └── models.py          # ChatResponse, Citation
+│   └── api/
+│       └── app.py             # FastAPI app
+├── web/
+│   └── index.html             # SPA frontend
+├── scripts/
+│   └── ingest.py              # CLI ingest
+└── infra/
+    └── ubuntu-x64/            # Productie .15 (compose, deploy scripts)</code></pre>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">3.2 Module-afhankelijkheden</h3>
+<div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6"><div class="mermaid">flowchart TD
+    app[api/app.py] --> orch[chat/orchestrator]
+    app --> ingest[ingestion/*]
+    app --> vs[vector_store]
+
+    orch --> ret[retrieval/retriever]
+    orch --> prompts[chat/prompts]
+    orch --> cfg[config]
+
+    ret --> emb[ingestion/embedder]
+    ret --> vs
+
+    ingest --> scraper --> chunker --> emb --> vs</div></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">3.3 Entry points</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Entry</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Commando / trigger</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Gebruik</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Productie-server</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">uvicorn sogyo_chatbot.api.app:app --host 0.0.0.0 --port 8001</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Docker CMD</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">CLI-indexering</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">python scripts/ingest.py [--max N] [--reset]</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Dev / handmatig</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">UI-indexering</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST /ingest/start?reset=&amp;max_pages=</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Tab Bronnen</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Debug retrieval</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET /test-retrieval?query=…</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Zonder LLM</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Sync chat test</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST /chat/sync</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">curl / automated tests</td></tr></tbody></table></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">3.4 Configuratie</h3>
+<p class="text-slate-600 mb-3">Centraal in <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">config.py</code> (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">Settings</code>), overschrijfbaar via environment variables:</p>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Variabele</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Default</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Rol</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">LLM_BASE_URL</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">http://ollama:11434/v1</code> (compose)</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Ollama OpenAI API</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">LLM_MODEL</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">nvidia/Gemma-4-26B-A4B-NVFP4</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chat-model</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">EMBEDDING_DEVICE</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">auto</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">cpu</code> / <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">cuda</code> / <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">auto</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">EMBEDDING_API_BASE</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">(leeg)</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Remote embeddings</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">embedding_model</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">BAAI/bge-m3</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">In code (Settings field)</td></tr></tbody></table></div>
+<p class="text-slate-600 mb-3">Data-paden (relatief t.o.v. werkdirectory):</p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">data/raw/</code> — ruwe scrape (optioneel)</li>
+<li class="text-slate-600 text-sm mb-1"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">data/chroma/</code> — Chroma persistent storage</li>
+</ul><h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">3.5 API-overzicht</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Method</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Pad</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Beschrijving</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Serveert <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">web/index.html</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/health</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Status + model-info</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/chat</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">SSE streaming chat</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/chat/sync</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Volledig JSON-antwoord</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/test-retrieval</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Alleen retrieval (debug)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/sources</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Bronnenstatistiek uit Chroma</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/ingest/start</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Start background indexering</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/ingest/stop</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Vraag stop aan</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/ingest/status</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Voortgang indexering</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/static/*</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Static files (logo)</td></tr></tbody></table></div>
+<hr class="my-8 border-slate-200">
+</section>
+<section id="physical" class="mb-14"><h2 class="section-title text-3xl mb-4">4. Physical View</h2>
+<p class="text-slate-600 mb-3">De physical view beschrijft <strong>waar</strong> software draait en hoe componenten over het netwerk praten. Detaildeploy staat in <a href="platform-overzicht.html" class="text-blue-600 underline">platform-overzicht</a>; hier de applicatie-relevante topology.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">4.1 Deployment-topologie (productie <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">.15</code>)</h3>
+<div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6"><div class="mermaid">flowchart TB
+    Browser[Browser jarvisje.com]
+    CF[cloudflared]
+    subgraph host [enterprise 192.168.165.15]
+        subgraph appc [Docker sogyo-chatbot-app]
+            API[FastAPI :8001]
+            CHROMA[(Chroma /app/data)]
+            EMB[Embedder CPU BGE-M3]
+        end
+        VOL[/home/evdillen/sogyo-chatbot-data]
+        OLL[Ollama gemma3:4b :11434]
+    end
+    WEBS[(sogyo.nl + 5 domeinen)]
+
+    Browser --> CF -->|localhost:8080| API
+    API --> CHROMA
+    CHROMA --- VOL
+    API --> EMB
+    API -->|HTTP OpenAI API| OLL
+    API -->|HTTPS ingest| WEBS</div></div>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Component</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Host/locatie</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Poort</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Web-UI + API</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Container <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sogyo-chatbot-app</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">8001 intern, <strong>8080</strong> host</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chroma data</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Volume <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sogyo-chatbot-data</code> → <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/app/data</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">—</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Ollama LLM</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Zelfde host (container)</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><strong>11434</strong></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Cloudflare Tunnel</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Host <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">cloudflared</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">—</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Bronwebsites</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Internet</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">443</td></tr></tbody></table></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">4.2 Opslag</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Data</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Locatie</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Overleeft image-update?</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chroma index</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">{volume}/chroma/</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Ja</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">HuggingFace model cache</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Container cache (of volume)</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Afhankelijk van setup</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Ruwe HTML</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Meestal niet persistent</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Nee</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chat-sessies</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">RAM</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Nee</td></tr></tbody></table></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">4.3 Netwerkafhankelijkheden</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Richting</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Doel</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Wanneer nodig</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Uitgaand HTTPS</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">sogyo.nl e.d.</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Indexering</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Uitgaand HTTP</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">LLM_BASE_URL</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Elke chat</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Uitgaand HTTPS</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">huggingface.co</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Eerste embedder-load (indien niet gecached)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Inkomend</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Browser → :8080</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Gebruik</td></tr></tbody></table></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">4.4 Resource-profiel (indicatief)</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Fase</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">CPU</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">RAM</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Opmerking</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Embedder preload</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Hoog (kort)</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">~1–2 GB</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">BGE-M3 op CPU</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Indexering</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Matig–hoog</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Pieken bij embed</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Per-domein verwerking beperkt pieken</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chat retrieval</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Laag</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Embedder al geladen</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Eén query-embedding</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">LLM-call</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Laag in container</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">—</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Werk bij vLLM</td></tr></tbody></table></div>
+<hr class="my-8 border-slate-200">
+</section>
+<section id="kruisconcerns" class="mb-14"><h2 class="section-title text-3xl mb-4">5. Kruisconcerns</h2>
+<p class="text-slate-600 mb-3">Onderwerpen die alle views raken.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">5.1 Beveiliging (MVP-niveau)</h3>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Geen authenticatie op API of UI</li>
+<li class="text-slate-600 text-sm mb-1">CORS: <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">allow_origins=[&quot;*&quot;]</code></li>
+<li class="text-slate-600 text-sm mb-1">Geen persistente opslag van chatberichten op server</li>
+<li class="text-slate-600 text-sm mb-1">Ingest vereist uitgaand internet vanuit container</li>
+</ul><h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">5.2 Observability</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Mechanisme</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Doel</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET /health</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Liveness + config sanity</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET /ingest/status</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Voortgang indexering</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET /test-retrieval</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Debug retrieval zonder LLM</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Docker logs</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Uvicorn + print-statements</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Healthcheck in compose</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET /health</code> op :8001</td></tr></tbody></table></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">5.3 Bekende beperkingen (MVP)</h3>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Geen query rewriting of re-ranking</li>
+<li class="text-slate-600 text-sm mb-1">Simpele character-chunking</li>
+<li class="text-slate-600 text-sm mb-1">Chat-sessies alleen in memory</li>
+<li class="text-slate-600 text-sm mb-1">Gesimuleerde token-streaming (niet echte LLM-stream)</li>
+<li class="text-slate-600 text-sm mb-1">Roldetectie via keywords, geen ML-classifier</li>
+<li class="text-slate-600 text-sm mb-1">Designer-agent (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">src/sogyo_chatbot/designer/</code>) is aparte tooling, niet onderdeel van Jarvisje-runtime</li>
+</ul><h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">5.4 Evolutiepad</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Onderwerp</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Richting</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Vector DB</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chroma → Qdrant (documented in code comments)</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chunking</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Heading/token-aware</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Embeddings</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">GPU op GB10 wanneer PyTorch/container ondersteuning stabiel is</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Streaming</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Echte LLM token-stream van vLLM</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Auth</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">API-key of SSO voor productie</td></tr></tbody></table></div>
+<hr class="my-8 border-slate-200">
+</section>
+<section id="scenarios" class="mb-14"><h2 class="section-title text-3xl mb-4">6. Scenarios (+1 View)</h2>
+<p class="text-slate-600 mb-3">De scenarioview bindt de vier views aan <strong>concrete use cases</strong>. Dit is het primaire leespad voor wie het systeem snel wil begrijpen.</p>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">6.1 Use case: Indexering bijwerken</h3>
+<p class="text-slate-600 mb-3"><strong>Doel:</strong> De kennisbank verversen met actuele content van de geconfigureerde websites.</p>
+<p class="text-slate-600 mb-3"><strong>Actoren:</strong> Beheerder, Web UI, FastAPI, Scraper, Chunker, Embedder, Chroma.</p>
+<p class="text-slate-600 mb-3"><strong>Triggers:</strong></p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Knop &quot;Indexering starten&quot; in tab <strong>Bronnen &amp; Meta-data</strong></li>
+<li class="text-slate-600 text-sm mb-1">Alternatief: <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">python scripts/ingest.py</code> op de server of lokaal</li>
+</ul><p class="text-slate-600 mb-3"><strong>Precondities:</strong></p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Container draait; uitgaand internet beschikbaar</li>
+<li class="text-slate-600 text-sm mb-1">Embedder geladen (of laadt bij eerste embed-batch)</li>
+</ul><p class="text-slate-600 mb-3"><strong>Postcondities:</strong></p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Chroma bevat upserted chunks met verse <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ingested_at</code></li>
+<li class="text-slate-600 text-sm mb-1"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">GET /sources</code> toont bijgewerkte pagina-tellingen per domein</li>
+</ul><p class="text-slate-600 mb-3"><strong>Varianten:</strong></p>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Variant</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Gedrag</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">reset=true</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Collection wordt eerst verwijderd</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">max_pages=N</code></td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Maximaal N pagina&#x27;s per domein</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Stop door gebruiker</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Graceful stop tussen domeinen</td></tr></tbody></table></div>
+<h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Sequence diagram — indexering via UI</h4>
+<div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6"><div class="mermaid">sequenceDiagram
+    actor Beheerder
+    participant UI as Web UI<br/>(Bronnen-tab)
+    participant API as FastAPI
+    participant BG as _run_ingestion_task
+    participant Scraper as scraper.py
+    participant Chunker as chunker.py
+    participant Embedder as embedder.py
+    participant Chroma as Chroma
+
+    Beheerder->>UI: Klik "Indexering starten"
+    UI->>API: POST /ingest/start?reset=&max_pages=
+    API->>BG: BackgroundTasks (async)
+    API-->>UI: 200 OK (task gestart)
+
+    loop Poll elke ~2s
+        UI->>API: GET /ingest/status
+        API-->>UI: {status, progress, message, current_source}
+    end
+
+    opt reset=true
+        BG->>Chroma: delete_collection
+    end
+
+    loop Per geconfigureerd domein
+        BG->>Scraper: scrape_domain(url, max_pages, progress_cb)
+        Scraper->>Scraper: HTTP GET pagina's (polite delay)
+        Scraper-->>BG: raw_docs[]
+        BG->>BG: update _ingest_state (progress, current_source)
+
+        BG->>Chunker: chunk_documents(docs)
+        Chunker-->>BG: chunks[]
+
+        BG->>Embedder: embed_chunks(texts)
+        Note over Embedder: BGE-M3 batch encode<br/>normalize_embeddings=True
+        Embedder-->>BG: embeddings[][]
+
+        loop Upsert batches van 64
+            BG->>Chroma: upsert_chunks(batch)
+        end
+
+        BG->>BG: gc.collect(), sleep (OOM-preventie)
+    end
+
+    BG->>BG: status=completed, progress=100
+    UI->>API: GET /ingest/status
+    API-->>UI: {status: completed, message: "N chunks"}
+    UI->>API: GET /sources
+    API->>Chroma: collection.get(metadatas)
+    API-->>UI: bronnen + page_count per domein
+    UI-->>Beheerder: Tabel bijgewerkt</div></div>
+<h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Narratief per stap</h4>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><strong>Start</strong> — UI roept <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/ingest/start</code> aan; API weigert als er al een ingest loopt.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Reset (optioneel)</strong> — Verwijdert de collection zodat geen oude chunk-ids blijven hangen bij gewijzigd embedding-model.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Scrape per domein</strong> — <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">scrape_domain</code> volgt interne links tot <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">max_pages</code>. Progress callback voedt live UI-status.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Chunk</strong> — Elke pagina wordt gesplitst in overlappende stukken van ~800 tekens.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Embed</strong> — Alle chunk-teksten worden naar vectoren omgezet; zelfde model als bij retrieval.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Upsert</strong> — Chroma slaat id, tekst, embedding en metadata op. Bestaande ids worden overschreven.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Afronding</strong> — Optionele testquery; status <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">completed</code>; UI ververst bronnentabel.  </li>
+</ul><hr class="my-8 border-slate-200">
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">6.2 Use case: Gebruiker communiceert met de app</h3>
+<p class="text-slate-600 mb-3"><strong>Doel:</strong> Een bezoeker stelt een vraag over Sogyo/traineeship/AI en ontvangt een onderbouwd antwoord met bronverwijzingen.</p>
+<p class="text-slate-600 mb-3"><strong>Actoren:</strong> Gebruiker, Web UI, FastAPI, ChatOrchestrator, Retriever, Embedder, Chroma, vLLM.</p>
+<p class="text-slate-600 mb-3"><strong>Triggers:</strong> Gebruiker typt bericht en klikt &quot;Verstuur&quot;.</p>
+<p class="text-slate-600 mb-3"><strong>Precondities:</strong></p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">App healthy (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">/health</code> ok)</li>
+<li class="text-slate-600 text-sm mb-1">Chroma bevat geïndexeerde chunks</li>
+<li class="text-slate-600 text-sm mb-1">vLLM bereikbaar op <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">LLM_BASE_URL</code></li>
+</ul><p class="text-slate-600 mb-3"><strong>Postcondities:</strong></p>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Gebruiker ziet antwoord + citaten + hints</li>
+<li class="text-slate-600 text-sm mb-1">Sessie-history in memory bijgewerkt (tot container-restart)</li>
+</ul><h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Sequence diagram — chat via UI</h4>
+<div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6"><div class="mermaid">sequenceDiagram
+    actor Gebruiker
+    participant UI as Web UI<br/>(Chat-tab)
+    participant API as FastAPI /chat
+    participant Orch as ChatOrchestrator
+    participant Ret as retriever.py
+    participant Emb as Embedder
+    participant Chroma as Chroma
+    participant LLM as vLLM Gemma
+
+    Gebruiker->>UI: Typ vraag + Verstuur
+    UI->>UI: Toon "denk"-indicator
+    UI->>API: POST /chat {session_id, message, history?}
+
+    API->>Orch: chat(message) [lookup session_id]
+
+    Orch->>Orch: _detect_role(keywords)
+    Orch->>Ret: retrieve(message, top_k=6)
+    Ret->>Emb: encode([query], normalize=True)
+    Emb-->>Ret: query_vector
+    Ret->>Chroma: query(query_embeddings, n_results=6)
+    Chroma-->>Ret: documents + metadatas + distances
+    Ret-->>Orch: hits[6]
+
+    Orch->>Orch: build_system_prompt(role, hits)
+    Orch->>Orch: build_user_prompt(history, message)
+    Orch->>LLM: POST /chat/completions (JSON mode)
+    Note over LLM: model=Gemma-4<br/>system + user messages
+    LLM-->>Orch: JSON string
+
+    Orch->>Orch: parse ChatResponse (of fallback)
+    Orch-->>API: ChatResponse
+
+    loop Gesimuleerde streaming (chunks van 40 tekens)
+        API-->>UI: SSE event:delta {content}
+        UI->>UI: Append aan chat-bubble
+    end
+
+    API-->>UI: SSE event:final {answer, citations, hints, role_context}
+    UI->>UI: Render citaten + hints
+    UI-->>Gebruiker: Volledig antwoord zichtbaar</div></div>
+<h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Narratief per stap</h4>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><strong>Client</strong> — <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">session_id</code> in <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sessionStorage</code>; history array wordt meegegeven.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Retrieval</strong> — Vraag wordt geëmbed; Chroma zoekt 6 dichtstbijzijnde chunks (cosine).  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Prompt</strong> — System prompt bevat rolcontext + tot 6 bronfragmenten (max ~800 tekens elk in prompt). LLM moet JSON teruggeven met antwoord, citaten en hints.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>LLM</strong> — Externe call naar vLLM; timeout configureerbaar (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">LLM_TIMEOUT</code>, default 120s).  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Streaming</strong> — Antwoord wordt na afloop in stukken gestuurd voor UX; geen echte token-stream van vLLM.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Final</strong> — Client ontvangt gestructureerde citaten voor weergave onder het antwoord.  </li>
+</ul><hr class="my-8 border-slate-200">
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">6.3 Use case (secundair): Alleen retrieval testen</h3>
+<p class="text-slate-600 mb-3">Voor debugging zonder LLM-kosten:</p>
+<pre class="bg-slate-100 p-3 rounded-lg text-xs overflow-auto mb-4"><code>GET /test-retrieval?query=traineeship&amp;top_k=5</code></pre>
+<p class="text-slate-600 mb-3">Retourneert chunks met metadata en distance — zelfde pad als in orchestrator, maar zonder prompt/LLM.</p>
+<hr class="my-8 border-slate-200">
+</section>
+<section id="samenhang" class="mb-14"><h2 class="section-title text-3xl mb-4">7. Samenhang tussen views</h2>
+<div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6"><div class="mermaid">flowchart TB
+    subgraph scenarios ["+1 Scenarios"]
+        UC1[Indexering bijwerken]
+        UC2[Gebruiker chat]
+    end
+
+    subgraph four ["4 Views"]
+        L[Logical]
+        P[Process]
+        D[Development]
+        Ph[Physical]
+    end
+
+    UC1 --> L & P & D & Ph
+    UC2 --> L & P & D & Ph</div></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">Aanbevolen leesvolgorde</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Doel</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Volgorde</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Snel begrip</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Summary → Scenarios → Logical</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Implementatie</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Development → Logical → Process</td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Deploy/debug</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Physical → Process → Scenarios</td></tr></tbody></table></div>
+<hr class="my-8 border-slate-200">
+</section>
+<section id="bijlagen" class="mb-14"><h2 class="section-title text-3xl mb-4">8. Bijlagen</h2>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">A. Verwijzing naar broncode</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Onderwerp</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Bestand</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chroma wrapper</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">src/sogyo_chatbot/ingestion/vector_store.py</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Embeddings</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">src/sogyo_chatbot/ingestion/embedder.py</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Retrieval</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">src/sogyo_chatbot/retrieval/retriever.py</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Chat orchestratie</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">src/sogyo_chatbot/chat/orchestrator.py</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Prompts</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">src/sogyo_chatbot/chat/prompts.py</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">API + ingest</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">src/sogyo_chatbot/api/app.py</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Web UI</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">web/index.html</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">CLI ingest</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">scripts/ingest.py</code></td></tr><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Productie compose</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100"><code class="text-sm bg-slate-100 px-1 py-0.5 rounded">infra/ubuntu-x64/docker-compose.prod-local.yaml</code></td></tr></tbody></table></div>
+<h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">B. Versiegeschiedenis document</h3>
+<div class="overflow-x-auto mb-4"><table class="w-full bg-white border border-slate-200 rounded-lg"><thead><tr><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Versie</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Datum</th><th class="px-4 py-2 text-left text-sm font-semibold text-[#003366] border-b border-slate-200">Wijziging</th></tr></thead><tbody><tr><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">0.1</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">2026-07-01</td><td class="px-4 py-2 text-sm text-slate-600 border-b border-slate-100">Eerste volledige markdown op basis van 4+1-model</td></tr></tbody></table></div>
+<hr class="my-8 border-slate-200">
+<p class="text-sm text-slate-500 italic mt-6">Volgende stap (optioneel): HTML-pagina in stijl van platform-overzicht met navigatie tussen infra- en applicatiedocumentatie.</p>
+</section>
+<footer class="pt-8 border-t text-xs text-slate-500 mt-8">
+    Technisch design Sogyo Kennis-Chatbot (Jarvisje). Zie ook
+    <a href="platform-overzicht.html" class="text-blue-600 underline">Platform Overzicht</a>
+    voor deploy &amp; infrastructuur.
+    <br>Laatste update: 2026-07-01
+</footer>
+</div>
+<script>
+mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    flowchart: { curve: 'basis', useMaxWidth: true },
+    sequence: { useMaxWidth: true }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sogyo | Software-innovators</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .sogyo-green { color: #2E7D32; }
+  .header { background: #2E7D32; color: white; }
+  .chat-window { height: 50vh; min-height: 320px; max-height: 520px; overflow-y: auto; background: #f8fafc; }
+  .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin-bottom: 10px; white-space: pre-wrap; }
+  .user { background: #4CAF50; color: white; margin-left: auto; border-bottom-right-radius: 4px; }
+  .bot { background: white; border: 1px solid #e2e8f0; border-bottom-left-radius: 4px; }
+  .error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+
+  /* Creative thinking indicator */
+  .thinking {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #4a5568;
+  }
+  .thinking-cloud {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: #f1f5f9;
+    border-radius: 9999px;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  .thinking-cloud.active {
+    background: #dcfce7; /* light green */
+    border-color: #86efac;
+    box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.2);
+    transform: scale(1.03);
+  }
+  .thinking-dots {
+    display: flex;
+    gap: 3px;
+  }
+  .thinking-dot {
+    width: 5px;
+    height: 5px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: think-bounce 1.4s infinite ease-in-out both;
+    transition: background-color 0.4s ease;
+  }
+  .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+  .thinking-cloud.active .thinking-dot {
+    background: #4CAF50;
+  }
+  .thinking-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  @keyframes think-bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+  }
+</style>
+</head>
+<body class="bg-slate-50">
+  <header class="header">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <!-- Official Sogyo 30 jaar logo (1996-2026) -->
+        <img src="/static/sogyo-30-jaar-logo.png" 
+             alt="Sogyo 30 jaar 1996-2026" 
+             class="h-10 sm:h-12 w-auto">
+      </div>
+      <span class="text-sm font-mono px-2.5 py-0.5 rounded bg-[#2E7D32] text-white font-semibold">v0.6.3</span>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <div class="max-w-5xl mx-auto px-4 md:px-6">
+    <div class="flex border-b border-slate-200" id="tabs">
+      <button data-tab="chat" class="tab-button px-4 py-2 font-medium text-sm border-b-2 border-[#2E7D32] text-[#2E7D32] active">Chat</button>
+      <button data-tab="sources" class="tab-button px-4 py-2 font-medium text-sm text-slate-600 hover:text-slate-800">Bronnen &amp; Meta-data</button>
+      <button data-tab="architecture" class="tab-button px-4 py-2 font-medium text-sm text-slate-600 hover:text-slate-800">Chatbot Opbouw</button>
+    </div>
+  </div>
+
+  <div id="chat-view" class="tab-content max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
+    <div class="max-w-3xl mx-auto">
+      <!-- Chat (centered) -->
+      <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow">
+        <div class="px-4 py-3 bg-[#2E7D32] text-white flex items-center text-sm">
+          <div>Jarvisje</div>
+        </div>
+        <div id="chat" class="chat-window p-4 text-sm"></div>
+        <div class="p-3 border-t bg-white flex flex-col sm:flex-row gap-2">
+          <input id="input" type="text" class="flex-1 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none" placeholder="Vraag iets over Sogyo, traineeship of AI...">
+          <button onclick="sendMessage()" class="bg-[#4CAF50] hover:bg-[#388E3C] text-white px-5 py-2 sm:py-0 rounded-xl text-sm font-medium transition-colors active:scale-[0.985]">Verstuur</button>
+        </div>
+        <div class="px-3 pb-2 text-[10px] text-slate-400">Antwoorden komen van ons eigen lokale model (Gemma). Geen chatgeschiedenis wordt permanent opgeslagen.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sources / Meta-data tab content -->
+  <div id="sources-view" class="tab-content hidden max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
+    <!-- Ingestion controls + progress -->
+    <div class="mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h3 class="font-semibold text-[#2E7D32]">Indexering starten (MVP)</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Start een handmatige update van de kennisbank. Progressie wordt live getoond. (Indexering vereist uitgaande internettoegang vanuit de Python omgeving.)</p>
+        </div>
+        <button onclick="refreshSources()" 
+                class="text-sm px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg flex items-center gap-1 text-slate-600 active:bg-slate-100">
+          <span>🔄</span> <span>Ververs</span>
+        </button>
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+        <div class="min-w-0">
+          <label class="block text-xs font-medium text-slate-600 mb-1" for="ingest-token">
+            Indexeringstoken <span class="text-red-500">*</span>
+          </label>
+          <input id="ingest-token" type="password" autocomplete="off"
+                 placeholder="Token vereist om te starten"
+                 class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#4CAF50]">
+          <p class="text-[10px] text-slate-400 mt-0.5">Alleen geautoriseerde gebruikers. Wordt meegegeven aan de API.</p>
+        </div>
+        <div class="min-w-0">
+          <label class="block text-xs font-medium text-slate-600 mb-1" for="max-pages">Max artikelen per bron</label>
+          <input id="max-pages" type="number" value="500" min="0" max="2000" step="50"
+                 class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#4CAF50]">
+          <p class="text-[10px] text-slate-400 mt-0.5">0 = maximaal (hard cap 2000). Sitemap-first crawl.</p>
+        </div>
+        <label class="flex items-center gap-2 text-sm pb-2">
+          <input id="reset-check" type="checkbox" class="accent-[#4CAF50]">
+          <span>Reset bestaande index</span>
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button id="start-ingest-btn" onclick="startIngestion()"
+                  class="bg-[#4CAF50] hover:bg-[#388E3C] text-white text-sm font-medium px-5 py-2 rounded-xl transition active:scale-[0.985]">
+            Start indexering
+          </button>
+          <button id="stop-ingest-btn" onclick="stopIngestion()"
+                  class="hidden bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-5 py-2 rounded-xl transition active:scale-[0.985]">
+            Stop indexering
+          </button>
+        </div>
+      </div>
+      <div id="ingest-start-error" class="hidden mt-2 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2"></div>
+
+      <!-- Progress / Status - always visible and prominent -->
+      <div id="ingest-status-wrapper" class="mt-4 p-3 border rounded-xl bg-slate-50 transition-colors">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2 min-w-0">
+            <span id="ingest-icon" class="text-lg shrink-0">⏸️</span>
+            <div id="ingest-message" class="font-semibold text-slate-800 truncate">Geen indexering actief</div>
+          </div>
+          <div id="ingest-progress-text" class="font-mono text-sm font-bold text-[#2E7D32] shrink-0 ml-2">0%</div>
+        </div>
+        <div class="h-3 bg-slate-200 rounded-full overflow-hidden mb-1">
+          <div id="ingest-progress-bar" class="h-3 bg-[#4CAF50] transition-all duration-300" style="width: 0%"></div>
+        </div>
+        <div id="ingest-current" class="text-xs font-medium text-[#2E7D32] min-h-[1rem]"></div>
+        <div id="ingest-meta" class="text-[11px] text-slate-500 flex flex-wrap gap-3"></div>
+      </div>
+    </div>
+
+    <!-- Sources table -->
+    <div>
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-semibold text-[#2E7D32]">Geïndexeerde bronnen</h2>
+          <p class="text-sm text-slate-500">Overzicht van websites waarmee de chatbot is gevoed.</p>
+        </div>
+      </div>
+
+      <div id="sources-loading" class="text-sm text-slate-500 py-4">Laden...</div>
+      <div id="sources-error" class="hidden text-sm text-red-600 bg-red-50 border border-red-100 p-3 rounded"></div>
+
+      <div id="sources-content" class="hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="text-left px-4 py-3 font-medium text-slate-600">Bron (domein)</th>
+                <th class="text-right px-4 py-3 font-medium text-slate-600">Artikelen</th>
+                <th class="text-left px-4 py-3 font-medium text-slate-600">Nieuwste artikel</th>
+                <th class="text-left px-4 py-3 font-medium text-slate-600">Laatst geïndexeerd</th>
+              </tr>
+            </thead>
+            <tbody id="sources-tbody" class="divide-y divide-slate-100 bg-white"></tbody>
+          </table>
+        </div>
+        <div class="mt-3 text-xs text-slate-500 flex items-center gap-2">
+          <span id="sources-total"></span>
+          <span class="text-slate-300">•</span>
+          <span>Gebaseerd op de huidige vector store (Chroma).</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Architecture tab content -->
+  <div id="architecture-view" class="tab-content hidden max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
+    <div class="mb-8">
+      <h2 class="text-2xl font-semibold text-[#2E7D32] mb-2">Chatbot Architectuur</h2>
+      <p class="text-slate-600">Overzicht van de end-to-end flow van de Sogyo Kennis Chatbot, van browser tot LLM en het indexeringsproces.</p>
+    </div>
+
+    <!-- High level flow -->
+    <div class="mb-8 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+      <h3 class="font-semibold mb-4 text-lg">Globale Flow</h3>
+      <div class="mermaid">
+flowchart LR
+    subgraph Client
+      Browser[🌐 Browser<br/>jarvisje.com via Cloudflare]
+    end
+
+    subgraph Host["Server enterprise .15"]
+      CF[cloudflared]
+      HostPort[Poort 8080]
+      Container[Docker<br/>sogyo-chatbot-app<br/>Poort 8001]
+      App[FastAPI<br/>Chat + Ingestion]
+      Embed[BGE-M3<br/>embeddings CPU]
+      Chroma[(Chroma<br/>persist volume)]
+      Ollama[Ollama<br/>gemma3:4b GPU]
+    end
+
+    Browser -- HTTPS via Tunnel --> CF
+    CF --> HostPort
+    HostPort --> Container
+    Container --> App
+    App --> Embed
+    Embed --> Chroma
+    App -- Retrieval --> Chroma
+    App -- Chat completion --> Ollama
+    Ollama -- Streaming antwoord --> App --> Browser
+      </div>
+
+      <div class="mt-4 text-sm text-slate-700 space-y-2">
+        <p><strong>Hoe de flow werkt (stap voor stap):</strong></p>
+        <ol class="list-decimal pl-5 space-y-1">
+          <li><strong>Browser</strong>: Gebruiker opent jarvisje.com. Cloudflare Tunnel stuurt veilig door naar de host (poort 8080).</li>
+          <li><strong>Host &amp; Container</strong>: Docker container sogyo-chatbot-app (8001). FastAPI serveert UI en API.</li>
+          <li><strong>Chat / Retrieval</strong>: Query wordt ge-embedded met BGE-M3 (CPU) en gezocht in Chroma.</li>
+          <li><strong>Lokaal LLM</strong>: Context + vraag naar Ollama gemma3:4b op de GPU van dezelfde server.</li>
+          <li><strong>Antwoord</strong>: Streaming tokens + bronnen terug naar de browser.</li>
+        </ol>
+        <p class="text-xs text-slate-500">Alles draait op één host (.15): app, embeddings, vector store en LLM. Geen DGX nodig voor de productiechabot.</p>
+      </div>
+
+      <!-- Extra mooie visualisatie van de flow -->
+      <div class="mt-6">
+        <h4 class="font-medium mb-3 text-sm">Visuele weergave – Stapsgewijze flow</h4>
+        <div class="flex flex-col md:flex-row items-center gap-2 text-center">
+          <!-- Step 1: Browser -->
+          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+            <div class="text-2xl mb-1">🌐</div>
+            <div class="font-semibold text-[#2E7D32]">1. Browser</div>
+            <div class="text-[10px] text-slate-500">jarvisje.com (Cloudflare Tunnel)</div>
+          </div>
+          <div class="text-[#2E7D32] text-xl hidden md:block">→</div>
+          <div class="text-[#2E7D32] text-xl md:hidden">↓</div>
+
+          <!-- Step 2: Host -->
+          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+            <div class="text-2xl mb-1">🖥️</div>
+            <div class="font-semibold text-[#2E7D32]">2. Server Host</div>
+            <div class="text-[10px] text-slate-500">Poort 8080 → Docker</div>
+          </div>
+          <div class="text-[#2E7D32] text-xl hidden md:block">→</div>
+          <div class="text-[#2E7D32] text-xl md:hidden">↓</div>
+
+          <!-- Step 3: Container + App -->
+          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+            <div class="text-2xl mb-1">🐳</div>
+            <div class="font-semibold text-[#2E7D32]">3. Container</div>
+            <div class="text-[10px] text-slate-500">FastAPI (8001)<br/>Chat + Index</div>
+          </div>
+          <div class="text-[#2E7D32] text-xl hidden md:block">→</div>
+          <div class="text-[#2E7D32] text-xl md:hidden">↓</div>
+
+          <!-- Step 4: Retrieval / LLM -->
+          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+            <div class="text-2xl mb-1">🔍 / 🤖</div>
+            <div class="font-semibold text-[#2E7D32]">4. Verwerking</div>
+            <div class="text-[10px] text-slate-500">BGE-M3 + Chroma<br/>→ Ollama Gemma 4B</div>
+          </div>
+          <div class="text-[#2E7D32] text-xl hidden md:block">→</div>
+          <div class="text-[#2E7D32] text-xl md:hidden">↓</div>
+
+          <!-- Step 5: Response -->
+          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+            <div class="text-2xl mb-1">💬</div>
+            <div class="font-semibold text-[#2E7D32]">5. Antwoord</div>
+            <div class="text-[10px] text-slate-500">Stream via SSE<br/>+ bronnen</div>
+          </div>
+        </div>
+        <p class="mt-2 text-[10px] text-center text-slate-500">Elke stap is traceerbaar: van vraag tot antwoord, volledig op de lokale server.</p>
+      </div>
+    </div>
+
+    <!-- Chat flow -->
+    <div class="mb-8 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+      <h3 class="font-semibold mb-3">1. Chat Flow (Vraag → Antwoord)</h3>
+      <ol class="list-decimal pl-5 space-y-1 text-sm">
+        <li>Gebruiker stelt vraag in de browser</li>
+        <li>Request via Cloudflare Tunnel naar host:8080 → container:8001</li>
+        <li>FastAPI ontvangt POST /chat</li>
+        <li><strong>Retrieval</strong>: Vraag → BGE-M3 embedding → Chroma similarity search</li>
+        <li>Context + vraag → Ollama gemma3:4b (OpenAI-compatible, lokaal op GPU)</li>
+        <li>LLM streamt tokens terug via SSE</li>
+        <li>Browser toont antwoord met bronnen</li>
+      </ol>
+      <p class="text-xs text-slate-500 mt-2">Retrieval en LLM draaien lokaal op de productieserver.</p>
+    </div>
+
+    <!-- Indexing flow -->
+    <div class="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
+      <h3 class="font-semibold mb-3">2. Indexeringsproces (Kennisbank opbouwen)</h3>
+      <div class="mermaid">
+flowchart TB
+    subgraph Ingestion
+      direction TB
+      Start[Admin klikt 'Start indexering']
+      Scrape[Scraper<br/>sitemaps + trafilatura<br/>+ fallback]
+      Chunk[Chunker<br/>800 chars + overlap]
+      Embed2[BGE-M3 Embedder<br/>lokaal CPU]
+      Store[Upsert in Chroma]
+    end
+
+    Start --> Scrape
+    Scrape --> Chunk
+    Chunk --> Embed2
+    Embed2 --> Store
+      </div>
+      <ul class="list-disc pl-5 mt-3 text-sm space-y-0.5">
+        <li>Start via UI → /ingest/start (background task)</li>
+        <li>Per bron: scrape → chunk → embed → upsert</li>
+        <li>Progress live via /ingest/status polling</li>
+        <li>Data blijft in persistente volume <code>/home/evdillen/sogyo-chatbot-data</code></li>
+        <li>Model wordt bij eerste run (of startup) geladen</li>
+      </ul>
+    </div>
+
+    <div class="mt-6 text-xs text-slate-500">
+      <strong>Belangrijke componenten:</strong> FastAPI (backend), BGE-M3 (embeddings), Chroma (vector store), Ollama gemma3:4b (LLM op GPU), Cloudflare Tunnel (publieke exposure).
+    </div>
+  </div>
+
+<script>
+const chatEl = document.getElementById("chat");
+const input = document.getElementById("input");
+
+let sessionId = 'sogyo-' + Date.now();
+
+function addMessage(text, isUser) {
+  const div = document.createElement("div");
+  div.className = "msg " + (isUser ? "user" : "bot");
+  div.textContent = text;
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function addHtml(html) {
+  const div = document.createElement("div");
+  div.className = "msg bot";
+  div.innerHTML = html;
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function addError(text) {
+  const div = document.createElement("div");
+  div.className = "msg error";
+  div.textContent = "Fout: " + text;
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function startOnboarding() {
+  addMessage("Welkom bij de Sogyo Chatbot! Ik ben gevoed door de inhoudelijke content vanuit Sogyo. Waar wil je het mij over hebben?", false);
+}
+
+async function sendMessage() {
+  const text = (input.value || "").trim();
+  if (!text) return;
+
+  addMessage(text, true);
+  input.value = "";
+
+  let messageToSend = text;
+
+  // Creative active thinking indicator: denkwolk met groene animatie
+  const thinking = document.createElement("div");
+  thinking.className = "msg bot";
+
+  const cloud = document.createElement("div");
+  cloud.className = "thinking-cloud";
+
+  const dots = document.createElement("div");
+  dots.className = "thinking-dots";
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement("div");
+    dot.className = "thinking-dot";
+    dots.appendChild(dot);
+  }
+
+  const label = document.createElement("span");
+  label.className = "thinking-label";
+  label.textContent = "Denkt na";
+
+  cloud.appendChild(dots);
+  cloud.appendChild(label);
+
+  thinking.appendChild(cloud);
+  chatEl.appendChild(thinking);
+  chatEl.scrollTop = chatEl.scrollHeight;
+
+  // Activate the green cloud effect after a short delay for a nice "opbouwend" feel
+  setTimeout(() => {
+    if (cloud && cloud.parentNode) {
+      cloud.classList.add("active");
+    }
+  }, 400);
+
+  try {
+    const res = await fetch("/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, message: messageToSend })
+    });
+
+    if (!res.ok || !res.body) {
+      thinking.remove();
+      throw new Error("HTTP " + res.status);
+    }
+
+    thinking.remove();
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let streamDiv = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      let idx;
+      while ((idx = buffer.indexOf("\n\n")) !== -1) {
+        const event = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 2);
+
+        const lines = event.split("\n");
+        let eventName = "message";
+        let dataStr = "";
+        for (const line of lines) {
+          if (line.startsWith("event:")) eventName = line.slice(6).trim();
+          if (line.startsWith("data:")) dataStr = line.slice(5).trim();
+        }
+
+        if (!dataStr) continue;
+
+        try {
+          const payload = JSON.parse(dataStr);
+
+          if (eventName === "delta") {
+            if (!streamDiv) {
+              streamDiv = document.createElement("div");
+              streamDiv.className = "msg bot";
+              chatEl.appendChild(streamDiv);
+            }
+            streamDiv.textContent += (payload.content || "");
+            chatEl.scrollTop = chatEl.scrollHeight;
+          } else if (eventName === "final") {
+            if (streamDiv && streamDiv.parentNode) streamDiv.parentNode.removeChild(streamDiv);
+            streamDiv = null;
+
+            let html = (payload.answer || "").replace(/\n/g, "<br>");
+            if (payload.citations && payload.citations.length) {
+              html += '<div class="text-[10px] mt-2 text-slate-500"><strong>Bronnen:</strong><br>' +
+                payload.citations.map(c => `<a class="underline" href="${c.url}" target="_blank">${c.title || c.url}</a>`).join("<br>") + "</div>";
+            }
+            if (payload.hints && payload.hints.length) {
+              html += '<div class="text-[10px] mt-1 text-slate-500"><strong>Mogelijke vervolgvragen:</strong><br>' +
+                payload.hints.map(h => "• " + h).join("<br>") + "</div>";
+            }
+            addHtml(html);
+
+          } else if (eventName === "error") {
+            if (streamDiv && streamDiv.parentNode) streamDiv.parentNode.removeChild(streamDiv);
+            addError(payload.message || "Onbekende fout.");
+          }
+        } catch (e) {}
+      }
+    }
+  } catch (err) {
+    if (thinking && thinking.parentNode) thinking.parentNode.removeChild(thinking);
+    if (streamDiv && streamDiv.parentNode) streamDiv.parentNode.removeChild(streamDiv);
+    console.error(err);
+    addError("Kan geen antwoord krijgen. Controleer of de API en het lokale model (Ollama) bereikbaar zijn.");
+  }
+}
+
+if (input) {
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") sendMessage();
+  });
+}
+
+// Start
+window.onload = () => {
+  startOnboarding();
+  initTabs();
+
+  // Initialize Mermaid diagrams (lazy render when architecture tab is shown)
+  if (window.mermaid) {
+    mermaid.initialize({ startOnLoad: false });
+  }
+};
+
+// ========================
+// Tabs + Sources metadata
+// ========================
+let sourcesData = null;
+
+function initTabs() {
+  const buttons = document.querySelectorAll('.tab-button');
+  const chatView = document.getElementById('chat-view');
+  const sourcesView = document.getElementById('sources-view');
+  const architectureView = document.getElementById('architecture-view');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+
+      // Update active styles
+      buttons.forEach(b => {
+        if (b.dataset.tab === target) {
+          b.classList.add('border-b-2', 'border-[#2E7D32]', 'text-[#2E7D32]');
+          b.classList.remove('text-slate-600', 'hover:text-slate-800');
+        } else {
+          b.classList.remove('border-b-2', 'border-[#2E7D32]', 'text-[#2E7D32]');
+          b.classList.add('text-slate-600', 'hover:text-slate-800');
+        }
+      });
+
+      chatView.classList.add('hidden');
+      sourcesView.classList.add('hidden');
+      if (architectureView) architectureView.classList.add('hidden');
+
+      if (target === 'chat') {
+        chatView.classList.remove('hidden');
+      } else if (target === 'sources') {
+        sourcesView.classList.remove('hidden');
+        if (!sourcesData) {
+          loadSources();
+        }
+      } else if (target === 'architecture') {
+        if (architectureView) architectureView.classList.remove('hidden');
+        // Initialize Mermaid if present
+        if (window.mermaid) {
+          try { window.mermaid.run(); } catch(e) {}
+        }
+      }
+    });
+  });
+}
+
+async function loadSources() {
+  const loading = document.getElementById('sources-loading');
+  const errorBox = document.getElementById('sources-error');
+  const content = document.getElementById('sources-content');
+  const tbody = document.getElementById('sources-tbody');
+  const totalEl = document.getElementById('sources-total');
+
+  loading.classList.remove('hidden');
+  errorBox.classList.add('hidden');
+  content.classList.add('hidden');
+  tbody.innerHTML = '';
+
+  try {
+    const res = await fetch('/sources');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    sourcesData = data;
+
+    const sources = data.sources || [];
+    if (sources.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-slate-500 text-center">Nog geen bronnen geïndexeerd. Voer een ingest uit.</td></tr>`;
+    } else {
+      sources.forEach(s => {
+        const tr = document.createElement('tr');
+        const lastIngest = formatMaybeDate(s.last_ingested_at || s.last_updated);
+        const newestArticle = formatMaybeDate(s.newest_article_date);
+        tr.innerHTML = `
+          <td class="px-4 py-3 font-medium text-slate-700">${escapeHtml(s.source)}</td>
+          <td class="px-4 py-3 text-right font-semibold">${s.page_count}</td>
+          <td class="px-4 py-3 text-slate-600" title="Publicatie- of sitemap-lastmod van het nieuwste artikel">${newestArticle}</td>
+          <td class="px-4 py-3 text-slate-600" title="Moment van de laatste indexeringsrun">${lastIngest}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    totalEl.textContent = `${data.total_unique_pages || 0} unieke pagina's in totaal`;
+
+    loading.classList.add('hidden');
+    content.classList.remove('hidden');
+  } catch (e) {
+    loading.classList.add('hidden');
+    errorBox.classList.remove('hidden');
+    errorBox.textContent = 'Kon bronnen niet ophalen: ' + e.message;
+  }
+}
+
+function refreshSources() {
+  sourcesData = null;
+  loadSources();
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function formatMaybeDate(val) {
+  if (!val) return 'onbekend';
+  const d = new Date(val);
+  if (!isNaN(d.getTime())) return d.toLocaleString('nl-NL');
+  // already a date string like 2024-03-01
+  return escapeHtml(String(val));
+}
+
+function setIngestUiRunningOptimistic(message) {
+  const wrapper = document.getElementById('ingest-status-wrapper');
+  const msgEl = document.getElementById('ingest-message');
+  const pctEl = document.getElementById('ingest-progress-text');
+  const barEl = document.getElementById('ingest-progress-bar');
+  const iconEl = document.getElementById('ingest-icon');
+  const startBtn = document.getElementById('start-ingest-btn');
+  const stopBtn = document.getElementById('stop-ingest-btn');
+  const errEl = document.getElementById('ingest-start-error');
+  if (errEl) {
+    errEl.classList.add('hidden');
+    errEl.textContent = '';
+  }
+  if (wrapper) {
+    wrapper.classList.remove('hidden');
+    wrapper.classList.add('ring-2', 'ring-blue-300', 'bg-blue-50');
+  }
+  if (iconEl) iconEl.textContent = '⏳';
+  if (msgEl) {
+    msgEl.textContent = message || 'Indexering wordt gestart…';
+    msgEl.classList.add('text-[#2E7D32]');
+  }
+  if (pctEl) pctEl.textContent = '1%';
+  if (barEl) {
+    barEl.style.width = '1%';
+    barEl.style.backgroundColor = '#3b82f6';
+  }
+  if (startBtn && stopBtn) {
+    startBtn.classList.add('hidden');
+    startBtn.disabled = true;
+    stopBtn.classList.remove('hidden');
+    stopBtn.disabled = false;
+  }
+}
+
+function showIngestStartError(msg) {
+  const errEl = document.getElementById('ingest-start-error');
+  if (errEl) {
+    errEl.textContent = msg;
+    errEl.classList.remove('hidden');
+  } else {
+    alert(msg);
+  }
+  const startBtn = document.getElementById('start-ingest-btn');
+  const stopBtn = document.getElementById('stop-ingest-btn');
+  if (startBtn) {
+    startBtn.classList.remove('hidden');
+    startBtn.disabled = false;
+  }
+  if (stopBtn) stopBtn.classList.add('hidden');
+  const wrapper = document.getElementById('ingest-status-wrapper');
+  if (wrapper) wrapper.classList.remove('ring-2', 'ring-blue-300', 'bg-blue-50');
+  const iconEl = document.getElementById('ingest-icon');
+  const msgEl = document.getElementById('ingest-message');
+  if (iconEl) iconEl.textContent = '❌';
+  if (msgEl) msgEl.textContent = msg;
+}
+
+let statusPollInterval = null;
+
+async function startIngestion() {
+  const maxInput = document.getElementById('max-pages');
+  const resetCheck = document.getElementById('reset-check');
+  const tokenInput = document.getElementById('ingest-token');
+
+  const token = tokenInput ? String(tokenInput.value || '').trim() : '';
+  if (!token) {
+    showIngestStartError('Vul het indexeringstoken in om te starten.');
+    if (tokenInput) tokenInput.focus();
+    return;
+  }
+
+  let maxPages = maxInput ? parseInt(maxInput.value, 10) : 500;
+  if (Number.isNaN(maxPages)) maxPages = 500;
+  // 0 means "full crawl" → send 0 to backend hard-cap path
+  const reset = resetCheck ? resetCheck.checked : false;
+
+  // Immediate visual feedback (before network round-trip)
+  setIngestUiRunningOptimistic('Token gecontroleerd — indexering starten…');
+  startStatusPolling();
+
+  try {
+    const res = await fetch('/ingest/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, max_pages: maxPages, reset })
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (res.status === 401 || data.status === 'error') {
+      showIngestStartError(data.message || 'Kan indexering niet starten (HTTP ' + res.status + ')');
+      if (statusPollInterval) {
+        clearInterval(statusPollInterval);
+        statusPollInterval = null;
+      }
+      return;
+    }
+
+    setIngestUiRunningOptimistic(data.message || 'Indexering loopt…');
+    startStatusPolling();
+  } catch (e) {
+    showIngestStartError('Fout bij starten indexering: ' + e.message);
+    if (statusPollInterval) {
+      clearInterval(statusPollInterval);
+      statusPollInterval = null;
+    }
+  }
+}
+
+async function stopIngestion() {
+  const stopBtn = document.getElementById('stop-ingest-btn');
+  const tokenInput = document.getElementById('ingest-token');
+  const token = tokenInput ? String(tokenInput.value || '').trim() : '';
+
+  if (!token) {
+    showIngestStartError('Token nodig om te stoppen.');
+    return;
+  }
+
+  if (stopBtn) stopBtn.disabled = true;
+
+  try {
+    const res = await fetch('/ingest/stop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (res.status === 401 || data.status === 'error') {
+      showIngestStartError(data.message || 'Kan niet stoppen');
+    } else {
+      const msgEl = document.getElementById('ingest-message');
+      if (msgEl) msgEl.textContent = 'Stoppen aangevraagd…';
+    }
+
+    setTimeout(() => {
+      if (stopBtn) stopBtn.disabled = false;
+    }, 1000);
+  } catch (e) {
+    showIngestStartError('Fout bij stoppen: ' + e.message);
+    if (stopBtn) stopBtn.disabled = false;
+  }
+}
+
+function startStatusPolling() {
+  if (statusPollInterval) clearInterval(statusPollInterval);
+
+  updateStatusUI(); // immediate
+
+  statusPollInterval = setInterval(async () => {
+    await updateStatusUI();
+  }, 1500);  // faster polling for better live feel
+}
+
+function showTab(tab) {
+  const buttons = document.querySelectorAll('.tab-button');
+  const chatView = document.getElementById('chat-view');
+  const sourcesView = document.getElementById('sources-view');
+  const architectureView = document.getElementById('architecture-view');
+
+  buttons.forEach(b => {
+    if (b.dataset.tab === tab) {
+      b.classList.add('border-b-2', 'border-[#2E7D32]', 'text-[#2E7D32]');
+      b.classList.remove('text-slate-600', 'hover:text-slate-800');
+    } else {
+      b.classList.remove('border-b-2', 'border-[#2E7D32]', 'text-[#2E7D32]');
+      b.classList.add('text-slate-600', 'hover:text-slate-800');
+    }
+  });
+
+  chatView.classList.add('hidden');
+  sourcesView.classList.add('hidden');
+  if (architectureView) architectureView.classList.add('hidden');
+
+  if (tab === 'chat') {
+    chatView.classList.remove('hidden');
+  } else if (tab === 'sources') {
+    sourcesView.classList.remove('hidden');
+    // If ingestion is running, make sure polling is active
+    fetch('/ingest/status').then(r => r.json()).then(st => {
+      if (st.status === 'running') {
+        startStatusPolling();
+      }
+    });
+  } else if (tab === 'architecture') {
+    if (architectureView) architectureView.classList.remove('hidden');
+    if (window.mermaid) {
+      try { window.mermaid.run(); } catch(e) {}
+    }
+  }
+}
+
+async function updateStatusUI() {
+  const wrapper = document.getElementById('ingest-status-wrapper');
+  const msgEl = document.getElementById('ingest-message');
+  const pctEl = document.getElementById('ingest-progress-text');
+  const barEl = document.getElementById('ingest-progress-bar');
+  const metaEl = document.getElementById('ingest-meta');
+  const iconEl = document.getElementById('ingest-icon');
+  const btn = document.getElementById('start-ingest-btn');
+
+  if (!wrapper || !msgEl) return;
+
+  try {
+    const res = await fetch('/ingest/status');
+    const st = await res.json();
+
+    wrapper.classList.remove('hidden');
+
+    const isRunning = st.status === 'running';
+    const isDone = st.status === 'completed';
+    const isError = st.status === 'error';
+    const isStopped = st.status === 'stopped';
+
+    // Icon
+    if (iconEl) {
+      if (isRunning) iconEl.textContent = '⏳';
+      else if (isDone) iconEl.textContent = '✅';
+      else if (isError) iconEl.textContent = '❌';
+      else if (isStopped) iconEl.textContent = '🛑';
+      else iconEl.textContent = '⏸️';
+    }
+
+    // Message
+    let displayMessage = st.message || st.status;
+    if (isStopped) {
+      displayMessage = 'Indexering gestopt door gebruiker.';
+    }
+    msgEl.textContent = displayMessage;
+    if (isRunning) {
+      msgEl.classList.add('text-[#2E7D32]');
+    } else {
+      msgEl.classList.remove('text-[#2E7D32]');
+    }
+
+    const pct = Math.max(0, Math.min(100, st.progress || 0));
+    pctEl.textContent = `${pct}%`;
+    barEl.style.width = `${pct}%`;
+
+    // Color bar based on state
+    if (isRunning) {
+      barEl.style.backgroundColor = '#3b82f6'; // blue while running
+    } else if (isDone) {
+      barEl.style.backgroundColor = '#4CAF50';
+    } else if (isError) {
+      barEl.style.backgroundColor = '#ef4444';
+    } else {
+      barEl.style.backgroundColor = '#4CAF50';
+    }
+
+    let metaParts = [];
+    if (st.started_at) {
+      metaParts.push(`Gestart: ${new Date(st.started_at).toLocaleTimeString('nl-NL')}`);
+    }
+    if (st.finished_at) {
+      metaParts.push(`Voltooid: ${new Date(st.finished_at).toLocaleTimeString('nl-NL')}`);
+    }
+    if (st.pages_scraped != null && st.pages_scraped > 0) {
+      metaParts.push(`Pagina's: ${st.pages_scraped}`);
+    }
+    if (st.chunks_indexed != null && st.chunks_indexed > 0) {
+      metaParts.push(`Chunks: ${st.chunks_indexed}`);
+    }
+    metaEl.innerHTML = metaParts.join(' · ');
+
+    const wrapperEl = document.getElementById('ingest-status-wrapper');
+    if (wrapperEl) {
+      if (isRunning) {
+        wrapperEl.classList.add('ring-2', 'ring-blue-300', 'bg-blue-50');
+      } else {
+        wrapperEl.classList.remove('ring-2', 'ring-blue-300', 'bg-blue-50');
+      }
+    }
+
+    const currentEl = document.getElementById('ingest-current');
+    if (currentEl) {
+      if (st.status === 'running' && st.current_source) {
+        // current_source may be enriched like "sogyo.nl — https://.../foo" or just domain
+        const extra = st.current_source.includes('—') ? '' : `  (${st.progress || 0}%)`;
+        currentEl.textContent = `Bezig met: ${st.current_source}${extra}`;
+        currentEl.style.display = '';
+      } else {
+        currentEl.textContent = '';
+        currentEl.style.display = 'none';
+      }
+    }
+
+    // Button state
+    const startBtn = document.getElementById('start-ingest-btn');
+    const stopBtn = document.getElementById('stop-ingest-btn');
+
+    if (startBtn && stopBtn) {
+      if (isRunning) {
+        startBtn.classList.add('hidden');
+        stopBtn.classList.remove('hidden');
+        stopBtn.disabled = false;
+      } else {
+        startBtn.classList.remove('hidden');
+        stopBtn.classList.add('hidden');
+        startBtn.disabled = false;
+        startBtn.textContent = 'Start indexering';
+      }
+    } else if (startBtn) {
+      // fallback if stop button not present
+      startBtn.disabled = isRunning;
+      startBtn.textContent = isRunning ? 'Indexering loopt...' : 'Start indexering';
+    }
+
+    if (isDone || isError || isStopped) {
+      if (statusPollInterval) {
+        clearInterval(statusPollInterval);
+        statusPollInterval = null;
+      }
+
+      // Auto refresh sources table + show final message clearly
+      setTimeout(() => {
+        if (!document.getElementById('sources-view').classList.contains('hidden')) {
+          refreshSources();
+        }
+      }, 800);
+    } else if (isRunning) {
+      // Aggressively refresh sources table while scraping so you see pages appearing
+      refreshSources();
+    }
+
+  } catch (e) {
+    if (msgEl) msgEl.textContent = 'Kan status niet ophalen';
+  }
+}
+</script>
+</body>
+</html>

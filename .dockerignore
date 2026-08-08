@@ -1,0 +1,55 @@
+# Ignore git history and metadata
+.git
+.gitignore
+
+# Build artifacts and data (never send to image context)
+data/
+deploy-artifacts/
+*.tar
+*.tar.gz
+*.tgz
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Logs and temp
+*.log
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (if any frontend appears later)
+node_modules/
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Other unnecessary for Docker context
+*.md
+LICENSE
+Dockerfile*
+docker-compose*.yml
+infra/
+scripts/test_*.py
+tests/

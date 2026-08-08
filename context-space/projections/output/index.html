@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sogyo Kennis-Chatbot — Documentatie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .logo-font { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
+        .sogyo-header { background: linear-gradient(135deg, #003366 0%, #002244 100%); }
+        .card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <header class="sogyo-header text-white">
+        <div class="max-w-4xl mx-auto px-6 py-5">
+            <div class="flex items-center gap-x-3">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                    <span class="text-[#003366] font-bold text-2xl logo-font">S</span>
+                </div>
+                <div>
+                    <div class="logo-font text-3xl font-semibold tracking-tight">Sogyo</div>
+                    <div class="text-[10px] text-blue-200 -mt-1">SOFTWARE INNOVATORS</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-6 py-12">
+        <h1 class="text-4xl font-semibold text-[#003366] mb-2">Kennis-Chatbot Documentatie</h1>
+        <p class="text-slate-600 mb-10">Human-readable documentatie voor de Sogyo Kennis-Chatbot (productie .15 / jarvisje.com).</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <a href="platform-overzicht.html" class="card block bg-white border border-slate-200 rounded-2xl p-6 hover:border-blue-300">
+                <div class="text-sm font-medium text-blue-600 mb-2">Infrastructuur &amp; deploy</div>
+                <h2 class="text-xl font-semibold text-[#003366] mb-2">Platform Overzicht</h2>
+                <p class="text-sm text-slate-600">Componentdiagram, Ollama, Cloudflare, lokale dev en deploy naar 192.168.165.15.</p>
+            </a>
+
+            <a href="technisch-design.html" class="card block bg-white border border-slate-200 rounded-2xl p-6 hover:border-blue-300">
+                <div class="text-sm font-medium text-blue-600 mb-2">Applicatie-architectuur</div>
+                <h2 class="text-xl font-semibold text-[#003366] mb-2">Technisch Design</h2>
+                <p class="text-sm text-slate-600">4+1 model: indexering, Chroma, embeddings, RAG-chat, API en sequence-diagrammen.</p>
+            </a>
+        </div>
+
+        <p class="mt-10 text-xs text-slate-500">
+            Bron-markdown: <code class="bg-slate-100 px-1 rounded">technisch-design.md</code> ·
+            Laatste update: 2026-07-01
+        </p>
+    </div>
+</body>
+</html>
