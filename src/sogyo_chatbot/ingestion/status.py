@@ -27,7 +27,9 @@ DEFAULT_STATUS: dict[str, Any] = {
     "error": None,
     "stop_requested": False,
     "pages_scraped": 0,
+    "pages_skipped": 0,
     "chunks_indexed": 0,
+    "incremental": None,
     "pid": None,
     "run_id": None,
 }

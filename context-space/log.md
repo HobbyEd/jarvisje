@@ -2,6 +2,7 @@
 
 ## 2026-08-08
 
+* **Incrementele indexering**: zonder reset alleen nieuw/gewijzigd (sitemap lastmod vs Chroma); reset = full rebuild; UI **v0.8.1**.
 * **ADR-011**: secrets policy — geen tokens in git/image; `.env` + `INGEST_TOKEN`; deploy scp host-`.env`; UI **v0.8.0**.
 * **ADR review**: 01–09 reality-check; **ADR-010** async ingestion worker.
 * **ADR-010 implementatie**: `ingestion/worker.py` + status files; API spawn i.p.v. in-process; UI banner; CLI `scripts/ingest.py` → worker; UI **v0.7.0**.

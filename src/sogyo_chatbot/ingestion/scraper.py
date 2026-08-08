@@ -264,6 +264,25 @@ def _resolve_page_limit(max_pages: int | None) -> int:
     return min(max_pages, hard)
 
 
+def _needs_refetch(
+    url: str,
+    *,
+    known: Dict[str, Dict[str, str]],
+    lastmod_map: Dict[str, Optional[str]],
+) -> bool:
+    """True if URL is unknown or sitemap lastmod is newer than stored."""
+    if url not in known:
+        return True
+    sitemap_lm = (lastmod_map.get(url) or "").strip()
+    stored_lm = (known[url].get("lastmod") or "").strip()
+    if sitemap_lm and stored_lm and sitemap_lm > stored_lm:
+        return True
+    if sitemap_lm and not stored_lm:
+        # Have a sitemap signal but never stored a date — treat as refresh candidate
+        return True
+    return False
+
+
 def scrape_domain(
     start_url: str,
     max_pages: int | None = None,
@@ -271,20 +290,28 @@ def scrape_domain(
     progress_callback: Optional[ProgressCallback] = None,
     batch_callback: Optional[BatchCallback] = None,
     batch_size: int | None = None,
+    known_pages: Optional[Dict[str, Dict[str, str]]] = None,
+    incremental: bool = False,
+    stats_out: Optional[Dict[str, int]] = None,
 ) -> List[Document]:
     """
     Crawl a single domain: sitemap-first (article priority), then light BFS.
 
     - max_pages limits extracted *content* pages (not raw visits of empty shells).
     - batch_callback receives batches of documents for progressive indexing.
+    - incremental + known_pages: skip URLs already in the index unless sitemap
+      lastmod is newer (reset=False path). Full crawl when incremental=False.
+    - stats_out: optional dict filled with skipped/extracted counts.
     """
     limit = _resolve_page_limit(max_pages)
     bsize = batch_size or settings.ingest_batch_size
     domain = _get_domain(start_url)
+    known = known_pages or {}
 
     visited: Set[str] = set()
     documents: List[Document] = []
     pending_batch: List[Document] = []
+    skipped = 0
     # url -> lastmod from sitemap
     lastmod_map: Dict[str, Optional[str]] = {}
 
@@ -295,10 +322,12 @@ def scrape_domain(
     sitemap_items = _collect_pages_from_sitemaps(start_url, client)
     for u, lm in sitemap_items:
         if _is_same_domain(start_url, u):
-            lastmod_map[u] = lm
+            lastmod_map[_clean_url(u)] = lm
 
     # Queue: article-priority sitemap URLs first, then home, then pagination seeds
-    sitemap_urls = [u for u, _ in sitemap_items if _is_same_domain(start_url, u)]
+    sitemap_urls = [
+        _clean_url(u) for u, _ in sitemap_items if _is_same_domain(start_url, u)
+    ]
     to_visit: deque[str] = deque()
     seen_q: Set[str] = set()
 
@@ -306,23 +335,57 @@ def scrape_domain(
         cu = _clean_url(u)
         if cu in seen_q or cu in visited:
             return
+        # Incremental: never queue pages we will skip (keeps crawl short)
+        if incremental and known and not _needs_refetch(
+            cu, known=known, lastmod_map=lastmod_map
+        ):
+            return
         seen_q.add(cu)
         if front:
             to_visit.appendleft(cu)
         else:
             to_visit.append(cu)
 
-    for u in sitemap_urls:
-        _enqueue(u)
-    _enqueue(start_url, front=True)
-
-    # If sitemap thin: seed pagination/archives to discover posts
-    if len(sitemap_urls) < 20:
-        for i in range(1, 31):
-            _enqueue(urljoin(start_url, f"/page/{i}"))
-            _enqueue(urljoin(start_url, f"/blog/page/{i}"))
-        for suffix in ("/blog", "/posts", "/archive", "/category"):
-            _enqueue(urljoin(start_url, suffix))
+    if incremental and known:
+        new_urls: List[str] = []
+        refresh_urls: List[str] = []
+        for u in sitemap_urls:
+            if u not in known:
+                new_urls.append(u)
+            elif _needs_refetch(u, known=known, lastmod_map=lastmod_map):
+                refresh_urls.append(u)
+            else:
+                skipped += 1
+        # Newest/most article-like first among new posts
+        new_urls.sort(key=_article_score, reverse=True)
+        refresh_urls.sort(key=_article_score, reverse=True)
+        for u in new_urls:
+            _enqueue(u)
+        for u in refresh_urls:
+            _enqueue(u)
+        # Light discovery only if sitemap is thin (unknown non-sitemap pages)
+        if len(sitemap_urls) < 20:
+            _enqueue(start_url, front=True)
+            for i in range(1, 31):
+                _enqueue(urljoin(start_url, f"/page/{i}"))
+                _enqueue(urljoin(start_url, f"/blog/page/{i}"))
+            for suffix in ("/blog", "/posts", "/archive", "/category"):
+                _enqueue(urljoin(start_url, suffix))
+        print(
+            f"[{domain}] Incremental: {len(new_urls)} new, "
+            f"{len(refresh_urls)} refresh, {skipped} already indexed (skipped)"
+        )
+    else:
+        for u in sitemap_urls:
+            _enqueue(u)
+        _enqueue(start_url, front=True)
+        # If sitemap thin: seed pagination/archives to discover posts
+        if len(sitemap_urls) < 20:
+            for i in range(1, 31):
+                _enqueue(urljoin(start_url, f"/page/{i}"))
+                _enqueue(urljoin(start_url, f"/blog/page/{i}"))
+            for suffix in ("/blog", "/posts", "/archive", "/category"):
+                _enqueue(urljoin(start_url, suffix))
 
     def _flush_batch(force: bool = False) -> None:
         nonlocal pending_batch
@@ -352,6 +415,13 @@ def scrape_domain(
     while to_visit and len(documents) < limit and len(visited) < max_visits:
         url = _clean_url(to_visit.popleft())
         if url in visited:
+            continue
+
+        if incremental and known and not _needs_refetch(
+            url, known=known, lastmod_map=lastmod_map
+        ):
+            visited.add(url)
+            skipped += 1
             continue
 
         if not rp.can_fetch(settings.user_agent, url):
@@ -410,8 +480,13 @@ def scrape_domain(
 
     print(
         f"[{domain}] Extracted {len(documents)} pages "
-        f"(visited {len(visited)}, sitemap seeds {len(sitemap_urls)}, limit {limit})"
+        f"(visited {len(visited)}, skipped {skipped}, "
+        f"sitemap seeds {len(sitemap_urls)}, limit {limit}, "
+        f"incremental={incremental})"
     )
+    if stats_out is not None:
+        stats_out["skipped"] = int(stats_out.get("skipped", 0)) + skipped
+        stats_out["extracted"] = int(stats_out.get("extracted", 0)) + len(documents)
     return documents
 
 
