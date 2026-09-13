@@ -52,7 +52,7 @@ We scheiden **chat-API** en **ingestion worker** in **aparte processen** (en bij
 
 De worker deelt **geen** Python-proces met de API. Wel:
 
-- **Zelfde image** mag (entrypoint verschilt), of dunne hergebruik van `src/sogyo_chatbot/ingestion/`.
+- **Zelfde image** mag (entrypoint verschilt), of dunne hergebruik van `src/jarvisje/ingestion/`.
 - **Zelfde volume** voor Chroma/raw (`~/sogyo-chatbot-data`).
 - **Status-bestand** (of kleine state store) op het volume of een afgesproken pad, leesbaar door de API.
 
@@ -61,7 +61,7 @@ De worker deelt **geen** Python-proces met de API. Wel:
 Alle starts roepen **dezelfde worker entrypoint** aan, bijv.:
 
 ```text
-python -m sogyo_chatbot.ingestion.worker --max-pages N [--reset]
+python -m jarvisje.ingestion.worker --max-pages N [--reset]
 ```
 
 | Trigger | Mechanisme |
@@ -129,7 +129,7 @@ Cron kan `docker compose run --rm ingest ...` of host-venv worker tegen het data
 3. `POST /ingest/start`: valideer token → start worker → return 202.
 4. `GET /ingest/status`: lees status file.
 5. UI: poll status; toon banner op chat + bronnen-tab.
-6. Cron voorbeeld: `0 */6 * * * docker compose run --rm ingest python -m sogyo_chatbot.ingestion.worker`
+6. Cron voorbeeld: `0 */6 * * * docker compose run --rm ingest python -m jarvisje.ingestion.worker`
 
 ## Gerelateerde ADRs
 - ADR-001 Knowledge Strategy  

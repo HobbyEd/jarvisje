@@ -48,4 +48,4 @@ ENV EMBEDDING_DEVICE=cpu
 EXPOSE 8001
 
 # Default run the API
-CMD ["python", "-m", "uvicorn", "sogyo_chatbot.api.app:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["python", "-m", "uvicorn", "jarvisje.api.app:app", "--host", "0.0.0.0", "--port", "8001"]

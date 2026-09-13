@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from sogyo_chatbot.ingestion.worker import main as worker_main
+from jarvisje.ingestion.worker import main as worker_main
 
 
 def main() -> int:

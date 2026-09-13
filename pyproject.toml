@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sogyo-chatbot"
-version = "0.8.1"
-description = "Domein-specifieke RAG-chatbot voor Sogyo content (MVP)"
+name = "jarvisje"
+version = "1.0.0"
+description = "Jarvisje — chatbot rondom de wereld van AI, grounded in twee blogs"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}

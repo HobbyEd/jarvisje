@@ -118,7 +118,7 @@ Zonder `INGEST_TOKEN` weigert de API start/stop van indexering.
 
 Indexering draait **buiten** de chat request-thread:
 
-- **UI / API**: `POST /ingest/start` (token = `INGEST_TOKEN`) spawnt `python -m sogyo_chatbot.ingestion.worker` in de app-container; status op volume `ingest_status.json`.
+- **UI / API**: `POST /ingest/start` (token = `INGEST_TOKEN`) spawnt `python -m jarvisje.ingestion.worker` in de app-container; status op volume `ingest_status.json`.
 - **CLI op server (zelfde image, one-shot)** — geen HTTP-token nodig:
 
 ```bash

@@ -100,4 +100,4 @@ services:
       - 1.1.1.1
     mem_limit: 8g
     cpus: "4.0"
-    entrypoint: ["python", "-m", "sogyo_chatbot.ingestion.worker"]
+    entrypoint: ["python", "-m", "jarvisje.ingestion.worker"]

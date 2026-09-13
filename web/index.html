@@ -192,7 +192,7 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
         </button>
-        <span class="version-badge">v1.0.0</span>
+        <span class="version-badge">v1.0.1</span>
       </div>
     </div>
   </header>
@@ -481,7 +481,7 @@ flowchart TB
         <li>Start via UI → <code>POST /ingest/start</code> spawnt een <strong>apart worker-proces</strong> (ADR-010)</li>
         <li>Worker: scrape → chunk → embed → upsert; chat-API blijft beschikbaar</li>
         <li>Status via gedeeld bestand op data-volume; UI pollt <code>GET /ingest/status</code></li>
-        <li>Zelfde entrypoint voor CLI/cron: <code>python -m sogyo_chatbot.ingestion.worker</code></li>
+        <li>Zelfde entrypoint voor CLI/cron: <code>python -m jarvisje.ingestion.worker</code></li>
         <li>Data blijft in persistente volume <code>~/sogyo-chatbot-data</code></li>
       </ul>
     </div>

@@ -57,8 +57,8 @@ Dit document bevat expliciete aannames die gemaakt zijn tijdens de implementatie
 - LLM client: `httpx` + OpenAI-compatibele `/chat/completions` (of `openai` library als die al in env zit).
 - Geen LangChain/LlamaIndex.
 - Voor development kan de LLM tijdelijk gemockt worden (of een dummy vLLM draaien).
-- Post-commit hook is een eenvoudige shell script die `python -m sogyo_chatbot.designer` aanroept.
-- Alle code blijft in `src/sogyo_chatbot/`.
+- Post-commit hook is een eenvoudige shell script die `python -m jarvisje.designer.cli` aanroept.
+- Alle code blijft in `src/jarvisje/`.
 - Commits na iedere logische bouwstap.
 
 ## Open punten / Later te herzien

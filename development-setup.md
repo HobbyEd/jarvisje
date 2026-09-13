@@ -88,7 +88,7 @@ Niet bij elke UI/API-regelwijziging tijdens lokale Python-dev.
 ```
 sogyo-chatbot/
 ├── context-space/
-├── src/sogyo_chatbot/
+├── src/jarvisje/
 │   ├── api/           # FastAPI + UI serve
 │   ├── chat/          # Orchestrator, prompts
 │   ├── ingestion/     # Scrape, chunk, embed, chroma
@@ -120,7 +120,7 @@ python scripts/ingest.py --reset
 ## Retrieval smoke test
 
 ```python
-from sogyo_chatbot.retrieval import retrieve
+from jarvisje.retrieval import retrieve
 
 results = retrieve("Hoe werkt intent-driven development?", top_k=5)
 for r in results:

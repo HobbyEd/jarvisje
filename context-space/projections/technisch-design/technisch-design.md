@@ -327,7 +327,7 @@ De development view beschrijft **codestructuur** en waar ontwikkelaars wat vinde
 
 ```
 sogyo-chatbot/
-├── src/sogyo_chatbot/
+├── src/jarvisje/
 │   ├── config.py              # Settings, env vars, paden
 │   ├── ingestion/
 │   │   ├── scraper.py         # crawl per domein
@@ -372,7 +372,7 @@ flowchart TD
 
 | Entry | Commando / trigger | Gebruik |
 |-------|-------------------|---------|
-| Productie-server | `uvicorn sogyo_chatbot.api.app:app --host 0.0.0.0 --port 8001` | Docker CMD |
+| Productie-server | `uvicorn jarvisje.api.app:app --host 0.0.0.0 --port 8001` | Docker CMD |
 | CLI-indexering | `python scripts/ingest.py [--max N] [--reset]` | Dev / handmatig |
 | UI-indexering | `POST /ingest/start?reset=&max_pages=` | Tab Bronnen |
 | Debug retrieval | `GET /test-retrieval?query=…` | Zonder LLM |
@@ -506,7 +506,7 @@ Onderwerpen die alle views raken.
 - Chat-sessies alleen in memory  
 - Gesimuleerde token-streaming (niet echte LLM-stream)  
 - Roldetectie via keywords, geen ML-classifier  
-- Designer-agent (`src/sogyo_chatbot/designer/`) is aparte tooling, niet onderdeel van Jarvisje-runtime  
+- Designer-agent (`src/jarvisje/designer/`) is aparte tooling, niet onderdeel van Jarvisje-runtime  
 
 ### 5.4 Evolutiepad
 
@@ -745,12 +745,12 @@ flowchart TB
 
 | Onderwerp | Bestand |
 |-----------|---------|
-| Chroma wrapper | `src/sogyo_chatbot/ingestion/vector_store.py` |
-| Embeddings | `src/sogyo_chatbot/ingestion/embedder.py` |
-| Retrieval | `src/sogyo_chatbot/retrieval/retriever.py` |
-| Chat orchestratie | `src/sogyo_chatbot/chat/orchestrator.py` |
-| Prompts | `src/sogyo_chatbot/chat/prompts.py` |
-| API + ingest | `src/sogyo_chatbot/api/app.py` |
+| Chroma wrapper | `src/jarvisje/ingestion/vector_store.py` |
+| Embeddings | `src/jarvisje/ingestion/embedder.py` |
+| Retrieval | `src/jarvisje/retrieval/retriever.py` |
+| Chat orchestratie | `src/jarvisje/chat/orchestrator.py` |
+| Prompts | `src/jarvisje/chat/prompts.py` |
+| API + ingest | `src/jarvisje/api/app.py` |
 | Web UI | `web/index.html` |
 | CLI ingest | `scripts/ingest.py` |
 | Productie compose | `infra/ubuntu-x64/docker-compose.prod-local.yaml` |

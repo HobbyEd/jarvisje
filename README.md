@@ -42,7 +42,7 @@ Operationeel: [infra/runbooks/infrastructure.md](infra/runbooks/infrastructure.m
 ```
 .
 ├── context-space/          # Scope, ADRs, werkwijze — start voor AI-agents
-├── src/sogyo_chatbot/      # Python package (API, chat, ingestion, retrieval)
+├── src/jarvisje/      # Python package (API, chat, ingestion, retrieval)
 ├── scripts/                # run_api, ingest, deploy-to-15.sh, smoke_health
 ├── web/                    # UI (geserveerd door FastAPI)
 ├── infra/

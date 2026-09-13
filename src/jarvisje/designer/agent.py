@@ -46,7 +46,7 @@ def run_agent(repo_root: Path | None = None) -> Dict:
     Returns a report dict and writes tech-debt files when issues are found.
     """
     root = repo_root or Path.cwd()
-    src_root = root / "src" / "sogyo_chatbot"
+    src_root = root / "src" / "jarvisje"
     adr_dir = root / "context-space" / "core-domain" / "02-architectural" / "decisions"
 
     report: Dict = {

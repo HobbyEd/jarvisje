@@ -3,8 +3,8 @@ Standalone ingestion worker (ADR-010).
 
 Same entrypoint for UI-spawn, CLI, and future cron:
 
-    python -m sogyo_chatbot.ingestion.worker
-    python -m sogyo_chatbot.ingestion.worker --max-pages 500 --reset
+    python -m jarvisje.ingestion.worker
+    python -m jarvisje.ingestion.worker --max-pages 500 --reset
 """
 from __future__ import annotations
 
@@ -15,10 +15,10 @@ import sys
 import time
 import traceback
 
-from sogyo_chatbot.config import settings
-from sogyo_chatbot.ingestion import chunk_documents, embed_chunks, upsert_chunks
-from sogyo_chatbot.ingestion.scraper import scrape_domain
-from sogyo_chatbot.ingestion.status import (
+from jarvisje.config import settings
+from jarvisje.ingestion import chunk_documents, embed_chunks, upsert_chunks
+from jarvisje.ingestion.scraper import scrape_domain
+from jarvisje.ingestion.status import (
     clear_stop_flag,
     new_run_id,
     release_lock,
@@ -27,7 +27,7 @@ from sogyo_chatbot.ingestion.status import (
     utc_now_iso,
     write_status,
 )
-from sogyo_chatbot.ingestion.vector_store import (
+from jarvisje.ingestion.vector_store import (
     _get_collection_name,
     get_chroma_client,
     get_chroma_store,
@@ -106,7 +106,7 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
                 client.delete_collection(coll_name)
             except Exception:
                 pass
-            import sogyo_chatbot.ingestion.vector_store as vs
+            import jarvisje.ingestion.vector_store as vs
 
             vs._collection = None
             get_chroma_store()

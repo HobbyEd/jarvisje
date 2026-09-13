@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 if __name__ == "__main__":
     import uvicorn
-    from sogyo_chatbot.api.app import app
+    from jarvisje.api.app import app
 
     base_url = os.getenv("LLM_BASE_URL", "http://<host>:11434/v1")
     model = os.getenv("LLM_MODEL", "gemma3:4b")

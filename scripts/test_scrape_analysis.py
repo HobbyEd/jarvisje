@@ -7,8 +7,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from sogyo_chatbot.config import settings
-from sogyo_chatbot.ingestion.scraper import scrape_domain
+from jarvisje.config import settings
+from jarvisje.ingestion.scraper import scrape_domain
 
 def main():
     print("=== SCRAPER QUALITY ANALYSIS ===\n")

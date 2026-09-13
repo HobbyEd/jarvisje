@@ -22,9 +22,9 @@ Repeat for **each** discrete change (code, docs, infra, UI):
    - **Git commit** — small, step-oriented message (Dutch or English, clear).  
    - **Software Designer Agent** — run and verify findings under `context-space/harnessing/findings/`:
      ```bash
-     PYTHONPATH=src python -m sogyo_chatbot.designer.cli
+     PYTHONPATH=src python -m jarvisje.designer.cli
      # Windows PowerShell:
-     # $env:PYTHONPATH="src"; python -m sogyo_chatbot.designer.cli
+     # $env:PYTHONPATH="src"; python -m jarvisje.designer.cli
      ```
    - **Projections** — update `context-space/projections/output/` when architecture, start instructions, or platform overview change (see `context-space/projections/generation-rules.md`).  
    - **UI version** — bump badge in `web/index.html` (semver: patch/minor/major as appropriate; current line is like `v0.8.0`).

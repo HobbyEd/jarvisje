@@ -5,7 +5,7 @@ $hookContent = @'
 # Runs after every local commit.
 
 # Ensure the src package is importable when running from repo root
-PYTHONPATH="src" python -m sogyo_chatbot.designer.cli || echo "Designer agent finished with warnings (non-blocking)"
+PYTHONPATH="src" python -m jarvisje.designer.cli || echo "Designer agent finished with warnings (non-blocking)"
 '@
 
 $hookPath = ".git/hooks/post-commit"

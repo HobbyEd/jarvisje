@@ -45,7 +45,7 @@ def _parse_env_file(path: Path, *, override: bool = False) -> None:
 def _load_env_files() -> None:
     """Load gitignored .env files into os.environ (does not override existing env)."""
     here = Path(__file__).resolve()
-    # src/sogyo_chatbot/config.py → repo root (local) or /app (container layout)
+    # src/jarvisje/config.py → repo root (local) or /app (container layout)
     candidates = [
         here.parents[2] / ".env",  # .../project/.env or /app/.env
         here.parents[1] / ".env",

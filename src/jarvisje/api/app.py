@@ -174,7 +174,7 @@ async def test_retrieval(query: str, top_k: int = 5):
 
 @app.get("/health")
 async def health():
-    from sogyo_chatbot.config import settings
+    from jarvisje.config import settings
     return {
         "status": "ok",
         "embedding": settings.embedding_model,
@@ -248,7 +248,7 @@ async def sources():
     except Exception:
         configured = []
 
-    from sogyo_chatbot.config import settings as _settings
+    from jarvisje.config import settings as _settings
 
     return {
         "sources": sources_list,
@@ -265,7 +265,7 @@ def _check_ingest_token(token: str | None) -> tuple[bool, str | None]:
 
     Returns (ok, error_message_if_not_ok).
     """
-    from sogyo_chatbot.config import settings
+    from jarvisje.config import settings
 
     expected = (settings.ingest_token or "").strip()
     if not expected:
@@ -280,7 +280,7 @@ def _check_ingest_token(token: str | None) -> tuple[bool, str | None]:
 
 def _spawn_ingest_worker(max_pages: int | None, reset: bool) -> subprocess.Popen:
     """Start ADR-010 worker in a separate process (same image/code)."""
-    cmd = [sys.executable, "-m", "sogyo_chatbot.ingestion.worker"]
+    cmd = [sys.executable, "-m", "jarvisje.ingestion.worker"]
     if max_pages is not None:
         cmd.extend(["--max-pages", str(max_pages)])
     if reset:
@@ -291,7 +291,7 @@ def _spawn_ingest_worker(max_pages: int | None, reset: bool) -> subprocess.Popen
     prev = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = src if not prev else f"{src}{os.pathsep}{prev}"
 
-    from sogyo_chatbot.config import settings
+    from jarvisje.config import settings
 
     settings.ensure_dirs()
     log_path = Path(settings.data_dir) / "ingest_worker.log"
@@ -312,7 +312,7 @@ def _spawn_ingest_worker(max_pages: int | None, reset: bool) -> subprocess.Popen
 @app.post("/ingest/start")
 async def start_ingest(req: IngestStartRequest):
     """Start indexering in a separate worker process (ADR-010). Token required."""
-    from sogyo_chatbot.ingestion.status import (
+    from jarvisje.ingestion.status import (
         clear_stop_flag,
         is_worker_running,
         utc_now_iso,
@@ -378,7 +378,7 @@ async def start_ingest(req: IngestStartRequest):
 @app.post("/ingest/stop")
 async def stop_ingest(req: IngestStopRequest):
     """Ask the worker to stop (stop flag on data volume)."""
-    from sogyo_chatbot.ingestion.status import is_worker_running, request_stop
+    from jarvisje.ingestion.status import is_worker_running, request_stop
 
     ok, err = _check_ingest_token(req.token)
     if not ok:
@@ -397,7 +397,7 @@ async def stop_ingest(req: IngestStopRequest):
 @app.get("/ingest/status")
 async def ingest_status():
     """Read-only status from shared status file (ADR-010)."""
-    from sogyo_chatbot.ingestion.status import read_status
+    from jarvisje.ingestion.status import read_status
 
     return read_status()
 

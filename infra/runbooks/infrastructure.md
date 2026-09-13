@@ -108,7 +108,7 @@ docker stats sogyo-chatbot-app sogyo-ollama
 
 ## Frontend serving
 
-FastAPI (`src/sogyo_chatbot/api/app.py`) serveert `web/index.html` op `/`.
+FastAPI (`src/jarvisje/api/app.py`) serveert `web/index.html` op `/`.
 
 | Omgeving | URL |
 |----------|-----|
