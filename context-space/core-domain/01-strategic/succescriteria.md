@@ -1,41 +1,40 @@
 ---
 type: Success Criteria
-title: "MVP Definition of Done"
-description: "Meetbare en kwalitatieve succescriteria voor de MVP."
-tags: [mvp, quality]
-timestamp: 2026-06-26T00:00:00Z
+title: "Definition of Done — Jarvisje"
+description: "Meetbare en kwalitatieve succescriteria."
+tags: [quality, jarvisje]
+timestamp: 2026-09-13T00:00:00Z
 traces_to:
   - /core-domain/01-strategic/vision.md
   - /core-domain/04-delivery/roadmap.md
+  - /core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md
 ---
 
 # Succescriteria (Definition of Done)
 
 ## Functioneel
 
-De MVP is klaar als:
+Klaar als:
 
-1. Er is een werkende chat interface waarmee je kunt praten.
-2. Bij vragen binnen het domein: relevante antwoorden + concrete [citations](/core-domain/03-technical/ubiquitous-language.md) met links.
-3. Bij duidelijk buiten-domein vragen: beleefde weigering of redirect.
-4. Evaluatieset van minimaal 20–30 vragen (in-domein, grijs, out-of-domein) meet:
-   - % antwoorden in domein
-   - % antwoorden met correcte citations
-5. End-to-end stack op DGX of lokale dev-omgeving.
-6. Nieuwe content handmatig toevoegbaar via [ingestion](/core-domain/04-delivery/use-cases/bronnen-indexeren.md).
+1. Werkende chat (standalone + embed-iframe).
+2. Binnen-domein: relevante antwoorden + concrete [citations](/core-domain/03-technical/ubiquitous-language.md) naar edwinvandillen.nl of jeroenteunisse.nl.
+3. Buiten-domein: beleefde weigering of redirect.
+4. Geen antwoorden grounded in sogyo.nl of andere geschrapte bronnen.
+5. Dark én light mode volgens *Edwin Blog*; embed volgt het parent-thema.
+6. Nieuwe content handmatig toevoegbaar via [ingestion](/core-domain/04-delivery/use-cases/bronnen-indexeren.md) (reset na bronwijziging).
+7. Stack op `.15` (app + Ollama + data), publiek via jarvisje.com.
 
 ## Niet-functioneel
 
-- Elke bewering in een antwoord: minstens één concrete bron met link.
-- Herkenbaar in het Sogyo-domein bij de meeste vragen.
-- Redelijke responstijd op DGX (geen harde SLA).
-- DGX-centric zonder externe hosting-afhankelijkheid.
+- Elke bewering: minstens één concrete bron met link op een toegestaan host.
+- Responstijd acceptabel op `.15` (geen harde SLA).
+- Geen Sogyo-productreferenties in UI, prompts, package of infra-namen (na cutover).
 
 ## Kwalitatief
 
-- Voelt als "onze content", niet generieke AI.
-- Bekenden van de content herkennen filosofie en verwijzingen.
+- Voelt als de blogs, niet als generieke AI.
+- Ondertitel is een knipoog, geen Iron Man-cosplay in de antwoorden.
 
-## Development guardrails (bouwfase)
+## Development guardrails
 
 Tijdens de bouw valideert de [Software Designer Agent](/core-domain/03-technical/aannames.md) ADR-compliance en complexiteit; findings in [harnessing/](/harnessing/).

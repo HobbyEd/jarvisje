@@ -1,6 +1,6 @@
 ---
 type: Context Map
-title: "Context map — Sogyo Kennis-Chatbot"
+title: "Context map — Jarvisje"
 description: "Relaties tussen bounded contexts en externe bronnen."
 tags: [ddd, context-mapping]
 timestamp: 2026-07-05T00:00:00Z
@@ -12,8 +12,8 @@ traces_to:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Externe kennisbronnen (6 websites)                          │
-│  sogyo.nl · jeroenteunisse.nl · edwinvandillen.nl · …        │
+│  Externe kennisbronnen (2 blogs)                             │
+│  edwinvandillen.nl · jeroenteunisse.nl                       │
 └───────────────────────────┬─────────────────────────────────┘
                             │ upstream (published content)
                             ▼
@@ -24,14 +24,14 @@ traces_to:
                             │ customer/supplier
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Kennis-Chatbot (CORE)                                       │
-│  onboarding · retrieval · guardrails · citations · hints       │
+│  Jarvisje (CORE)                                             │
+│  welkom · retrieval · guardrails · citations · hints · embed   │
 └───────────────┬─────────────────────────────┬─────────────────┘
                 │ conformist                   │ customer/supplier
                 ▼                              ▼
 ┌───────────────────────────┐    ┌────────────────────────────┐
-│  Inference-Serving (DGX)    │    │  Chat-UI (gebruiker)        │
-│  vLLM OpenAI-compatible     │    │  sollicitant / bedrijf      │
+│  Inference-Serving (.15)    │    │  Chat-UI (lezer)            │
+│  Ollama gemma3:4b           │    │  standalone / WP-iframe     │
 └───────────────────────────┘    └────────────────────────────┘
 ```
 

@@ -14,12 +14,12 @@ Single source of truth — **wat & waarom**. Vier kennislagen (augmentedengineer
 * [Bounded contexts](02-architectural/bounded-contexts.md) - domeingrenzen
 * [Context map](02-architectural/context-map.md) - relaties tussen contexten
 * [Software design](02-architectural/software-design.md) - high-level architectuur
-* [Decisions/](02-architectural/decisions/) - ADRs 01–09
+* [Decisions/](02-architectural/decisions/) - ADRs 01–12
 
 # Technical
 
 * [Ubiquitous language](03-technical/ubiquitous-language.md) - gedeelde begrippen
-* [Kennisbronnen](03-technical/kennisbronnen.md) - zes websites
+* [Kennisbronnen](03-technical/kennisbronnen.md) - twee blogs
 * [Aannames](03-technical/aannames.md) - expliciete aannames bouwfase
 
 # Delivery

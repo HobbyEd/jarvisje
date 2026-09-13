@@ -1,6 +1,6 @@
 okf_version: "0.1"
 
-# Context Space — Sogyo Kennis-Chatbot
+# Context Space — Jarvisje
 
 > **Agents:** start hier. Lees [werkwijze](core-domain/04-delivery/werkwijze.md), daarna vision/scope/ADRs.  
 > Repo-contract: [AGENTS.md](../AGENTS.md).

@@ -14,3 +14,4 @@
 * [ADR 09 Image compose deployment](decisions/09-ADR-image-compose-deployment.md)
 * [ADR 10 Async ingestion worker](decisions/10-ADR-async-ingestion-worker.md)
 * [ADR 11 Secrets handling](decisions/11-ADR-secrets-handling.md)
+* [ADR 12 Jarvisje rebrand](decisions/12-ADR-jarvisje-rebrand.md)

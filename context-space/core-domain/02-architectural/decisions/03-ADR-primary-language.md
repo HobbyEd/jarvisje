@@ -12,15 +12,13 @@ traces_to:
 # ADR-003: Primary Language - Nederlands
 
 ## Status
-Accepted
+Accepted — Nederlands blijft default. Voorbeelden/doelgroep in de context hieronder zijn historisch; actueel kader: [ADR-012](12-ADR-jarvisje-rebrand.md).
 
 ## Datum
-2026-06-26 · reality check 2026-08-08: nog geldig (UI/prompts NL; model gemma3:4b).
+2026-06-26 · reality check 2026-08-08: UI/prompts NL; gemma3:4b · 2026-09-13: bronnen zijn de twee Nederlandstalige blogs.
 
 ## Context
-De website sogyo.nl is Nederlandstalig. De content op de gekoppelde blogs (jeroenteunisse.nl, edwinvandillen.nl, augmentedorganisation.nl, etc.) is grotendeels of volledig in het Nederlands geschreven.
-
-De primaire gebruikers (sollicitanten en Nederlandse bedrijven) verwachten een Nederlandstalige ervaring.
+De blogs edwinvandillen.nl en jeroenteunisse.nl zijn Nederlandstalig (historisch gold dat ook voor sogyo.nl en de framework-sites). Lezers verwachten een Nederlandstalige ervaring.
 
 ## Decision
 De chatbot communiceert **hoofdzakelijk in het Nederlands**.

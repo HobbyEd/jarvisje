@@ -1,6 +1,6 @@
 ---
 type: Software Design
-title: "Software design — Sogyo Kennis-Chatbot"
+title: "Software design — Jarvisje"
 description: "High-level architectuur en componenten (wat & waarom)."
 tags: [architecture, design]
 timestamp: 2026-06-26T00:00:00Z
@@ -9,23 +9,17 @@ traces_to:
   - /core-domain/02-architectural/bounded-contexts.md
 ---
 
-# Software Design: Sogyo Kennis-Chatbot
+# Software Design: Jarvisje
 
 ## 1. Inleiding en Doel
 
-Dit document beschrijft de software architectuur voor een domein-specifieke chatbot op [www.sogyo.nl](https://www.sogyo.nl).
+Dit document beschrijft de software-architectuur voor **Jarvisje**: een chatbot rondom de wereld van AI, met een knipoog naar Jarvis. Hij wordt ingebed op [edwinvandillen.nl](https://edwinvandillen.nl/) en verwijst naar twee blogs ([ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md)).
 
-De chatbot helpt twee doelgroepen:
-- **Sollicitanten** (starters): Inzicht krijgen in de filosofie, werkwijze en waarden van Sogyo (traineeship, software engineering craft).
-- **Bedrijven**: Inzicht krijgen in AI-adoptie, talentontwikkeling, kennis-elicitatie en hoe Sogyo-achtige engineers werken.
+Doelgroep: lezers van die blogs. Geen sollicitant/bedrijf-modes.
 
-De chatbot is **geen algemene AI-assistent**. Hij fungeert als gids binnen een specifiek kennisdomein en verwijst actief naar de bestaande content op de volgende bronnen:
-- sogyo.nl
-- jeroenteunisse.nl
+De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 - edwinvandillen.nl
-- augmentedorganisation.nl
-- intentdriven.nl
-- augmentedengineering.nl
+- jeroenteunisse.nl
 
 **Kernuitgangspunten** (vastgelegd op 26 juni 2026):
 - Hoofdzakelijk Nederlands.
@@ -49,12 +43,12 @@ De chatbot is **geen algemene AI-assistent**. Hij fungeert als gids binnen een s
   - Software engineering craft en vakmanschap
 - Verwijzen naar specifieke blogposts, tools en canvases.
 - Natuurlijke gesprekken binnen het domein.
-- Twee doelgroep-tonen (sollicitant vs bedrijf).
+- Eén toon: gids door de twee blogs.
 
 ### Out of scope (guardrails handhaven)
 - Algemene programmeerhulp / code schrijven.
 - Algemene AI-adviezen, andere modellen of bedrijven.
-- Persoonlijke coaching, loopbaanadvies buiten het Sogyo-domein.
+- Persoonlijke coaching, loopbaanadvies buiten de blogs.
 - Politiek, ethiek in brede zin, niet-gerelateerde onderwerpen.
 - Alles wat niet gerelateerd is aan software engineering en het ontwikkelen van engineers.
 
@@ -64,7 +58,7 @@ De chatbot is **geen algemene AI-assistent**. Hij fungeert als gids binnen een s
 - Conversational interface met goede UX (bij voorkeur streaming).
 - Actieve verwijzingen naar bronnen met directe links.
 - Ondersteuning voor lange gesprekken (meerdere turns).
-- Mogelijkheid om context te geven over doelgroep (sollicitant / bedrijf).
+- Compacte embed-view voor iframe op edwinvandillen.nl.
 
 ### Niet-functioneel
 - **Guardrails**: Gematigd maar effectief. Blijft binnen "software engineering + engineers".

@@ -12,7 +12,7 @@ traces_to:
 # ADR-009: Image + Compose Deployment Strategy
 
 ## Status
-Accepted (geactualiseerd 2026-08-08)
+Accepted (geactualiseerd 2026-08-08). **Paden en unitnamen** worden hernoemd naar Jarvisje volgens [ADR-012](12-ADR-jarvisje-rebrand.md); image + compose + data-buiten-image blijft.
 
 ## Datum
 2026-06-27 · update 2026-08-08

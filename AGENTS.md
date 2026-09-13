@@ -1,4 +1,4 @@
-# Agent instructions — Sogyo Kennis Chatbot
+# Agent instructions — Jarvisje
 
 These rules apply to **every** AI coding agent working in this repository
 (Grok Build, Claude Code, Cursor, Codex, Gemini, …).

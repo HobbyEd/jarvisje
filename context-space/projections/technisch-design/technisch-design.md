@@ -1,17 +1,17 @@
-# Technisch design — Sogyo Kennis-Chatbot (Jarvisje)
+# Technisch design — Jarvisje
 
 | Veld | Waarde |
 |------|--------|
-| **Versie** | 0.4 (MVP) |
-| **Status** | Productie op <host> — Ollama gemma3:4b + Cloudflare jarvisje.com |
-| **Datum** | 2026-08-08 |
+| **Versie** | 0.5 |
+| **Status** | Productrebrand Jarvisje (ADR-012); productie op <host> — Ollama gemma3:4b + Cloudflare jarvisje.com |
+| **Datum** | 2026-09-13 |
 | **Gerelateerde docs** | [Platform-overzicht](platform-overzicht.html), `infra/runbooks/` |
 
 ---
 
 ## Doel en scope
 
-Dit document beschrijft de **applicatie-architectuur** van de Sogyo Kennis-Chatbot: hoe content wordt geïndexeerd in een vector database, hoe embeddings worden berekend, en hoe de web-app een RAG-gesprek voert met de gebruiker.
+Dit document beschrijft de **applicatie-architectuur** van Jarvisje: hoe content wordt geïndexeerd in een vector database, hoe embeddings worden berekend, en hoe de web-app een RAG-gesprek voert met de gebruiker.
 
 Het document volgt het **4+1 architectuurmodel** van Philippe Kruchten. Dat model splitst architectuur in vier complementaire views plus een scenarioview die alles samenbindt:
 
@@ -42,7 +42,7 @@ Het document volgt het **4+1 architectuurmodel** van Philippe Kruchten. Dat mode
 
 ## Executive summary
 
-De Sogyo Kennis-Chatbot is een **RAG-systeem** dat publieke content van Sogyo en zes partnerdomeinen indexeert en daarover in natuurlijke taal vragen beantwoordt. De kern bestaat uit vijf ketens:
+Jarvisje is een **RAG-systeem** dat publieke artikelen van edwinvandillen.nl en jeroenteunisse.nl indexeert en daarover in natuurlijke taal vragen beantwoordt. De kern bestaat uit vijf ketens:
 
 1. **Indexering:** scrape → chunk → embed → Chroma  
 2. **Retrieval:** embed gebruikersvraag → similarity search in Chroma  
@@ -189,14 +189,10 @@ Korte pagina's worden als één chunk opgeslagen. Toekomstige verbetering: headi
 
 ### 1.6 Bronnen (sources)
 
-Geconfigureerd in `config.py`:
+Geconfigureerd in `config.py` ([ADR-012](../../core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md)):
 
-- sogyo.nl  
-- jeroenteunisse.nl  
 - edwinvandillen.nl  
-- augmentedorganisation.nl  
-- intentdriven.nl  
-- augmentedengineering.nl  
+- jeroenteunisse.nl  
 
 `max_pages_per_domain` (default 50) beperkt crawl-diepte per domein.
 

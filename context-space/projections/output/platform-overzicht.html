@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sogyo Kennis Chatbot - Platform Overzicht</title>
+    <title>Jarvisje - Platform Overzicht</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
@@ -28,11 +28,11 @@
         <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-x-3">
                 <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <span class="text-[#003366] font-bold text-2xl logo-font">S</span>
+                    <span class="text-[#003366] font-bold text-2xl logo-font">J</span>
                 </div>
                 <div>
-                    <div class="logo-font text-3xl font-semibold tracking-tight">Sogyo</div>
-                    <div class="text-[10px] text-blue-200 -mt-1">SOFTWARE INNOVATORS</div>
+                    <div class="logo-font text-3xl font-semibold tracking-tight">Jarvisje</div>
+                    <div class="text-[10px] text-blue-200 -mt-1">een chatbot rondom de wereld van AI</div>
                 </div>
             </div>
             <div class="flex items-center gap-x-5 text-sm flex-wrap">
@@ -49,14 +49,14 @@
     <div class="max-w-6xl mx-auto px-6 py-10">
         <div class="mb-12 max-w-3xl">
             <div class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-[#003366] mb-4">
-                MVP · bijgewerkt 2026-08-08 · UI v0.6.3
+                ADR-012 · bijgewerkt 2026-09-13 · UI v0.9.0
             </div>
             <h1 class="text-5xl font-semibold tracking-tighter text-[#003366] leading-none mb-4">
-                Sogyo Kennis Chatbot<br>
+                Jarvisje<br>
                 <span class="text-slate-600">Platform Overzicht</span>
             </h1>
             <p class="text-xl text-slate-600">
-                Domein-specifieke RAG-chatbot. Productie op <strong><host></strong> met lokaal
+                Chatbot rondom de wereld van AI — knipoog naar Jarvis. Productie op <strong><host></strong> met lokaal
                 <strong>Ollama gemma3:4b</strong>, publiek via <strong>https://jarvisje.com</strong> (Cloudflare Tunnel).
             </p>
         </div>
@@ -67,7 +67,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="card bg-white p-5 rounded-2xl border border-slate-200">
                     <div class="font-semibold text-[#003366] mb-1">Ingestie</div>
-                    <div class="text-sm text-slate-600">Sitemap-first scraper, BGE-M3 embeddings (CPU), Chroma. 6 bronnen. Indexering met token.</div>
+                    <div class="text-sm text-slate-600">Sitemap-first scraper, BGE-M3 embeddings (CPU), Chroma. 2 bronnen (edwinvandillen.nl, jeroenteunisse.nl). Indexering met token.</div>
                 </div>
                 <div class="card bg-white p-5 rounded-2xl border border-slate-200">
                     <div class="font-semibold text-[#003366] mb-1">Chat</div>

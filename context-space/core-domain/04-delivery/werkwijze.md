@@ -6,7 +6,7 @@ tags: [process, delivery]
 timestamp: 2026-07-05T00:00:00Z
 ---
 
-# Werkwijze voor de Sogyo Chatbot MVP ontwikkeling
+# Werkwijze voor Jarvisje-ontwikkeling
 
 **Belangrijke regel: Vanaf nu moet je bij iedere stap die je uitvoert deze werkwijze.md eerst lezen.**
 

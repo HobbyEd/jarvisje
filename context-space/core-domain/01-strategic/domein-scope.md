@@ -1,68 +1,70 @@
 ---
 type: Scope
-title: "MVP functionele scope"
-description: "In/out scope voor de Sogyo Kennis-Chatbot MVP."
-tags: [mvp, scope]
-timestamp: 2026-06-26T00:00:00Z
+title: "Functionele scope — Jarvisje"
+description: "In/out scope na rebrand (ADR-012)."
+tags: [jarvisje, scope]
+timestamp: 2026-09-13T00:00:00Z
 traces_to:
   - /core-domain/01-strategic/vision.md
+  - /core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md
 ---
 
-# Domein-scope (MVP)
+# Domein-scope
 
 ## In scope
 
 ### Kennisbasis
 
-- Volledige content van alle 6 [kennisbronnen](/core-domain/03-technical/kennisbronnen.md).
-- Broad coverage: geen strenge pre-prioritering van pagina's; indexeren wat we kunnen scrapen.
+- Content van de twee [kennisbronnen](/core-domain/03-technical/kennisbronnen.md): edwinvandillen.nl en jeroenteunisse.nl.
+- Broad coverage: indexeren wat we kunnen scrapen (artikelen via sitemap-first).
 
 ### Core functionaliteit
 
-- Conversatie via een interface (tekst in/uit).
-- [Onboarding flow](/core-domain/04-delivery/use-cases/onboarding-flow.md): welkom + 2 vragen + hints na elk antwoord.
-- Retrieval van relevante chunks.
-- Generatie met **verplichte citations** (link + titel).
-- Basis multi-turn chat (geschiedenis).
-- **MVP stretch**: consent voor sessie-deling bij lastige gevallen (zie [ADR-006](/core-domain/02-architectural/decisions/06-ADR-conversation-management.md)).
+- Conversatie via standalone UI (`jarvisje.com`) en compacte **embed-view** (`/?embed=1`) voor iframe op edwinvandillen.nl.
+- Dark/light volgens tokens van *Edwin Blog*; in embed volgt het parent-thema.
+- Retrieval van relevante chunks uit alleen die twee hosts.
+- Generatie met **verplichte citations** (link + titel), alleen naar die hosts.
+- Basis multi-turn chat (geschiedenis in-sessie).
+- Hints na elk antwoord (zelfde LLM-call).
 
 ### Guardrails
 
-- Gematigd: binnen "software engineering en het ontwikkelen van engineers".
-- Domeingerelateerde vragen zonder goede bron-match: antwoorden toegestaan mits link naar content/principes.
+- Gematigd: binnen software engineering, AI-augmentatie, intentie-gedreven werk en de onderwerpen van de twee blogs.
+- Geen match in de bronnen: eerlijk zeggen en verwijzen naar wat wél bekend is.
 - Duidelijke weigering buiten domein.
-- Retrieval-first, met ruimte voor domein-gerelateerde antwoorden.
+- Retrieval-first.
 
 ### Taal & output
 
 - Nederlands als primair ([ADR-003](/core-domain/02-architectural/decisions/03-ADR-primary-language.md)).
 - Structured output voor citations ([ADR-008](/core-domain/02-architectural/decisions/08-ADR-citations-grounding.md)).
-- Streaming verplicht voor MVP.
+- Streaming verplicht.
 
 ### UI
 
 - Lichte custom HTML + JavaScript (geen Gradio).
-- Citations onder het antwoord.
-- Multi-turn chat.
+- Standalone: header Jarvisje + ondertitel, tabs Chat / Bronnen / Opbouw, theme-toggle.
+- Embed: alleen de chatkaart, geen beheer-tabs.
 
 ## Out of scope
 
-- Geavanceerde gelaagde guardrails (pre-classifier + post-validator).
+- Sogyo.nl, augmentedorganisation.nl, intentdriven.nl, augmentedengineering.nl als kennisbron.
+- Sollicitant/bedrijf-onboarding en Sogyo-traineeship-toon.
+- Zwevende chatbubbel; WordPress-themacode in deze repo.
+- Geavanceerde gelaagde guardrails (aparte pre-classifier + post-validator-LLM).
 - Volledige context compression voor lange gesprekken.
-- Aparte persona-modes buiten onboarding.
-- Productie-widget op sogyo.nl.
 - Automatische 4–6 uurs refresh (handmatige ingest OK).
-- Evaluatie-dashboard.
-- Authenticatie, rate limiting, gesprekslogging.
+- Evaluatie-dashboard, authenticatie, rate limiting, permanente gesprekslogging.
 - Interactieve tools/canvases (alleen beschrijven + linken).
 - Engels als primaire taal.
+- Iron Man-beeldmerk of Marvel-assets.
 
 ## Beperkingen
 
-- Tijdelijk DGX-centric / lokale setup ([ADR-005](/core-domain/02-architectural/decisions/05-ADR-temporary-deployment.md)).
-- RAG-first, geen fine-tuning in MVP ([ADR-001](/core-domain/02-architectural/decisions/01-ADR-knowledge-strategy.md)).
-- Lightweight implementatie; kwaliteit iteratief na MVP.
+- Eén host `.15`, image + compose ([ADR-009](/core-domain/02-architectural/decisions/09-ADR-image-compose-deployment.md)).
+- RAG-first, geen fine-tuning ([ADR-001](/core-domain/02-architectural/decisions/01-ADR-knowledge-strategy.md)).
+- Lightweight Python.
 
 ## Beslissingen (archief)
 
-Alle interviewbeslissingen uit de oorspronkelijke scope-sessie staan in [open-beslissingen.md](open-beslissingen.md).
+Interviewbeslissingen uit de oorspronkelijke Sogyo-scope-sessie staan in [open-beslissingen.md](open-beslissingen.md). Productkader sinds 2026-09-13: [ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md).

@@ -1,9 +1,9 @@
 ---
 type: Vision
-title: "Sogyo Kennis-Chatbot — kernbelofte"
-description: "Domein-specifieke grounded chatbot die actief verwijst naar Sogyo-content."
-tags: [mvp, sogyo, rag]
-timestamp: 2026-06-26T00:00:00Z
+title: "Jarvisje — kernbelofte"
+description: "Chatbot rondom de wereld van AI, grounded in twee blogs."
+tags: [jarvisje, rag, blogs]
+timestamp: 2026-09-13T00:00:00Z
 traces_to:
   - /core-domain/01-strategic/domein-scope.md
   - /core-domain/01-strategic/succescriteria.md
@@ -11,29 +11,29 @@ traces_to:
 
 # Vision
 
-## Doel van de MVP
+## Doel
 
-De MVP is de **kleinste versie** van de chatbot die al echte waarde levert voor de twee doelgroepen en de kernbelofte waarmaakt: een gesprek voeren binnen het Sogyo-domein met actieve verwijzingen naar de bestaande content.
+Jarvisje is een **chatbot rondom de wereld van AI** — met een knipoog naar Jarvis. Hij voert een gesprek over de artikelen op [edwinvandillen.nl](https://edwinvandillen.nl/) en [jeroenteunisse.nl](https://jeroenteunisse.nl/) en verwijst altijd naar concrete posts.
 
-**Kernbelofte MVP:**
+**Kernbelofte:**
 
-> Je kunt een natuurlijk gesprek voeren over software engineering, AI-augmentatie van engineers en gerelateerde onderwerpen uit onze content, en de chatbot verwijst je altijd naar concrete blogposts en tools.
+> Je kunt een natuurlijk gesprek voeren over AI, software-engineering en de ideeën in deze twee blogs, en Jarvisje wijst je naar de artikelen zelf.
 
-De MVP dient als **proof of concept** en als basis om verder te itereren op kwaliteit, guardrails en UX.
+Geen algemene assistent, geen Sogyo-traineeship-gids, geen zes-sites-index. Wel: grounded antwoorden met citations, ingebed in de look & feel van edwinvandillen.nl.
 
 ## Doelgroepen
 
-- **Primair**: Sollicitanten (starters die overwegen het traineeship te volgen of meer willen weten over de filosofie).
-- **Secundair**: Bedrijven (die interesse hebben in talentontwikkeling, AI-adoptie of hoe Sogyo engineers werken).
+- **Primair:** lezers van edwinvandillen.nl (en later dezelfde iframe op andere eigen sites).
+- **Secundair:** bezoekers die via jarvisje.com de standalone chat openen.
 
-Voor de MVP hoeven we nog geen sterk verschillende persona's of modes te hebben, maar de antwoorden moeten nuttig zijn voor beide.
+Geen aparte persona-modes (sollicitant vs bedrijf).
 
 ## Strategische doelen
 
-- Bewijzen dat een domein-specifieke, grounded chatbot rond onze content mogelijk is.
-- Actief doorverwijzen naar de blogs en tools ([citations](/core-domain/03-technical/ubiquitous-language.md) zijn verplicht).
-- Goed genoeg [guardrails](/core-domain/03-technical/ubiquitous-language.md) zodat het gesprek niet alle kanten op gaat.
-- Werkend op de DGX in een lokale / tijdelijke setup (per [ADR-005](/core-domain/02-architectural/decisions/05-ADR-temporary-deployment.md)).
-- Meetbaar via een evaluatieset.
+- De blogs actief ontsluiten via gesprek + verplichte [citations](/core-domain/03-technical/ubiquitous-language.md).
+- Visueel één geheel met *Edwin Blog* (dark en light).
+- Compact iframe in een gereserveerde WordPress-regio; beheer op jarvisje.com.
+- Gematigde [guardrails](/core-domain/03-technical/ubiquitous-language.md) binnen het onderwerp van de twee bronnen.
+- Draait lokaal op `.15` (zie [ADR-009](/core-domain/02-architectural/decisions/09-ADR-image-compose-deployment.md), [ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md)).
 
-Zie ook [software-design.md](/core-domain/02-architectural/software-design.md) voor de bredere productvisie.
+Zie [software-design.md](/core-domain/02-architectural/software-design.md) voor architectuur.

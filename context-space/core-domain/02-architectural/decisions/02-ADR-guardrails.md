@@ -12,10 +12,10 @@ traces_to:
 # ADR-002: Guardrails Approach (Gematigd)
 
 ## Status
-Accepted
+Accepted — **doelgroep- en Sogyo-framing superseded** door [ADR-012](12-ADR-jarvisje-rebrand.md). Gematigde, retrieval-first guardrails blijven; domein = onderwerpen van de twee blogs, geen sollicitant/bedrijf-onboarding.
 
 ## Datum
-2026-06-26 · reality check 2026-08-08: strategie nog geldig; implementatie is vooral system prompt + retrieval-only + structured citations (geen aparte pre-filter-service of post-validator-LLM).
+2026-06-26 · reality check 2026-08-08: strategie geldig (prompt + retrieval + citations) · 2026-09-13: geen Sogyo-traineeship-persona (ADR-012).
 
 ## Context
 De chatbot moet een natuurlijk gesprek mogelijk maken, maar mag **niet alle kanten op gaan**.

@@ -1,36 +1,35 @@
 ---
 type: Knowledge Source
-title: "Kennisbronnen — zes websites"
+title: "Kennisbronnen — twee blogs"
 description: "Externe contentbronnen voor RAG-indexering."
 tags: [rag, sources]
-timestamp: 2026-06-26T00:00:00Z
-resource: https://www.sogyo.nl
+timestamp: 2026-09-13T00:00:00Z
 traces_to:
   - /core-domain/02-architectural/decisions/01-ADR-knowledge-strategy.md
+  - /core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md
 ---
 
 # Kennisbronnen
 
-De chatbot is **geen algemene assistent**. Hij verwijst actief naar content op deze zes bronnen ([ADR-001](/core-domain/02-architectural/decisions/01-ADR-knowledge-strategy.md)):
+Jarvisje is **geen algemene assistent**. Hij verwijst alleen naar artikelen op deze twee bronnen ([ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md)):
 
 | Bron | Thema's (indicatief) |
 |------|----------------------|
-| [sogyo.nl](https://www.sogyo.nl) | Traineeship, filosofie, software craft |
+| [edwinvandillen.nl](https://edwinvandillen.nl) | Intentie-gedreven engineering, harnessing, AI-systemen, software-innovatie |
 | [jeroenteunisse.nl](https://jeroenteunisse.nl) | Engineering leadership, veranderkracht |
-| [edwinvandillen.nl](https://edwinvandillen.nl) | IT-landschap, sourcing, architectuur |
-| [augmentedorganisation.nl](https://augmentedorganisation.nl) | Canvases, governance, AI-adoptie |
-| [intentdriven.nl](https://intentdriven.nl) | Intent-Driven Engineering, kennis-elicitatie |
-| [augmentedengineering.nl](https://augmentedengineering.nl) | Vibe · Spec · Harness, Context Space |
+
+Geen sogyo.nl, augmentedorganisation.nl, intentdriven.nl of augmentedengineering.nl.
 
 ## Strategie
 
-- **RAG-first** — geen fine-tuning in MVP
-- **Broad coverage** — zoveel mogelijk pagina's per bron
-- **Her-ingestie** — doel 4–6 uur; handmatig in MVP ([ADR-007](/core-domain/02-architectural/decisions/07-ADR-ingestion-cadence.md))
+- **RAG-first** — geen fine-tuning ([ADR-001](/core-domain/02-architectural/decisions/01-ADR-knowledge-strategy.md))
+- **Broad coverage** — zoveel mogelijk pagina's per bron (sitemap-first)
+- **Her-ingestie** — handmatig in MVP ([ADR-007](/core-domain/02-architectural/decisions/07-ADR-ingestion-cadence.md)); na bronwijziging **reset** van de vector-index
 - **Scraping** — respect robots.txt en sitemaps
+- **Hardening** — retrieval en citations beperkt tot deze hosts
 
-## In scope onderwerpen (samenvatting)
+## In-scope onderwerpen (samenvatting)
 
-Intent-Driven Engineering, Augmented Organisation, veranderkracht, IT-landschap, Harness Engineering, AI als collega, lokale/self-hosted AI, software engineering craft.
+Wat in die twee blogs staat: intentie-gedreven engineering, harnessing, AI als systeem rondom het model, veranderkracht, software-engineeringvakmanschap.
 
 Zie [domein-scope.md](/core-domain/01-strategic/domein-scope.md) voor in/out scope van de chatbot zelf.
