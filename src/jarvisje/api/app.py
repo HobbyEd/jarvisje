@@ -93,7 +93,14 @@ async def _stream_chat(req: ChatRequest) -> AsyncGenerator[str, None]:
         response: ChatResponse = orchestrator.chat(req.message, history=req.history)
     except Exception as e:
         error_msg = str(e)
-        if "LLM call failed" in error_msg or "not reachable" in error_msg.lower():
+        lower = error_msg.lower()
+        if "does not exist" in lower or "collection" in lower:
+            error_msg = (
+                "De kennisindex wordt nu opnieuw opgebouwd, dus ik heb nog te weinig "
+                "artikelen om op te steunen. Probeer het zo dadelijk opnieuw — tot de "
+                "indexering klaar is zijn antwoorden onvolledig."
+            )
+        elif "LLM call failed" in error_msg or "not reachable" in lower:
             error_msg = (
                 "LLM endpoint is not reachable. Check Ollama (e.g. gemma3:4b on :11434) "
                 "and LLM_BASE_URL / LLM_MODEL env."
@@ -145,10 +152,18 @@ async def chat_sync(req: ChatRequest):
             "role_context": response.role_context,
         }
     except Exception as e:
+        err = str(e)
+        lower = err.lower()
+        if "does not exist" in lower or "collection" in lower:
+            err = (
+                "De kennisindex wordt nu opnieuw opgebouwd, dus ik heb nog te weinig "
+                "artikelen om op te steunen. Probeer het zo dadelijk opnieuw — tot de "
+                "indexering klaar is zijn antwoorden onvolledig."
+            )
         return JSONResponse(
             status_code=500,
             content={
-                "error": str(e),
+                "error": err,
                 "fallback": "LLM may not be reachable or response was invalid.",
             }
         )
@@ -195,12 +210,22 @@ async def sources():
     from collections import defaultdict
     from ..ingestion.vector_store import get_chroma_store
 
-    collection = get_chroma_store()
     try:
+        collection = get_chroma_store()
         res = collection.get(include=["metadatas"])
         metas = res.get("metadatas") or []
     except Exception as e:
-        return {"sources": [], "total_unique_pages": 0, "error": str(e)}
+        if "does not exist" in str(e).lower():
+            from ..ingestion.vector_store import invalidate_collection_cache
+            invalidate_collection_cache()
+            try:
+                collection = get_chroma_store()
+                res = collection.get(include=["metadatas"])
+                metas = res.get("metadatas") or []
+            except Exception:
+                return {"sources": [], "total_unique_pages": 0, "error": None}
+        else:
+            return {"sources": [], "total_unique_pages": 0, "error": str(e)}
 
     stats: dict = defaultdict(
         lambda: {

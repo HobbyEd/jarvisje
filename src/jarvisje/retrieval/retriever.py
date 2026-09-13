@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 
 from ..config import settings
 from ..ingestion.embedder import get_embedder
-from ..ingestion.vector_store import get_chroma_store
+from ..ingestion.vector_store import get_chroma_store, invalidate_collection_cache
 
 
 def _host(value: str) -> str:
@@ -52,14 +52,29 @@ def retrieve(query: str, top_k: int = 6) -> List[Dict[str, Any]]:
     if source_values:
         query_kwargs["where"] = {"source": {"$in": source_values}}
 
+    def _query(col: Any, with_filter: bool) -> Any:
+        kwargs = dict(query_kwargs)
+        if not with_filter:
+            kwargs.pop("where", None)
+        return col.query(**kwargs)
+
     try:
-        results = collection.query(**query_kwargs)
-    except Exception:
-        results = collection.query(
-            query_embeddings=q_vec,
-            n_results=fetch_k,
-            include=["documents", "metadatas", "distances"],
-        )
+        results = _query(collection, with_filter=True)
+    except Exception as exc:
+        msg = str(exc).lower()
+        if "does not exist" in msg or "not found" in msg:
+            invalidate_collection_cache()
+            try:
+                collection = get_chroma_store()
+                results = _query(collection, with_filter=True)
+            except Exception:
+                return []
+        else:
+            try:
+                results = _query(collection, with_filter=False)
+            except Exception:
+                invalidate_collection_cache()
+                return []
 
     hits: List[Dict[str, Any]] = []
     if not results["documents"] or not results["documents"][0]:

@@ -9,10 +9,24 @@ from typing import List, Dict, Any
 from pydantic import ValidationError
 
 from ..config import settings
-from ..ingestion.vector_store import get_chroma_store
+from ..ingestion.status import read_status
 from ..retrieval.retriever import retrieve
 from .models import ChatResponse
 from .prompts import build_system_prompt, build_user_prompt
+
+INGEST_INCOMPLETE_NOTE = (
+    "De kennisindex wordt nu opnieuw opgebouwd. Antwoorden kunnen daardoor "
+    "onvolledig zijn tot de indexering klaar is."
+)
+INGEST_EMPTY_ANSWER = (
+    "De kennisindex wordt nu opnieuw opgebouwd, dus ik heb nog te weinig artikelen "
+    "om op te steunen. Probeer het zo dadelijk opnieuw — tot de indexering klaar is "
+    "zijn antwoorden onvolledig."
+)
+EMPTY_INDEX_ANSWER = (
+    "Ik heb nog geen geïndexeerde artikelen. Start indexering onder Bronnen, "
+    "of wacht tot die klaar is."
+)
 
 try:
     import httpx
@@ -90,8 +104,31 @@ class ChatOrchestrator:
         """
         role_context = "De gebruiker is een lezer van edwinvandillen.nl of jeroenteunisse.nl."
 
-        # Retrieval
-        retrieved = retrieve(user_message, top_k=6)
+        ingest_running = False
+        try:
+            ingest_running = read_status().get("status") == "running"
+        except Exception:
+            ingest_running = False
+
+        try:
+            retrieved = retrieve(user_message, top_k=6)
+        except Exception as e:
+            logger.warning("Retrieval failed (index may be rebuilding): %s", e)
+            retrieved = []
+
+        if not retrieved:
+            answer = INGEST_EMPTY_ANSWER if ingest_running else EMPTY_INDEX_ANSWER
+            response = ChatResponse(
+                answer=answer,
+                citations=[],
+                hints=["Probeer het zo dadelijk opnieuw"] if ingest_running else [
+                    "Open het tabblad Bronnen om te indexeren"
+                ],
+                role_context="onbekend",
+            )
+            self.session.turns.append(ChatTurn(role="user", content=user_message))
+            self.session.turns.append(ChatTurn(role="assistant", content=response.answer))
+            return response
 
         # Build prompts
         system = build_system_prompt(role_context, retrieved)
@@ -119,6 +156,9 @@ class ChatOrchestrator:
             )
 
         response = self._filter_citations(response)
+
+        if ingest_running:
+            response.answer = INGEST_INCOMPLETE_NOTE + "\n\n" + response.answer
 
         # Update internal history
         self.session.turns.append(ChatTurn(role="user", content=user_message))

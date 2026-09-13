@@ -35,15 +35,31 @@ def _get_collection_name() -> str:
     return f"{prefix}_{safe}"
 
 
-def get_chroma_store() -> Collection:
-    """Get (or create) the main collection."""
+def invalidate_collection_cache() -> None:
+    """Drop the in-process handle (e.g. after another process deleted the collection)."""
     global _collection
-    if _collection is None:
-        client = get_chroma_client()
-        _collection = client.get_or_create_collection(
-            name=_get_collection_name(),
-            metadata={"hnsw:space": "cosine"},
-        )
+    _collection = None
+
+
+def get_chroma_store() -> Collection:
+    """Get (or create) the main collection.
+
+    The cached handle can go stale when ingest `--reset` deletes the collection
+    in another process. Probe with count() and recreate if needed.
+    """
+    global _collection
+    client = get_chroma_client()
+    name = _get_collection_name()
+    if _collection is not None:
+        try:
+            _collection.count()
+            return _collection
+        except Exception:
+            _collection = None
+    _collection = client.get_or_create_collection(
+        name=name,
+        metadata={"hnsw:space": "cosine"},
+    )
     return _collection
 
 
