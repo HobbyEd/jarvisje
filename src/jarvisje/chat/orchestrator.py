@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import List, Dict, Any
 
@@ -53,9 +54,46 @@ class ChatOrchestrator:
         self.session = ChatSession()
 
     def _filter_citations(self, response: ChatResponse) -> ChatResponse:
-        kept = [c for c in response.citations if settings.is_allowed_url(c.url)]
+        kept = []
+        for c in response.citations:
+            url = (c.url or "").lower()
+            if url.endswith((".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".pdf")):
+                continue
+            if settings.is_allowed_url(c.url):
+                kept.append(c)
         response.citations = kept
         return response
+
+    def _parse_llm_response(self, raw: str) -> ChatResponse:
+        """Parse model JSON; never show raw JSON as the chat answer."""
+        data = _extract_json_object(raw)
+        if data:
+            hints = data.get("hints") or []
+            if isinstance(hints, str):
+                hints = [hints]
+            data["hints"] = [str(h) for h in hints][:5]
+            try:
+                return ChatResponse(**data)
+            except ValidationError as e:
+                logger.warning("LLM JSON failed schema: %s", e)
+                answer = str(data.get("answer") or "").strip()
+                if answer:
+                    return ChatResponse(
+                        answer=answer[:4000],
+                        citations=[],
+                        hints=data["hints"],
+                        role_context="onbekend",
+                    )
+        logger.warning("LLM output was not usable JSON")
+        return ChatResponse(
+            answer="Ik kon het antwoord niet goed formatteren. Stel de vraag gerust opnieuw.",
+            citations=[],
+            hints=[
+                "Welk artikel op edwinvandillen.nl sluit hierbij aan?",
+                "Hoe beschrijft Jeroen Teunisse dit?",
+            ],
+            role_context="onbekend",
+        )
 
     def _call_llm(self, system: str, user: str) -> str:
         """Call the OpenAI-compatible vLLM endpoint and return raw content."""
@@ -135,25 +173,8 @@ class ChatOrchestrator:
         effective_history = history or [{"role": t.role, "content": t.content} for t in self.session.turns]
         user_prompt = build_user_prompt(effective_history, user_message)
 
-        # Call LLM
         raw = self._call_llm(system, user_prompt)
-
-        # Parse structured output
-        try:
-            data = json.loads(raw)
-            response = ChatResponse(**data)
-        except (json.JSONDecodeError, ValidationError) as e:
-            logger.warning(f"Failed to parse structured output from LLM: {e}")
-            # Fallback: wrap the raw answer
-            response = ChatResponse(
-                answer=raw[:2000] if isinstance(raw, str) else str(raw),
-                citations=[],
-                hints=[
-                    "Welk artikel op edwinvandillen.nl sluit hierbij aan?",
-                    "Hoe beschrijft Jeroen Teunisse dit?",
-                ],
-                role_context="onbekend",
-            )
+        response = self._parse_llm_response(raw)
 
         response = self._filter_citations(response)
 
@@ -164,6 +185,30 @@ class ChatOrchestrator:
         self.session.turns.append(ChatTurn(role="user", content=user_message))
         self.session.turns.append(ChatTurn(role="assistant", content=response.answer))
 
-        response.role_context = "onbekend"  # type: ignore
+        response.role_context = "onbekend"
 
         return response
+
+
+def _extract_json_object(raw: str) -> dict | None:
+    text = (raw or "").strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.IGNORECASE)
+        text = re.sub(r"\s*```$", "", text)
+    blobs = [text]
+    start, end = text.find("{"), text.rfind("}")
+    if start >= 0 and end > start:
+        blobs.append(text[start : end + 1])
+    for blob in blobs:
+        try:
+            data = json.loads(blob)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                continue
+        if isinstance(data, dict) and "answer" in data:
+            return data
+    return None

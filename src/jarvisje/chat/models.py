@@ -1,9 +1,9 @@
 """Structured output models for the LLM response (same call for answer + citations + hints)."""
 from __future__ import annotations
 
-from typing import List, Literal
+from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Citation(BaseModel):
@@ -21,4 +21,11 @@ class ChatResponse(BaseModel):
         description="3 to 5 short suggested follow-up questions or topics the user might want to explore next.",
         max_length=5,
     )
-    role_context: Literal["sollicitant", "bedrijf", "onbekend"] = "onbekend"
+    role_context: str = "onbekend"
+
+    @field_validator("role_context", mode="before")
+    @classmethod
+    def _coerce_role(cls, value: object) -> str:
+        if value in ("sollicitant", "bedrijf", "onbekend"):
+            return str(value)
+        return "onbekend"
