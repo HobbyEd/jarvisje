@@ -75,14 +75,8 @@ services:
     memswap_limit: 12g
     cpus: "6.0"
     pids_limit: 512
-    runtime: nvidia
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu, compute, utility]
+    # Embeddings on CPU (EMBEDDING_DEVICE=cpu). GPU is reserved for sogyo-ollama / Gemma.
+    # Do not set runtime: nvidia on app — persistenced socket is not required here.
 
   # ADR-010: one-shot ingest worker (cron/manual). UI spawn uses subprocess inside app.
   # Example:
