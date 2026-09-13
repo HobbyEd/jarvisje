@@ -1,6 +1,9 @@
 name: sogyo-chatbot
 
 # Production stack on <host> (enterprise)
+# Compose project name stays `sogyo-chatbot` so the running Ollama container
+# (sogyo-ollama, Gemma 3 4B on ~/sogyo-ollama) keeps the existing Docker
+# network. Host dirs are jarvisje-chatbot / jarvisje-chatbot-data.
 # Managed by systemd:
 #   sogyo-ollama.service  → docker compose up -d ollama
 #   sogyo-chatbot.service → docker compose up -d app
@@ -36,17 +39,17 @@ services:
       start_period: 20s
 
   app:
-    image: sogyo-chatbot:${IMAGE_TAG:-latest}
+    image: jarvisje:${IMAGE_TAG:-latest}
     pull_policy: never
-    container_name: sogyo-chatbot-app
+    container_name: jarvisje-chatbot-app
     depends_on:
       - ollama
     ports:
       - "8080:8001"
     volumes:
-      - ~/sogyo-chatbot-data:/app/data
+      - ~/jarvisje-chatbot-data:/app/data
     # ADR-011: secrets from host file next to this compose (never baked into image).
-    # Deploy places ~/sogyo-chatbot/.env (mode 600) with INGEST_TOKEN=.
+    # Deploy places ~/jarvisje-chatbot/.env (mode 600) with INGEST_TOKEN=.
     env_file:
       - .env
     environment:
@@ -85,11 +88,11 @@ services:
   # Example:
   #   docker compose -f docker-compose.yaml --profile ingest run --rm ingest --max-pages 500
   ingest:
-    image: sogyo-chatbot:${IMAGE_TAG:-latest}
+    image: jarvisje:${IMAGE_TAG:-latest}
     pull_policy: never
     profiles: ["ingest"]
     volumes:
-      - ~/sogyo-chatbot-data:/app/data
+      - ~/jarvisje-chatbot-data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
       - EMBEDDING_DEVICE=cpu

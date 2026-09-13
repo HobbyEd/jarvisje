@@ -28,8 +28,8 @@
 | **Ollama** | Docker service `ollama` | host `11434` |
 | **Model** | `gemma3:4b` | `~/sogyo-ollama` |
 | **Chatbot app** | Docker service `app` | host `8080` → container `8001` |
-| **Data** | volume | `~/sogyo-chatbot-data` |
-| **Compose** | | `~/sogyo-chatbot/docker-compose.yaml` |
+| **Data** | volume | `~/jarvisje-chatbot-data` |
+| **Compose** | | `~/jarvisje-chatbot/docker-compose.yaml` |
 | **Cloudflare Tunnel** | native `cloudflared` | → `http://127.0.0.1:8080` |
 
 **Canonieke compose (productie):**  
@@ -78,7 +78,7 @@ alias ollama='docker exec -it sogyo-ollama ollama'
 | `LLM_MODEL` | `gemma3:4b` |
 | `EMBEDDING_DEVICE` | `cpu` |
 | `CUDA_VISIBLE_DEVICES` | leeg (app) |
-| Data mount | `~/sogyo-chatbot-data:/app/data` |
+| Data mount | `~/jarvisje-chatbot-data:/app/data` |
 
 **Waarom embeddings op CPU?**  
 PyTorch 2.6+cu124 ondersteunt GPU-arch **sm_120** (Blackwell / RTX 50) nog niet. Ollama gebruikt wél de GPU voor Gemma.

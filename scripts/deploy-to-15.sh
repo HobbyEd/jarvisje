@@ -4,17 +4,20 @@
 # Requires SSH key access as <user>; user must be in the docker group (no sudo).
 #
 # Secrets (ADR-011): copies local .env to the host compose dir (not into the image).
+# Does not recreate Ollama / Gemma (container sogyo-ollama).
 #
 # Usage (from repo root):
 #   ./scripts/deploy-to-15.sh
-#   ./scripts/deploy-to-15.sh 0.8.0
+#   ./scripts/deploy-to-15.sh 1.0.2
 #
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HOST="${DEPLOY_HOST:-<user>@<host>}"
 TAG="${1:-latest}"
-REMOTE_BASE="sogyo-chatbot"
+REMOTE_BASE="jarvisje-chatbot"
+APP_CONTAINER="jarvisje-chatbot-app"
+IMAGE="jarvisje"
 
 cd "$ROOT"
 
@@ -56,16 +59,17 @@ else
   echo "==> Skipping .env deploy (file missing locally)"
 fi
 
-echo "==> Build & recreate app on server (tag=$TAG)"
+echo "==> Build & recreate app on server (tag=$TAG) — Ollama not touched"
 ssh -o BatchMode=yes "$HOST" bash -s <<EOF
 set -euo pipefail
 cd ~/$REMOTE_BASE/build-src
-docker build -t "sogyo-chatbot:${TAG}" -t sogyo-chatbot:latest -f Dockerfile .
+docker build -t "${IMAGE}:${TAG}" -t ${IMAGE}:latest -f Dockerfile .
 cd ~/$REMOTE_BASE
+# Recreate only the app; leave sogyo-ollama / Gemma running
 IMAGE_TAG=latest docker compose up -d --force-recreate --no-deps app
 # Wait for health (embedding preload can take a minute)
 ok=0
-for i in \$(seq 1 30); do
+for i in \$(seq 1 36); do
   if curl -sf --max-time 5 http://127.0.0.1:8080/health >/dev/null; then
     ok=1
     break
@@ -74,16 +78,15 @@ for i in \$(seq 1 30); do
 done
 curl -sf --max-time 10 http://127.0.0.1:8080/health | head -c 300 || true
 echo
-docker ps --filter name=sogyo-chatbot-app --format '{{.Names}} {{.Status}} {{.Image}}'
-# Confirm token configured without printing it
-docker exec sogyo-chatbot-app python -c "import os; t=(os.getenv('INGEST_TOKEN') or os.getenv('INDEX_TOKEN') or ''); print('INGEST_TOKEN configured:', bool(t), 'len=', len(t))"
-# Fail soft if old hardcoded sample still present in image sources
-if docker exec sogyo-chatbot-app grep -R '<old-token-fragment>' /app/src 2>/dev/null; then
+docker ps --filter name=${APP_CONTAINER} --format '{{.Names}} {{.Status}} {{.Image}}'
+docker exec ${APP_CONTAINER} python -c "import os; t=(os.getenv('INGEST_TOKEN') or os.getenv('INDEX_TOKEN') or ''); print('INGEST_TOKEN configured:', bool(t), 'len=', len(t))"
+if docker exec ${APP_CONTAINER} grep -R '<old-token-fragment>' /app/src 2>/dev/null; then
   echo "ERROR: old hardcoded token fragment still in image source" >&2
   exit 1
 fi
 if [[ "\$ok" -ne 1 ]]; then
-  echo "WARNING: health not ready yet; check docker logs sogyo-chatbot-app" >&2
+  echo "WARNING: health not ready yet; check docker logs ${APP_CONTAINER}" >&2
+  exit 1
 fi
 EOF
 

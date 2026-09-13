@@ -33,9 +33,9 @@ We kiezen voor een **image-first deployment** met **docker-compose** als declara
 1. **Image bouwen** — bij voorkeur op de productieserver (amd64) of lokaal + rsync tarball.
 2. **Transfer (optioneel)** — Image als `tar.gz` + compose-file naar de server.
 3. **Server: load + compose up** — `docker load` gevolgd door `docker compose up -d` (of systemd).
-4. **Data buiten image** — Chroma op host-pad `~/sogyo-chatbot-data`.
-5. **LLM buiten app-image** — Ollama als aparte compose-service; `LLM_BASE_URL` / `LLM_MODEL` via env.
-6. **Boot via systemd** — `sogyo-ollama.service` + `sogyo-chatbot.service` (+ host `cloudflared` voor het domein).
+4. **Data buiten image** — Chroma op host-pad `~/jarvisje-chatbot-data` (was `sogyo-chatbot-data`; ADR-012).
+5. **LLM buiten app-image** — Ollama als aparte compose-service; `LLM_BASE_URL` / `LLM_MODEL` via env. Model store blijft `~/sogyo-ollama` (Gemma niet meeverhuizen).
+6. **Boot via systemd** — `sogyo-ollama.service` + `sogyo-chatbot.service` (+ host `cloudflared` voor het domein). Compose-dir: `~/jarvisje-chatbot` (symlink `~/sogyo-chatbot` tot units met sudo zijn bijgewerkt).
 
 Productie-compose: `infra/ubuntu-x64/docker-compose.prod-local.yaml`.
 

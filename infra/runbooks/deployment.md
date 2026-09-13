@@ -10,9 +10,9 @@
 
 ## 1. Architectuur (deploy)
 
-- **Immutable image:** `sogyo-chatbot:<tag>` (app + deps + preloaded BGE-M3).
-- **Mutable data:** host `~/sogyo-chatbot-data` (Chroma, raw).
-- **LLM:** aparte compose-service `ollama` (niet in de app-image); model in `~/sogyo-ollama`.
+- **Immutable image:** `jarvisje:<tag>` (app + deps + preloaded BGE-M3).
+- **Mutable data:** host `~/jarvisje-chatbot-data` (Chroma, raw).
+- **LLM:** aparte compose-service `ollama` (niet in de app-image); model in `~/sogyo-ollama` (niet hernoemd — Gemma blijft staan).
 - **LLM-config via env** in compose: `LLM_BASE_URL`, `LLM_MODEL`, `EMBEDDING_DEVICE`.
 
 Productiestack start via **systemd** (`sogyo-ollama` + `sogyo-chatbot`), niet handmatig elke boot.
@@ -98,14 +98,15 @@ docker exec sogyo-ollama ollama pull gemma3:4b
 
 ```
 ~/
-├── sogyo-chatbot/
-│   ├── docker-compose.yaml      # prod-local stack
-│   ├── build-src/               # optioneel: on-server builds
-│   └── deploy-artifacts/        # tarballs bij rsync-deploy
-├── sogyo-chatbot-data/          # persistent app data
+├── jarvisje-chatbot/            # compose + build-src + .env
+│   ├── docker-compose.yaml
+│   ├── build-src/
+│   └── .env                     # INGEST_TOKEN (mode 600)
+├── sogyo-chatbot → jarvisje-chatbot   # symlink tot systemd-units met sudo zijn bijgewerkt
+├── jarvisje-chatbot-data/       # persistent app data (Chroma, raw)
 │   ├── chroma/
 │   └── raw/
-└── sogyo-ollama/                # Ollama model store
+└── sogyo-ollama/                # Ollama model store (Gemma 3 4B)
 ```
 
 ---

@@ -192,7 +192,7 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
         </button>
-        <span class="version-badge">v1.0.1</span>
+        <span class="version-badge">v1.0.2</span>
       </div>
     </div>
   </header>
@@ -362,7 +362,7 @@ flowchart LR
     subgraph Host["Server enterprise .15"]
       CF[cloudflared]
       HostPort[Poort 8080]
-      Container[Docker<br/>sogyo-chatbot-app<br/>Poort 8001]
+      Container[Docker<br/>jarvisje-chatbot-app<br/>Poort 8001]
       App[FastAPI<br/>Chat + Ingestion]
       Embed[BGE-M3<br/>embeddings CPU]
       Chroma[(Chroma<br/>persist volume)]
@@ -384,7 +384,7 @@ flowchart LR
         <p><strong>Hoe de flow werkt (stap voor stap):</strong></p>
         <ol class="list-decimal pl-5 space-y-1">
           <li><strong>Browser</strong>: Gebruiker opent jarvisje.com. Cloudflare Tunnel stuurt veilig door naar de host (poort 8080).</li>
-          <li><strong>Host &amp; Container</strong>: Docker container sogyo-chatbot-app (8001). FastAPI serveert UI en API.</li>
+          <li><strong>Host &amp; Container</strong>: Docker container jarvisje-chatbot-app (8001). FastAPI serveert UI en API.</li>
           <li><strong>Chat / Retrieval</strong>: Query wordt ge-embedded met BGE-M3 (CPU) en gezocht in Chroma.</li>
           <li><strong>Lokaal LLM</strong>: Context + vraag naar Ollama gemma3:4b op de GPU van dezelfde server.</li>
           <li><strong>Antwoord</strong>: Streaming tokens + bronnen terug naar de browser.</li>
@@ -482,7 +482,7 @@ flowchart TB
         <li>Worker: scrape → chunk → embed → upsert; chat-API blijft beschikbaar</li>
         <li>Status via gedeeld bestand op data-volume; UI pollt <code>GET /ingest/status</code></li>
         <li>Zelfde entrypoint voor CLI/cron: <code>python -m jarvisje.ingestion.worker</code></li>
-        <li>Data blijft in persistente volume <code>~/sogyo-chatbot-data</code></li>
+        <li>Data blijft in persistente volume <code>~/jarvisje-chatbot-data</code></li>
       </ul>
     </div>
 
