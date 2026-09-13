@@ -1,2 +1,2 @@
-"""Sogyo Chatbot - MVP RAG chatbot voor Sogyo domein content."""
+"""Jarvisje — RAG-chatbot rondom de wereld van AI."""
 __version__ = "0.8.1"

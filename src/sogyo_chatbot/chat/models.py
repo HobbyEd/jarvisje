@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 class Citation(BaseModel):
     title: str = Field(..., description="Title of the source document or page")
     url: str = Field(..., description="Full URL to the source")
-    source: str | None = Field(None, description="Domain or collection name, e.g. sogyo.nl")
+    source: str | None = Field(None, description="Domain, e.g. edwinvandillen.nl")
 
 
 class ChatResponse(BaseModel):

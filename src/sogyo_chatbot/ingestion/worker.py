@@ -252,7 +252,7 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
 
         _update(progress=95, message="Validatie query…")
         try:
-            query_collection("Sogyo traineeship", n_results=1)
+            query_collection("intentie-gedreven engineering", n_results=1)
         except Exception:
             pass
 
@@ -304,7 +304,7 @@ def run_ingest(max_pages: int | None = None, reset: bool = False) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Sogyo async ingestion worker (ADR-010)")
+    parser = argparse.ArgumentParser(description="Jarvisje async ingestion worker (ADR-010)")
     parser.add_argument(
         "--max-pages",
         type=int,
@@ -318,7 +318,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    print("=== Sogyo ingestion worker ===")
+    print("=== Jarvisje ingestion worker ===")
     print(f"data_dir     : {settings.data_dir}")
     print(f"chroma       : {settings.chroma_persist_dir}")
     print(f"embedding    : {settings.embedding_model}")

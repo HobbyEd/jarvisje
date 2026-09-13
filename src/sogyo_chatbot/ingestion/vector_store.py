@@ -31,7 +31,8 @@ def _get_collection_name() -> str:
     when switching embedding models (e.g. 384 vs 1024)."""
     model = settings.embedding_model
     safe = model.replace("/", "_").replace("-", "_").replace(".", "_")
-    return f"sogyo_knowledge_{safe}"
+    prefix = settings.collection_name
+    return f"{prefix}_{safe}"
 
 
 def get_chroma_store() -> Collection:

@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Sogyo Kennis Chatbot API", lifespan=lifespan)
+app = FastAPI(title="Jarvisje API", lifespan=lifespan)
 
 # Serve static assets from the web/ directory (e.g. logo)
 # This allows /static/sogyo-30-jaar.png etc.

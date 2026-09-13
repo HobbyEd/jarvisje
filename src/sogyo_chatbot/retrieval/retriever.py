@@ -1,18 +1,31 @@
 """
 Basic retriever used by the chatbot.
 
-For Fase 0 this is mainly a thin wrapper around Chroma + embeddings.
-Later we will add:
-- query rewriting / expansion
-- metadata filtering
-- re-ranking (optional)
+Chroma similarity search plus a hard host allowlist (ADR-012).
 """
 from __future__ import annotations
 
 from typing import Any, Dict, List
+from urllib.parse import urlparse
 
+from ..config import settings
 from ..ingestion.embedder import get_embedder
 from ..ingestion.vector_store import get_chroma_store
+
+
+def _host(value: str) -> str:
+    return urlparse(value).netloc.lower().lstrip("www.") if "://" in value else value.lower().lstrip("www.")
+
+
+def _is_allowed_hit(meta: Dict[str, Any]) -> bool:
+    allowed = set(settings.allowed_hosts())
+    url = str(meta.get("url") or "")
+    source = str(meta.get("source") or "")
+    if url and _host(url) in allowed:
+        return True
+    if source and source.lower().lstrip("www.") in allowed:
+        return True
+    return False
 
 
 def retrieve(query: str, top_k: int = 6) -> List[Dict[str, Any]]:
@@ -28,12 +41,25 @@ def retrieve(query: str, top_k: int = 6) -> List[Dict[str, Any]]:
     embedder = get_embedder()
 
     q_vec = embedder.encode([query], normalize_embeddings=True).tolist()
+    fetch_k = max(top_k * 3, top_k)
 
-    results = collection.query(
-        query_embeddings=q_vec,
-        n_results=top_k,
-        include=["documents", "metadatas", "distances"],
-    )
+    query_kwargs: Dict[str, Any] = {
+        "query_embeddings": q_vec,
+        "n_results": fetch_k,
+        "include": ["documents", "metadatas", "distances"],
+    }
+    source_values = settings.chroma_source_values()
+    if source_values:
+        query_kwargs["where"] = {"source": {"$in": source_values}}
+
+    try:
+        results = collection.query(**query_kwargs)
+    except Exception:
+        results = collection.query(
+            query_embeddings=q_vec,
+            n_results=fetch_k,
+            include=["documents", "metadatas", "distances"],
+        )
 
     hits: List[Dict[str, Any]] = []
     if not results["documents"] or not results["documents"][0]:
@@ -44,11 +70,16 @@ def retrieve(query: str, top_k: int = 6) -> List[Dict[str, Any]]:
         results["metadatas"][0],
         results["distances"][0],
     ):
+        meta = meta or {}
+        if not _is_allowed_hit(meta):
+            continue
         hits.append(
             {
                 "text": text,
-                "metadata": meta or {},
+                "metadata": meta,
                 "distance": dist,
             }
         )
+        if len(hits) >= top_k:
+            break
     return hits

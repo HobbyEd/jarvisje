@@ -1,4 +1,4 @@
-"""Simple configuration for the Sogyo Chatbot MVP.
+"""Simple configuration for Jarvisje.
 
 Lightweight: pydantic + environment variables (+ optional .env file).
 
@@ -10,6 +10,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import List
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field
 
@@ -117,15 +118,11 @@ class Settings(BaseModel):
     # Ingestion politeness
     request_timeout: float = 15.0
     request_delay_seconds: float = 0.8
-    user_agent: str = "SogyoChatbot/0.1 (+https://sogyo.nl; educational bot)"
+    user_agent: str = "Jarvisje/1.0 (+https://edwinvandillen.nl)"
 
     sources: List[str] = [
-        "https://sogyo.nl",
-        "https://jeroenteunisse.nl",
         "https://edwinvandillen.nl",
-        "https://augmentedorganisation.nl",
-        "https://intentdriven.nl",
-        "https://augmentedengineering.nl",
+        "https://jeroenteunisse.nl",
     ]
 
     max_pages_per_domain: int = Field(
@@ -143,7 +140,32 @@ class Settings(BaseModel):
         default_factory=lambda: _env_str("INGEST_TOKEN", "INDEX_TOKEN")
     )
 
-    collection_name: str = "sogyo_knowledge"
+    collection_name: str = "jarvisje_knowledge"
+
+    def allowed_hosts(self) -> List[str]:
+        """Registrable hosts from `sources` (www. stripped)."""
+        hosts: List[str] = []
+        seen: set[str] = set()
+        for raw in self.sources:
+            host = urlparse(raw).netloc.lower().lstrip("www.")
+            if host and host not in seen:
+                seen.add(host)
+                hosts.append(host)
+        return hosts
+
+    def chroma_source_values(self) -> List[str]:
+        """Metadata `source` values to allow in Chroma filters (with and without www)."""
+        values: List[str] = []
+        for host in self.allowed_hosts():
+            values.append(host)
+            values.append(f"www.{host}")
+        return values
+
+    def is_allowed_url(self, url: str) -> bool:
+        if not url:
+            return False
+        host = urlparse(url).netloc.lower().lstrip("www.")
+        return host in set(self.allowed_hosts())
 
     llm_base_url: str = Field(
         default_factory=lambda: _env_str("LLM_BASE_URL", default="http://127.0.0.1:11434/v1")

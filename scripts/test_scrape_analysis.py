@@ -16,8 +16,7 @@ def main():
     for s in settings.sources:
         print("  -", s)
 
-    # Test on sogyo.nl + one more
-    test_urls = ["https://sogyo.nl", "https://jeroenteunisse.nl"]
+    test_urls = ["https://edwinvandillen.nl", "https://jeroenteunisse.nl"]
 
     for url in test_urls:
         print(f"\n{'='*60}")

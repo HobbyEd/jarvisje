@@ -1,9 +1,9 @@
 """
-Simple non-streaming test client for the Sogyo chatbot.
+Simple non-streaming test client for Jarvisje.
 
 Usage:
     # Against local API (start with: python scripts/run_api.py)
-    python scripts/test_chat.py "Wat is de filosofie van Sogyo?"
+    python scripts/test_chat.py "Wat is intentie-gedreven engineering?"
 
     # Against production app on LAN
     API_BASE_URL=http://<host>:8080 \
@@ -12,7 +12,7 @@ Usage:
 Also:
     curl -X POST http://localhost:8001/chat/sync \
       -H "Content-Type: application/json" \
-      -d '{"message": "Hallo, ik ben sollicitant en wil over AI praten."}'
+      -d '{"message": "Hallo, wat is intentie-gedreven engineering?"}'
 """
 import os
 import sys

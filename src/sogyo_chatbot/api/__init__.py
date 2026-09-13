@@ -1,1 +1,1 @@
-"""FastAPI backend for the Sogyo chatbot (streaming via SSE)."""
+"""FastAPI backend for Jarvisje (streaming via SSE)."""

@@ -1,5 +1,5 @@
 """
-Polite web scraper for the Sogyo-related domains.
+Polite web scraper for the configured blog domains (ADR-012).
 
 Strategy (2026-08):
 1. Discover all page URLs from sitemaps (recursive) + lastmod when available

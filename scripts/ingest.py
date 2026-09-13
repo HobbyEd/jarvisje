@@ -19,7 +19,7 @@ from sogyo_chatbot.ingestion.worker import main as worker_main
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Sogyo ingestion (async worker entrypoint)")
+    parser = argparse.ArgumentParser(description="Jarvisje ingestion (async worker entrypoint)")
     parser.add_argument("--max", type=int, default=None, help="Max pages per domain (0 = hard cap)")
     parser.add_argument("--reset", action="store_true", help="Wipe collection first")
     args = parser.parse_args()

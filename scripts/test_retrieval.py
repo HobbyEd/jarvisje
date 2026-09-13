@@ -15,7 +15,7 @@ from sogyo_chatbot.retrieval import retrieve
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("query", nargs="?", default="Wat is de filosofie achter Sogyo?")
+    parser.add_argument("query", nargs="?", default="Wat is intentie-gedreven engineering?")
     parser.add_argument("--k", type=int, default=5)
     args = parser.parse_args()
 

@@ -31,20 +31,17 @@ class ChatTurn:
 @dataclass
 class ChatSession:
     turns: List[ChatTurn] = field(default_factory=list)
-    role: str = "onbekend"  # sollicitant | bedrijf | onbekend
+    role: str = "onbekend"
 
 
 class ChatOrchestrator:
     def __init__(self):
         self.session = ChatSession()
 
-    def _detect_role(self, message: str) -> str | None:
-        m = message.lower()
-        if any(k in m for k in ["sollicitant", "student", "traineeship", "ik wil solliciteren"]):
-            return "sollicitant"
-        if any(k in m for k in ["bedrijf", "organisatie", "talent", "samenwerken"]):
-            return "bedrijf"
-        return None
+    def _filter_citations(self, response: ChatResponse) -> ChatResponse:
+        kept = [c for c in response.citations if settings.is_allowed_url(c.url)]
+        response.citations = kept
+        return response
 
     def _call_llm(self, system: str, user: str) -> str:
         """Call the OpenAI-compatible vLLM endpoint and return raw content."""
@@ -91,13 +88,7 @@ class ChatOrchestrator:
         Main entry. Returns structured ChatResponse.
         If history is provided, it overrides internal session for this turn.
         """
-        # Update role if first messages
-        if self.session.role == "onbekend":
-            detected = self._detect_role(user_message)
-            if detected:
-                self.session.role = detected
-
-        role_context = f"De gebruiker komt vanuit: {self.session.role}."
+        role_context = "De gebruiker is een lezer van edwinvandillen.nl of jeroenteunisse.nl."
 
         # Retrieval
         retrieved = retrieve(user_message, top_k=6)
@@ -120,15 +111,19 @@ class ChatOrchestrator:
             response = ChatResponse(
                 answer=raw[:2000] if isinstance(raw, str) else str(raw),
                 citations=[],
-                hints=["Kun je een specifiek voorbeeld geven?", "Hoe past dit bij traineeships?"],
-                role_context=self.session.role,
+                hints=[
+                    "Welk artikel op edwinvandillen.nl sluit hierbij aan?",
+                    "Hoe beschrijft Jeroen Teunisse dit?",
+                ],
+                role_context="onbekend",
             )
+
+        response = self._filter_citations(response)
 
         # Update internal history
         self.session.turns.append(ChatTurn(role="user", content=user_message))
         self.session.turns.append(ChatTurn(role="assistant", content=response.answer))
 
-        # Force role context in response
-        response.role_context = self.session.role  # type: ignore
+        response.role_context = "onbekend"  # type: ignore
 
         return response

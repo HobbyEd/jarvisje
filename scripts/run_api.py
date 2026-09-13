@@ -1,5 +1,5 @@
 """
-Run the Sogyo Chatbot API locally (RAG backend + web/index.html UI at /).
+Run the Jarvisje API locally (RAG backend + web/index.html UI at /).
 
 Usage:
     # Default: Ollama on production host (.15) — must be reachable from your machine
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     base_url = os.getenv("LLM_BASE_URL", "http://<host>:11434/v1")
     model = os.getenv("LLM_MODEL", "gemma3:4b")
 
-    print("Starting Sogyo Kennis Chatbot API on http://localhost:8001")
+    print("Starting Jarvisje API on http://localhost:8001")
     print(f"LLM endpoint: {base_url}")
     print(f"Model: {model}")
     print("Open http://localhost:8001")
