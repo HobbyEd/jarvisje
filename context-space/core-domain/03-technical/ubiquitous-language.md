@@ -14,7 +14,7 @@ Termen in de **Kennis-Chatbot** bounded context. Gebruik deze definities in prom
 
 | Term | Definitie |
 |------|-----------|
-| **Jarvisje** | De RAG-chatbot; core bounded context van dit project. Ondertitel: een chatbot rondom de wereld van AI — een knipoog naar Jarvis |
+| **Jarvisje** | De RAG-chatbot; core bounded context van dit project. Ondertitel: een chatbot rondom de wereld van AI |
 | **Kennisbron** | Eén van de twee geïndexeerde blogs (zie [kennisbronnen.md](kennisbronnen.md)) |
 | **Chunk** | Een tekstfragment uit een kennisbron met metadata (url, title, section) |
 | **Retrieval** | Zoeken van relevante chunks bij een gebruikersvraag (alleen toegestane hosts) |

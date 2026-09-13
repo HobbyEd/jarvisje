@@ -30,7 +30,7 @@ RAG, citations, lokale inference op `.15` en de werkwijze (commit, designer, pro
 
 ## Decision
 
-1. **Naam.** Het product heet **Jarvisje**. Ondertitel (klein, niet in antwoorden tenzij gevraagd): *een chatbot rondom de wereld van AI — een knipoog naar Jarvis*. Geen Iron Man-beeldmerk of Marvel-assets.
+1. **Naam.** Het product heet **Jarvisje**. Ondertitel (klein): *een chatbot rondom de wereld van AI*. Geen Iron Man-beeldmerk of Marvel-assets.
 2. **Kennisbronnen.** Alleen `https://edwinvandillen.nl` en `https://jeroenteunisse.nl`. Overige domeinen uit de allowlist. Bestaande vector-index wissen en opnieuw opbouwen; retrieval filtert op die hosts; citations van andere hosts worden geweigerd. Incremental ingest is onvoldoende om oude chunks te verwijderen.
 3. **Doelgroep.** Lezers van die blogs, niet sollicitanten/bedrijven. Geen rol-onboarding (sollicitant vs bedrijf).
 4. **Look & feel.** Design tokens 1-op-1 van *Edwin Blog* (dark default, `[data-theme="light"]`). Geen Sogyo-groen.
@@ -47,7 +47,7 @@ RAG, citations, lokale inference op `.15` en de werkwijze (commit, designer, pro
 
 ### Negatief / risico's
 - Productie-cutover (paden, units, image) kent korte downtime.
-- Marvel-associatie blijft een tekstuele knipoog; geen visuele Iron Man-identiteit.
+- Geen visuele Iron Man-identiteit; de naam is genoeg.
 - Iframe + third-party localStorage: thema móet via postMessage, niet via gedeelde storage.
 
 ## Alternatives considered

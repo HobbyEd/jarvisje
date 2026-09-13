@@ -13,7 +13,7 @@ traces_to:
 
 ## Doel
 
-Jarvisje is een **chatbot rondom de wereld van AI** — met een knipoog naar Jarvis. Hij voert een gesprek over de artikelen op [edwinvandillen.nl](https://edwinvandillen.nl/) en [jeroenteunisse.nl](https://jeroenteunisse.nl/) en verwijst altijd naar concrete posts.
+Jarvisje is een **chatbot rondom de wereld van AI**. Hij voert een gesprek over de artikelen op [edwinvandillen.nl](https://edwinvandillen.nl/) en [jeroenteunisse.nl](https://jeroenteunisse.nl/) en verwijst altijd naar concrete posts.
 
 **Kernbelofte:**
 

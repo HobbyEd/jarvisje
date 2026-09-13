@@ -29,7 +29,7 @@ Gebruiker opent de chat voor het eerst in een sessie.
 
 Welkomstzin (richting):
 
-> Hallo, ik ben Jarvisje — een chatbot rondom de wereld van AI, met een knipoog naar Jarvis. Ik ken de artikelen op edwinvandillen.nl en jeroenteunisse.nl. Waar wil je het over hebben?
+> Hallo, ik ben Jarvisje — een chatbot rondom de wereld van AI. Ik ken de artikelen op edwinvandillen.nl en jeroenteunisse.nl. Waar wil je het over hebben?
 
 ## Acceptatie
 

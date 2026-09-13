@@ -13,7 +13,7 @@ traces_to:
 
 ## 1. Inleiding en Doel
 
-Dit document beschrijft de software-architectuur voor **Jarvisje**: een chatbot rondom de wereld van AI, met een knipoog naar Jarvis. Hij wordt ingebed op [edwinvandillen.nl](https://edwinvandillen.nl/) en verwijst naar twee blogs ([ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md)).
+Dit document beschrijft de software-architectuur voor **Jarvisje**: een chatbot rondom de wereld van AI. Hij wordt ingebed op [edwinvandillen.nl](https://edwinvandillen.nl/) en verwijst naar twee blogs ([ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md)).
 
 Doelgroep: lezers van die blogs. Geen sollicitant/bedrijf-modes.
 

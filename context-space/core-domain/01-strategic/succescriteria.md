@@ -33,7 +33,7 @@ Klaar als:
 ## Kwalitatief
 
 - Voelt als de blogs, niet als generieke AI.
-- Ondertitel is een knipoog, geen Iron Man-cosplay in de antwoorden.
+- Naam Jarvisje; geen Iron Man-cosplay in de antwoorden.
 
 ## Development guardrails
 
