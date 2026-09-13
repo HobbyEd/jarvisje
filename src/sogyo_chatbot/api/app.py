@@ -50,6 +50,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    """Allow iframe embed on edwinvandillen.nl (ADR-012)."""
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = (
+        "frame-ancestors 'self' https://edwinvandillen.nl"
+    )
+    return response
+
 # In-memory sessions for MVP (simple)
 _sessions: Dict[str, ChatOrchestrator] = {}
 
@@ -392,7 +402,7 @@ async def ingest_status():
     return read_status()
 
 
-# Serve the Sogyo-styled frontend (web/index.html) at root.
+# Serve the frontend (web/index.html) at root.
 # Ensures local run and deployed container give identical UI.
 _WEB_DIR = Path(__file__).resolve().parents[3] / "web"
 _WEB_INDEX = _WEB_DIR / "index.html"

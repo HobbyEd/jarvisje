@@ -1,0 +1,38 @@
+<!--
+  Jarvisje iframe voor edwin-blog (edwinvandillen.nl).
+  Zet dit in de gereserveerde regio. Thema volgt data-theme op <html>.
+  Na de eerste load alleen postMessage — src niet herschrijven (dat reset de chat).
+-->
+<iframe
+  id="jarvisje-frame"
+  title="Jarvisje"
+  loading="lazy"
+  style="width:100%;height:560px;border:0;border-radius:10px;background:transparent"
+></iframe>
+<script>
+(function () {
+  var origin = "https://jarvisje.com";
+  var frame = document.getElementById("jarvisje-frame");
+  if (!frame) return;
+
+  function currentTheme() {
+    var stored;
+    try { stored = localStorage.getItem("edwin-theme"); } catch (e) {}
+    if (stored === "light" || stored === "dark") return stored;
+    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
+  }
+
+  frame.src = origin + "/?embed=1&theme=" + currentTheme();
+
+  function sendTheme() {
+    if (!frame.contentWindow) return;
+    frame.contentWindow.postMessage({ type: "edwin-theme", theme: currentTheme() }, origin);
+  }
+
+  frame.addEventListener("load", sendTheme);
+  new MutationObserver(sendTheme).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"]
+  });
+}());
+</script>

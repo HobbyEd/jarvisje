@@ -3,90 +3,206 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sogyo | Software-innovators</title>
+<title>Jarvisje</title>
+<script>
+(function () {
+  var params = new URLSearchParams(location.search);
+  if (params.get('embed') === '1') document.documentElement.classList.add('embed');
+  var theme = params.get('theme');
+  if (theme !== 'light' && theme !== 'dark') {
+    try { theme = localStorage.getItem('jarvisje-theme'); } catch (e) { theme = null; }
+  }
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  else document.documentElement.removeAttribute('data-theme');
+})();
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
-  body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  .sogyo-green { color: #2E7D32; }
-  .header { background: #2E7D32; color: white; }
-  .chat-window { height: 50vh; min-height: 320px; max-height: 520px; overflow-y: auto; background: #f8fafc; }
-  .msg { max-width: 80%; padding: 10px 14px; border-radius: 16px; margin-bottom: 10px; white-space: pre-wrap; }
-  .user { background: #4CAF50; color: white; margin-left: auto; border-bottom-right-radius: 4px; }
-  .bot { background: white; border: 1px solid #e2e8f0; border-bottom-left-radius: 4px; }
-  .error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-
-  /* Creative thinking indicator */
-  .thinking {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #4a5568;
+  :root {
+    --bg-page:    #0d1b2a;
+    --bg-surface: #0f1e30;
+    --header-bg:  rgba(13, 27, 42, .97);
+    --s-04: rgba(255, 255, 255, .04);
+    --s-05: rgba(255, 255, 255, .05);
+    --s-07: rgba(255, 255, 255, .07);
+    --s-08: rgba(255, 255, 255, .08);
+    --s-12: rgba(255, 255, 255, .12);
+    --s-15: rgba(255, 255, 255, .15);
+    --text-1:       #dde6f0;
+    --text-heading: #c8dae8;
+    --text-2:       #9ab0c4;
+    --text-3:       #7a94a8;
+    --blue:         #4a90e2;
+    --blue-deep:    #2a5fa5;
+    --green:        #27ae60;
+    --red:          #c0392b;
+    --font-base:    'Segoe UI', Arial, sans-serif;
+    --font-mono:    'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    --radius-card:  10px;
+    --radius-sm:    6px;
+    --header-h:     60px;
   }
+  [data-theme="light"] {
+    --bg-page:    #f0f4f8;
+    --bg-surface: #ffffff;
+    --header-bg:  rgba(240, 244, 248, .97);
+    --s-04: rgba(0, 0, 0, .05);
+    --s-05: rgba(0, 0, 0, .06);
+    --s-07: rgba(0, 0, 0, .08);
+    --s-08: rgba(0, 0, 0, .10);
+    --s-12: rgba(0, 0, 0, .14);
+    --s-15: rgba(0, 0, 0, .18);
+    --text-1:       #1a2a38;
+    --text-heading: #2d3f50;
+    --text-2:       #3d5568;
+    --text-3:       #546e7a;
+  }
+
+  html, body {
+    font-family: var(--font-base);
+    font-size: 15.5px;
+    line-height: 1.85;
+    color: var(--text-1);
+    background-color: var(--bg-page);
+    min-height: 100vh;
+    transition: background-color .2s, color .2s;
+  }
+  a { color: var(--blue); }
+  a:hover { color: var(--blue-deep); }
+  code, pre { font-family: var(--font-mono); }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 40;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--s-08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    height: var(--header-h);
+  }
+  .site-name { font-size: 16px; font-weight: 700; color: var(--text-1); letter-spacing: .3px; line-height: 1.2; }
+  .site-tagline { font-size: 11px; color: var(--text-3); letter-spacing: .4px; }
+  .version-badge {
+    font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+    padding: 2px 8px; border-radius: var(--radius-sm);
+    background: var(--s-07); color: var(--text-2); border: 1px solid var(--s-08);
+  }
+  .icon-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; background: transparent;
+    border: 1px solid transparent; border-radius: var(--radius-sm);
+    cursor: pointer; color: var(--text-2);
+  }
+  .icon-btn:hover { color: var(--text-1); background: var(--s-07); border-color: var(--s-08); }
+  .icon-sun { display: none; }
+  [data-theme="light"] .icon-moon { display: none; }
+  [data-theme="light"] .icon-sun { display: block; }
+
+  .chat-window { height: 50vh; min-height: 320px; max-height: 520px; overflow-y: auto; background: var(--s-04); }
+  .msg { max-width: 80%; padding: 10px 14px; border-radius: 10px; margin-bottom: 10px; white-space: pre-wrap; }
+  .user { background: var(--blue); color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+  .bot { background: var(--bg-surface); border: 1px solid var(--s-08); color: var(--text-1); border-bottom-left-radius: 4px; }
+  .error { background: rgba(192, 57, 43, .12); color: var(--red); border: 1px solid rgba(192, 57, 43, .35); }
+
+  .chat-card { background: var(--bg-surface); border: 1px solid var(--s-08); border-radius: var(--radius-card); overflow: hidden; }
+  .chat-card-head { padding: 12px 16px; border-bottom: 1px solid var(--s-08); background: var(--s-04); }
+  .btn-primary { background: var(--blue); color: #fff; }
+  .btn-primary:hover { background: var(--blue-deep); }
+  .accent { color: var(--blue); }
+  .tab-button { color: var(--text-2); border-bottom: 2px solid transparent; }
+  .tab-button:hover { color: var(--text-1); }
+  .tab-button.active { color: var(--text-1); border-bottom-color: var(--blue); }
+
+  input[type="text"], input[type="password"], input[type="number"], input[type="search"] {
+    background: var(--s-04); color: var(--text-1); border-color: var(--s-08);
+  }
+  input:focus { outline: none; border-color: var(--blue); }
+
+  .thinking { display: flex; align-items: center; gap: 8px; color: var(--text-3); }
   .thinking-cloud {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    background: #f1f5f9;
-    border-radius: 9999px;
-    border: 1px solid #e2e8f0;
-    position: relative;
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 10px; background: var(--s-05);
+    border-radius: 9999px; border: 1px solid var(--s-08);
     transition: all 0.3s ease;
   }
   .thinking-cloud.active {
-    background: #dcfce7; /* light green */
-    border-color: #86efac;
-    box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.2);
+    background: rgba(74, 144, 226, .18);
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.15);
     transform: scale(1.03);
   }
-  .thinking-dots {
-    display: flex;
-    gap: 3px;
-  }
+  .thinking-dots { display: flex; gap: 3px; }
   .thinking-dot {
-    width: 5px;
-    height: 5px;
-    background: #94a3b8;
-    border-radius: 50%;
+    width: 5px; height: 5px; background: var(--text-3); border-radius: 50%;
     animation: think-bounce 1.4s infinite ease-in-out both;
-    transition: background-color 0.4s ease;
   }
   .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
   .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
-  .thinking-cloud.active .thinking-dot {
-    background: #4CAF50;
-  }
-  .thinking-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-  }
-
+  .thinking-cloud.active .thinking-dot { background: var(--blue); }
+  .thinking-label { font-size: 0.75rem; font-weight: 500; }
   @keyframes think-bounce {
     0%, 80%, 100% { transform: scale(0); }
     40% { transform: scale(1.0); }
   }
+
+  /* Tailwind surface overrides so dark/light tokens win */
+  .bg-white { background-color: var(--bg-surface) !important; }
+  .bg-slate-50 { background-color: var(--s-04) !important; }
+  .text-slate-600, .text-slate-500, .text-slate-700, .text-slate-800 { color: var(--text-2) !important; }
+  .text-slate-400, .text-slate-300 { color: var(--text-3) !important; }
+  .border-slate-200, .border-slate-300, .border-slate-100 { border-color: var(--s-08) !important; }
+  .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: var(--s-08) !important; }
+
+  html.embed .site-header,
+  html.embed #tabs,
+  html.embed #ingest-global-banner,
+  html.embed #sources-view,
+  html.embed #architecture-view { display: none !important; }
+  html.embed body { overflow: hidden; }
+  html.embed #chat-view { max-width: none; padding: 0; }
+  html.embed #chat-view > div { max-width: none; }
+  html.embed .chat-card { border: 0; border-radius: 0; min-height: 100vh; display: flex; flex-direction: column; }
+  html.embed .chat-window { flex: 1; height: auto; min-height: 0; max-height: none; }
 </style>
 </head>
-<body class="bg-slate-50">
-  <header class="header">
-    <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-      <div class="flex items-center gap-3">
-        <!-- Official Sogyo 30 jaar logo (1996-2026) -->
-        <img src="/static/sogyo-30-jaar-logo.png" 
-             alt="Sogyo 30 jaar 1996-2026" 
-             class="h-10 sm:h-12 w-auto">
+<body>
+  <header class="site-header">
+    <div class="max-w-5xl mx-auto px-6 h-full flex justify-between items-center">
+      <div class="flex flex-col justify-center">
+        <div class="site-name">Jarvisje</div>
+        <div class="site-tagline">een chatbot rondom de wereld van AI — een knipoog naar Jarvis</div>
       </div>
-      <span class="text-sm font-mono px-2.5 py-0.5 rounded bg-[#2E7D32] text-white font-semibold">v0.9.1</span>
+      <div class="flex items-center gap-2">
+        <button id="theme-toggle-btn" class="icon-btn" type="button" aria-label="Schakel thema" title="Schakel thema">
+          <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+          </svg>
+          <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+        <span class="version-badge">v1.0.0</span>
+      </div>
     </div>
   </header>
 
   <!-- Tabs -->
   <div class="max-w-5xl mx-auto px-4 md:px-6">
     <div class="flex border-b border-slate-200" id="tabs">
-      <button data-tab="chat" class="tab-button px-4 py-2 font-medium text-sm border-b-2 border-[#2E7D32] text-[#2E7D32] active">Chat</button>
-      <button data-tab="sources" class="tab-button px-4 py-2 font-medium text-sm text-slate-600 hover:text-slate-800">Bronnen &amp; Meta-data</button>
-      <button data-tab="architecture" class="tab-button px-4 py-2 font-medium text-sm text-slate-600 hover:text-slate-800">Chatbot Opbouw</button>
+      <button data-tab="chat" class="tab-button px-4 py-2 font-medium text-sm active">Chat</button>
+      <button data-tab="sources" class="tab-button px-4 py-2 font-medium text-sm">Bronnen &amp; Meta-data</button>
+      <button data-tab="architecture" class="tab-button px-4 py-2 font-medium text-sm">Chatbot Opbouw</button>
     </div>
   </div>
 
@@ -105,14 +221,17 @@
   <div id="chat-view" class="tab-content max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
     <div class="max-w-3xl mx-auto">
       <!-- Chat (centered) -->
-      <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow">
-        <div class="px-4 py-3 bg-[#2E7D32] text-white flex items-center text-sm">
-          <div>Jarvisje</div>
+      <div class="chat-card">
+        <div class="chat-card-head flex items-center text-sm">
+          <div>
+            <div class="font-semibold" style="color: var(--text-heading)">Jarvisje</div>
+            <div class="text-[11px]" style="color: var(--text-3)">edwinvandillen.nl · jeroenteunisse.nl</div>
+          </div>
         </div>
         <div id="chat" class="chat-window p-4 text-sm"></div>
-        <div class="p-3 border-t bg-white flex flex-col sm:flex-row gap-2">
-          <input id="input" type="text" class="flex-1 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none" placeholder="Vraag iets over Sogyo, traineeship of AI...">
-          <button onclick="sendMessage()" class="bg-[#4CAF50] hover:bg-[#388E3C] text-white px-5 py-2 sm:py-0 rounded-xl text-sm font-medium transition-colors active:scale-[0.985]">Verstuur</button>
+        <div class="p-3 border-t flex flex-col sm:flex-row gap-2" style="border-color: var(--s-08); background: var(--bg-surface)">
+          <input id="input" type="text" class="flex-1 border rounded-xl px-4 py-2 text-sm" placeholder="Vraag iets over een artikel, een idee of een reeks…">
+          <button onclick="sendMessage()" class="btn-primary px-5 py-2 sm:py-0 rounded-xl text-sm font-medium transition-colors active:scale-[0.985]">Verstuur</button>
         </div>
         <div class="px-3 pb-2 text-[10px] text-slate-400">Antwoorden komen van ons eigen lokale model (Gemma). Geen chatgeschiedenis wordt permanent opgeslagen.</div>
       </div>
@@ -125,7 +244,7 @@
     <div class="mb-6 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h3 class="font-semibold text-[#2E7D32]">Indexering starten</h3>
+          <h3 class="font-semibold accent">Indexering starten</h3>
           <p class="text-xs text-slate-500 mt-0.5">Draait in een <strong>apart worker-proces</strong> (ADR-010). Standaard <strong>incrementeel</strong>: alleen nieuwe of gewijzigde pagina's (sitemap-lastmod). Met “Reset” wis je de index en herindexeer je alles. Chat blijft beschikbaar.</p>
         </div>
         <button onclick="refreshSources()" 
@@ -141,17 +260,17 @@
           </label>
           <input id="ingest-token" type="password" autocomplete="off"
                  placeholder="Token vereist om te starten"
-                 class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#4CAF50]">
+                 class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[var(--blue)]">
           <p class="text-[10px] text-slate-400 mt-0.5">Alleen geautoriseerde gebruikers. Wordt meegegeven aan de API.</p>
         </div>
         <div class="min-w-0">
           <label class="block text-xs font-medium text-slate-600 mb-1" for="max-pages">Max artikelen per bron</label>
           <input id="max-pages" type="number" value="500" min="0" max="2000" step="50"
-                 class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#4CAF50]">
+                 class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[var(--blue)]">
           <p class="text-[10px] text-slate-400 mt-0.5">0 = maximaal (hard cap 2000). Sitemap-first crawl.</p>
         </div>
         <label class="flex items-start gap-2 text-sm pb-1">
-          <input id="reset-check" type="checkbox" class="accent-[#4CAF50] mt-0.5">
+          <input id="reset-check" type="checkbox" class="mt-0.5" style="accent-color: var(--blue)">
           <span>
             <span class="font-medium">Reset bestaande index</span>
             <span class="block text-[10px] text-slate-400 font-normal leading-snug">Aan = alles opnieuw. Uit = alleen nieuw/gewijzigd t.o.v. huidige index.</span>
@@ -159,7 +278,7 @@
         </label>
         <div class="flex flex-wrap gap-2">
           <button id="start-ingest-btn" onclick="startIngestion()"
-                  class="bg-[#4CAF50] hover:bg-[#388E3C] text-white text-sm font-medium px-5 py-2 rounded-xl transition active:scale-[0.985]">
+                  class="btn-primary text-white text-sm font-medium px-5 py-2 rounded-xl transition active:scale-[0.985]">
             Start indexering
           </button>
           <button id="stop-ingest-btn" onclick="stopIngestion()"
@@ -177,12 +296,12 @@
             <span id="ingest-icon" class="text-lg shrink-0">⏸️</span>
             <div id="ingest-message" class="font-semibold text-slate-800 truncate">Geen indexering actief</div>
           </div>
-          <div id="ingest-progress-text" class="font-mono text-sm font-bold text-[#2E7D32] shrink-0 ml-2">0%</div>
+          <div id="ingest-progress-text" class="font-mono text-sm font-bold accent shrink-0 ml-2">0%</div>
         </div>
         <div class="h-3 bg-slate-200 rounded-full overflow-hidden mb-1">
-          <div id="ingest-progress-bar" class="h-3 bg-[#4CAF50] transition-all duration-300" style="width: 0%"></div>
+          <div id="ingest-progress-bar" class="h-3 transition-all duration-300" style="width: 0%; background: var(--blue)"></div>
         </div>
-        <div id="ingest-current" class="text-xs font-medium text-[#2E7D32] min-h-[1.25rem] truncate">&nbsp;</div>
+        <div id="ingest-current" class="text-xs font-medium accent min-h-[1.25rem] truncate">&nbsp;</div>
         <div id="ingest-meta" class="text-[11px] text-slate-500 min-h-[1rem] flex flex-wrap gap-x-3 gap-y-0.5"></div>
       </div>
     </div>
@@ -191,7 +310,7 @@
     <div id="sources-panel">
       <div class="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h2 class="text-xl font-semibold text-[#2E7D32]">Geïndexeerde bronnen</h2>
+          <h2 class="text-xl font-semibold accent">Geïndexeerde bronnen</h2>
           <p class="text-sm text-slate-500">Overzicht van websites waarmee de chatbot is gevoed.</p>
         </div>
         <span id="sources-live-hint" class="hidden text-[11px] text-slate-400 whitespace-nowrap">Live bijgewerkt</span>
@@ -227,8 +346,8 @@
   <!-- Architecture tab content -->
   <div id="architecture-view" class="tab-content hidden max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
     <div class="mb-8">
-      <h2 class="text-2xl font-semibold text-[#2E7D32] mb-2">Chatbot Architectuur</h2>
-      <p class="text-slate-600">Overzicht van de end-to-end flow van de Sogyo Kennis Chatbot, van browser tot LLM en het indexeringsproces.</p>
+      <h2 class="text-2xl font-semibold accent mb-2">Chatbot Architectuur</h2>
+      <p class="text-slate-600">Overzicht van de end-to-end flow van Jarvisje, van browser tot LLM en het indexeringsproces.</p>
     </div>
 
     <!-- High level flow -->
@@ -278,45 +397,45 @@ flowchart LR
         <h4 class="font-medium mb-3 text-sm">Visuele weergave – Stapsgewijze flow</h4>
         <div class="flex flex-col md:flex-row items-center gap-2 text-center">
           <!-- Step 1: Browser -->
-          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
             <div class="text-2xl mb-1">🌐</div>
-            <div class="font-semibold text-[#2E7D32]">1. Browser</div>
+            <div class="font-semibold accent">1. Browser</div>
             <div class="text-[10px] text-slate-500">jarvisje.com (Cloudflare Tunnel)</div>
           </div>
-          <div class="text-[#2E7D32] text-xl hidden md:block">→</div>
-          <div class="text-[#2E7D32] text-xl md:hidden">↓</div>
+          <div class="accent text-xl hidden md:block">→</div>
+          <div class="accent text-xl md:hidden">↓</div>
 
           <!-- Step 2: Host -->
-          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
             <div class="text-2xl mb-1">🖥️</div>
-            <div class="font-semibold text-[#2E7D32]">2. Server Host</div>
+            <div class="font-semibold accent">2. Server Host</div>
             <div class="text-[10px] text-slate-500">Poort 8080 → Docker</div>
           </div>
-          <div class="text-[#2E7D32] text-xl hidden md:block">→</div>
-          <div class="text-[#2E7D32] text-xl md:hidden">↓</div>
+          <div class="accent text-xl hidden md:block">→</div>
+          <div class="accent text-xl md:hidden">↓</div>
 
           <!-- Step 3: Container + App -->
-          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
             <div class="text-2xl mb-1">🐳</div>
-            <div class="font-semibold text-[#2E7D32]">3. Container</div>
+            <div class="font-semibold accent">3. Container</div>
             <div class="text-[10px] text-slate-500">FastAPI (8001)<br/>Chat + Index</div>
           </div>
-          <div class="text-[#2E7D32] text-xl hidden md:block">→</div>
-          <div class="text-[#2E7D32] text-xl md:hidden">↓</div>
+          <div class="accent text-xl hidden md:block">→</div>
+          <div class="accent text-xl md:hidden">↓</div>
 
           <!-- Step 4: Retrieval / LLM -->
-          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
             <div class="text-2xl mb-1">🔍 / 🤖</div>
-            <div class="font-semibold text-[#2E7D32]">4. Verwerking</div>
+            <div class="font-semibold accent">4. Verwerking</div>
             <div class="text-[10px] text-slate-500">BGE-M3 + Chroma<br/>→ Ollama Gemma 4B</div>
           </div>
-          <div class="text-[#2E7D32] text-xl hidden md:block">→</div>
-          <div class="text-[#2E7D32] text-xl md:hidden">↓</div>
+          <div class="accent text-xl hidden md:block">→</div>
+          <div class="accent text-xl md:hidden">↓</div>
 
           <!-- Step 5: Response -->
-          <div class="flex-1 p-3 bg-white border border-[#2E7D32] rounded-xl shadow-sm">
+          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
             <div class="text-2xl mb-1">💬</div>
-            <div class="font-semibold text-[#2E7D32]">5. Antwoord</div>
+            <div class="font-semibold accent">5. Antwoord</div>
             <div class="text-[10px] text-slate-500">Stream via SSE<br/>+ bronnen</div>
           </div>
         </div>
@@ -376,7 +495,7 @@ flowchart TB
 const chatEl = document.getElementById("chat");
 const input = document.getElementById("input");
 
-let sessionId = 'sogyo-' + Date.now();
+let sessionId = 'jarvisje-' + Date.now();
 
 function addMessage(text, isUser) {
   const div = document.createElement("div");
@@ -403,7 +522,7 @@ function addError(text) {
 }
 
 function startOnboarding() {
-  addMessage("Welkom bij de Sogyo Chatbot! Ik ben gevoed door de inhoudelijke content vanuit Sogyo. Waar wil je het mij over hebben?", false);
+  addMessage("Hallo, ik ben Jarvisje — een chatbot rondom de wereld van AI, met een knipoog naar Jarvis. Ik ken de artikelen op edwinvandillen.nl en jeroenteunisse.nl. Waar wil je het over hebben?", false);
 }
 
 async function sendMessage() {
@@ -534,15 +653,45 @@ if (input) {
   });
 }
 
+function currentTheme() {
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+
+function applyTheme(theme) {
+  if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+  else document.documentElement.removeAttribute('data-theme');
+  if (window.mermaid) {
+    try {
+      mermaid.initialize({ startOnLoad: false, theme: theme === 'light' ? 'default' : 'dark' });
+    } catch (e) {}
+  }
+}
+
+function initThemeControls() {
+  var btn = document.getElementById('theme-toggle-btn');
+  if (btn) {
+    btn.addEventListener('click', function () {
+      var next = currentTheme() === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+      try { localStorage.setItem('jarvisje-theme', next); } catch (e) {}
+    });
+  }
+  window.addEventListener('message', function (e) {
+    if (e.origin !== 'https://edwinvandillen.nl') return;
+    if (!e.data || e.data.type !== 'edwin-theme') return;
+    applyTheme(e.data.theme === 'light' ? 'light' : 'dark');
+  });
+}
+
 // Start
 window.onload = () => {
+  initThemeControls();
   startOnboarding();
   initTabs();
   ensureGlobalIngestPoll();
 
-  // Initialize Mermaid diagrams (lazy render when architecture tab is shown)
   if (window.mermaid) {
-    mermaid.initialize({ startOnLoad: false });
+    mermaid.initialize({ startOnLoad: false, theme: currentTheme() === 'light' ? 'default' : 'dark' });
   }
 };
 
@@ -563,13 +712,7 @@ function initTabs() {
 
       // Update active styles
       buttons.forEach(b => {
-        if (b.dataset.tab === target) {
-          b.classList.add('border-b-2', 'border-[#2E7D32]', 'text-[#2E7D32]');
-          b.classList.remove('text-slate-600', 'hover:text-slate-800');
-        } else {
-          b.classList.remove('border-b-2', 'border-[#2E7D32]', 'text-[#2E7D32]');
-          b.classList.add('text-slate-600', 'hover:text-slate-800');
-        }
+        b.classList.toggle('active', b.dataset.tab === target);
       });
 
       chatView.classList.add('hidden');
@@ -765,7 +908,7 @@ function setIngestUiRunningOptimistic(message) {
   if (iconEl) iconEl.textContent = '⏳';
   if (msgEl) {
     msgEl.textContent = message || 'Indexering wordt gestart…';
-    msgEl.classList.add('text-[#2E7D32]');
+    msgEl.classList.add('accent');
   }
   if (pctEl) pctEl.textContent = '1%';
   if (barEl) {
@@ -907,13 +1050,7 @@ function showTab(tab) {
   const architectureView = document.getElementById('architecture-view');
 
   buttons.forEach(b => {
-    if (b.dataset.tab === tab) {
-      b.classList.add('border-b-2', 'border-[#2E7D32]', 'text-[#2E7D32]');
-      b.classList.remove('text-slate-600', 'hover:text-slate-800');
-    } else {
-      b.classList.remove('border-b-2', 'border-[#2E7D32]', 'text-[#2E7D32]');
-      b.classList.add('text-slate-600', 'hover:text-slate-800');
-    }
+    b.classList.toggle('active', b.dataset.tab === tab);
   });
 
   chatView.classList.add('hidden');
@@ -976,9 +1113,9 @@ async function updateStatusUI() {
     }
     msgEl.textContent = displayMessage;
     if (isRunning) {
-      msgEl.classList.add('text-[#2E7D32]');
+      msgEl.classList.add('accent');
     } else {
-      msgEl.classList.remove('text-[#2E7D32]');
+      msgEl.classList.remove('accent');
     }
 
     const pct = Math.max(0, Math.min(100, st.progress || 0));
@@ -987,13 +1124,13 @@ async function updateStatusUI() {
 
     // Color bar based on state
     if (isRunning) {
-      barEl.style.backgroundColor = '#3b82f6'; // blue while running
+      barEl.style.backgroundColor = 'var(--blue)';
     } else if (isDone) {
-      barEl.style.backgroundColor = '#4CAF50';
+      barEl.style.backgroundColor = 'var(--green)';
     } else if (isError) {
-      barEl.style.backgroundColor = '#ef4444';
+      barEl.style.backgroundColor = 'var(--red)';
     } else {
-      barEl.style.backgroundColor = '#4CAF50';
+      barEl.style.backgroundColor = 'var(--blue)';
     }
 
     let metaParts = [];
