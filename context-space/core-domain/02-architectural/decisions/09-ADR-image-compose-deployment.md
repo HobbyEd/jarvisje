@@ -1,7 +1,7 @@
 ---
 type: ADR
 title: "Image + Compose deployment"
-description: "Image + compose op .15; lokaal Ollama LLM; data buiten image."
+description: "Image + compose op de productiehost; lokaal Ollama LLM; data buiten image."
 status: accepted
 tags: [deployment, docker]
 timestamp: 2026-06-27T00:00:00Z

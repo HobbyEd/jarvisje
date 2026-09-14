@@ -44,8 +44,8 @@ If you skip any of these, say so explicitly to the user and offer to catch up.
 
 - Lightweight: pure Python where possible; no unnecessary frameworks.  
 - Structured LLM output via Pydantic.  
-- Production host: `<host>` — see `infra/runbooks/infrastructure.md` and `README.md`.  
-- **Secrets (ADR-011):** never hardcode tokens/passwords in source, docs, or commits. Use gitignored `.env` (`INGEST_TOKEN=…` for indexering). Ship host-`.env` via deploy, not the Docker image. See `.env.example` and `decisions/11-ADR-secrets-handling.md`.
+- Production host identity (`DEPLOY_USER`, `DEPLOY_HOST`, `HOST_HOME`) lives in gitignored `.env` — never in source or docs. See `.env.example` and `infra/runbooks/`.  
+- **Secrets (ADR-011):** never hardcode tokens/passwords/SSH user/host IPs in source, docs, or commits. Use gitignored `.env`. Ship host-`.env` via deploy, not the Docker image.
 
 ## Quick pointers
 

@@ -30,7 +30,7 @@ traces_to:
                 │ conformist                   │ customer/supplier
                 ▼                              ▼
 ┌───────────────────────────┐    ┌────────────────────────────┐
-│  Inference-Serving (.15)    │    │  Chat-UI (lezer)            │
+│  Inference-Serving     │    │  Chat-UI (lezer)            │
 │  Ollama gemma3:4b           │    │  standalone / WP-iframe     │
 └───────────────────────────┘    └────────────────────────────┘
 ```

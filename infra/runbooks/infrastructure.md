@@ -10,8 +10,8 @@
 
 | Item | Waarde |
 |------|--------|
-| Host | `enterprise` / `<host>` |
-| SSH | `<user>@<host>` (SSH-key) |
+| Host | `$DEPLOY_HOST` (`.env`) |
+| SSH | `$DEPLOY_USER@$DEPLOY_HOST` |
 | OS | Ubuntu 26.04 LTS, x86_64 |
 | CPU | AMD Ryzen 5 9600X (12 threads) |
 | RAM | ~30 GB |
@@ -19,9 +19,9 @@
 | Driver | nvidia-driver-595-open (595.x), CUDA runtime 13.x |
 | Docker | Engine 29.x + Compose + nvidia-container-toolkit |
 | Publiek | https://jarvisje.com |
-| LAN UI | http://<host>:8080 |
+| LAN UI | `http://$DEPLOY_HOST:8080` |
 
-Geen tweede GPU-host. NVIDIA Spark DGX `<host>` is **geen** deploydoel.
+Geen tweede GPU-host. NVIDIA Spark DGX `<legacy-host>` is **geen** deploydoel.
 
 ### Runtime-stack op de host
 
@@ -130,7 +130,7 @@ API o.a.: `POST /chat`, `POST /chat/sync`, `GET /health`, ingest-endpoints, `/so
 ## Netwerkoverzicht
 
 ```
-Internet ──HTTPS──► Cloudflare ──tunnel──► cloudflared@enterprise
+Internet ──HTTPS──► Cloudflare ──tunnel──► cloudflared@productiehost
                                               │
                                               ▼
                                          :8080 app

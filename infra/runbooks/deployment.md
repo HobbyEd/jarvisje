@@ -17,7 +17,7 @@
 
 Productiestack start via **systemd** (`sogyo-ollama` + `sogyo-chatbot`), niet handmatig elke boot. Compose-dir: `~/jarvisje-chatbot`.
 
-Geen deploydoel naar NVIDIA Spark DGX `<host>`. Alles (app + embeddings + LLM) draait op `.15`.
+Geen deploydoel naar NVIDIA Spark DGX `<legacy-host>`. Alles (app + embeddings + LLM) draait op de productiehost.
 
 ---
 

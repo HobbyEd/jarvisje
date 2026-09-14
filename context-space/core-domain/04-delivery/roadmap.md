@@ -16,7 +16,7 @@ traces_to:
 | Item | Status |
 |------|--------|
 | RAG chat + citations + SSE UI | Live |
-| Productiehost | `<host>` (enterprise) |
+| Productiehost | `<host>`  |
 | Publiek | https://jarvisje.com (Cloudflare Tunnel) |
 | LLM | Ollama `gemma3:4b` (GPU, lokaal) |
 | Embeddings | BGE-M3 (CPU tot Blackwell/torch-support) |
@@ -38,7 +38,7 @@ MVP end-to-end is **operationeel**. Verdere fasen zijn kwaliteit, onderhoud en s
 
 ### P0 — stabiliteit & operatie
 - [x] **ADR-010**: ingestion worker buiten chat-API-proces + status in UI
-- [x] Herindexering twee blogs (reset + crawl; ~340 pagina’s op `.15`)
+- [x] Herindexering twee blogs (reset + crawl; ~340 pagina’s op de productiehost)
 - [ ] Geplande ingest (cron/systemd timer) via dezelfde worker-entrypoint
 - [ ] Backup van `jarvisje-chatbot-data` documenteren/automatiseren
 

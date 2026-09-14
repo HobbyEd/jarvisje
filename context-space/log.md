@@ -2,10 +2,11 @@
 
 ## 2026-09-14
 
+* **Host-identiteit uit git:** `DEPLOY_USER`, `DEPLOY_HOST`, `HOST_HOME` in `.env` / `.env.example`. Geen SSH-user of LAN-IP meer in bron/docs. UI **v1.0.9**.
 * **Opruimen:** weg `open-beslissingen.md`, `cutover-dirs-on-15.sh`, oude `deploy-artifacts` tarballs; harnessing-index ingekort. vLLM/GB10 uit huidige technisch-design, werkwijze, orchestrator. Roadmap: herindexering af. UI **v1.0.8**.
 * **Uitlegpagina (voorstel):** [pagina-hoe-jarvisje-werkt.md](core-domain/04-delivery/pagina-hoe-jarvisje-werkt.md) — inhoudelijke opzet voor vervanging van de tab Chatbot Opbouw; nog niet gebouwd. UI **v1.0.7**.
 * **Deploy-descriptors = live:** hostpaden `~/jarvisje-chatbot` + `~/jarvisje-chatbot-data`, image `jarvisje`, container `jarvisje-chatbot-app`. Compose-projectnaam en Ollama blijven `sogyo-*` (Gemma-netwerk). Systemd-unitnamen blijven `sogyo-*` tot sudo-rename; WorkingDirectory → jarvisje.
-* **Geen DGX-deploy:** NVIDIA Spark DGX `<host>` / vLLM uit aannames, ADR-004 current-status, software-design, runbooks. ADR-005 blijft historisch/superseded.
+* **Geen DGX-deploy:** NVIDIA Spark DGX `<legacy-host>` / vLLM uit aannames, ADR-004 current-status, software-design, runbooks. ADR-005 blijft historisch/superseded.
 
 ## 2026-08-08
 
@@ -13,7 +14,7 @@
 * **ADR-011**: secrets policy — geen tokens in git/image; `.env` + `INGEST_TOKEN`; deploy scp host-`.env`; UI **v0.8.0**.
 * **ADR review**: 01–09 reality-check; **ADR-010** async ingestion worker.
 * **ADR-010 implementatie**: `ingestion/worker.py` + status files; API spawn i.p.v. in-process; UI banner; CLI `scripts/ingest.py` → worker; UI **v0.7.0**.
-* **Productie-migratie**: app-host van `.10` naar **`<host>`** (enterprise); lokaal **Ollama gemma3:4b**; Cloudflare Tunnel **jarvisje.com**; systemd `sogyo-ollama` + `sogyo-chatbot` + `cloudflared`.
+* **Productie-migratie**: app-host van `.10` naar **`<host>`** ; lokaal **Ollama gemma3:4b**; Cloudflare Tunnel **jarvisje.com**; systemd `sogyo-ollama` + `sogyo-chatbot` + `cloudflared`.
 * **Docs**: README, development-setup, infra runbooks, ubuntu-x64 README, ADR-004/009; UI; config → Ollama.
 * **Opschoning**: verwijderd `actualization/`, `infra/dgx-arm64/`, legacy compose, proxy-script, agent-stubs; projecties; UI **v0.6.2**.
 * **Lean A–E**: weg `terminals/`, redirect-stubs, lege `tests/`; roadmap → `04-delivery/roadmap.md`; `scripts/deploy-to-15.sh` + `smoke_health.py`; UI **v0.6.3**.

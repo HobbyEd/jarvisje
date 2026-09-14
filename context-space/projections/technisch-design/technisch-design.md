@@ -142,13 +142,13 @@ Het embedding-model zet tekst om in vectoren voor similarity search.
 
 - **Lokaal (default):** `sentence-transformers` met `BAAI/bge-m3`
 - **Device:** `cuda` als beschikbaar, anders `cpu`; overschrijfbaar via `EMBEDDING_DEVICE`
-- **Remote (optioneel):** bij `EMBEDDING_API_BASE` worden embeddings uitbesteed naar een OpenAI-compatible `/v1/embeddings` endpoint. Productie op `.15` gebruikt lokale BGE-M3.
+- **Remote (optioneel):** bij `EMBEDDING_API_BASE` worden embeddings uitbesteed naar een OpenAI-compatible `/v1/embeddings` endpoint. Productie op de productiehost gebruikt lokale BGE-M3.
 - **Batching:** GPU-batch tot 128; CPU via `embedding_batch_size` (default 32)
 - **Singleton:** `get_embedder()` laadt het model één keer en hergebruikt de instantie
 
 **Preload bij startup:** FastAPI `lifespan` roept `get_embedder()` aan tenzij `embedding_api_base` is gezet. Zonder preload duurt de eerste chat 30–90 seconden (download + laden).
 
-**Productie-notitie (.15 / RTX 5060 Ti):** PyTorch 2.6+cu124 ondersteunt sm_120 (Blackwell) nog niet; embeddings op **CPU** (`EMBEDDING_DEVICE=cpu`). LLM via Ollama op GPU.
+**Productie-notitie (RTX 5060 Ti):** PyTorch 2.6+cu124 ondersteunt sm_120 (Blackwell) nog niet; embeddings op **CPU** (`EMBEDDING_DEVICE=cpu`). LLM via Ollama op GPU.
 
 ### 1.4 Vector database (Chroma)
 
@@ -347,7 +347,7 @@ jarvisje/
 ├── scripts/
 │   └── ingest.py              # CLI ingest
 └── infra/
-    └── ubuntu-x64/            # Productie .15 (compose, deploy scripts)
+    └── ubuntu-x64/            # Productie (compose, deploy scripts)
 ```
 
 ### 3.2 Module-afhankelijkheden
@@ -416,13 +416,13 @@ Data-paden (relatief t.o.v. werkdirectory):
 
 De physical view beschrijft **waar** software draait en hoe componenten over het netwerk praten. Detaildeploy staat in [platform-overzicht](platform-overzicht.html); hier de applicatie-relevante topology.
 
-### 4.1 Deployment-topologie (productie `.15`)
+### 4.1 Deployment-topologie (de productiehost)
 
 ```mermaid
 flowchart TB
     Browser[Browser jarvisje.com]
     CF[cloudflared]
-    subgraph host [enterprise <host>]
+    subgraph host [productiehost]
         subgraph appc [Docker jarvisje-chatbot-app]
             API[FastAPI :8001]
             CHROMA[(Chroma /app/data)]
@@ -513,7 +513,7 @@ Onderwerpen die alle views raken.
 | Onderwerp | Richting |
 |-----------|----------|
 | Chunking | Heading/token-aware |
-| Embeddings | GPU op `.15` wanneer PyTorch sm_120 ondersteunt |
+| Embeddings | GPU op de productiehost wanneer PyTorch sm_120 ondersteunt |
 | Streaming | Echte LLM token-stream van Ollama |
 | Auth | API-key of SSO voor productie |
 

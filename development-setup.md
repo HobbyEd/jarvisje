@@ -6,7 +6,7 @@ Lokale ontwikkeling en testen. Productie-details: [infra/runbooks/infrastructure
 
 Docker image build + transfer is **traag** (ML-deps). Gebruik een tiered aanpak:
 
-1. **Dagelijkse dev: lokaal Python** — `python scripts/run_api.py` met LLM naar Ollama op `.15` (of andere endpoint).
+1. **Dagelijkse dev: lokaal Python** — `python scripts/run_api.py` met LLM naar Ollama op de productiehost (of andere endpoint).
 2. **Container-validatie** — alleen bij Dockerfile/web-serving/paden.
 3. **Server deploy** — alleen stabiele releases (`infra/ubuntu-x64/`).
 
@@ -23,7 +23,7 @@ cp .env.example .env
 #   INGEST_TOKEN=<jouw-geheime-token>
 # Optionele alias: INDEX_TOKEN=...
 
-# Productie-Ollama op .15 (LAN)
+# Productie-Ollama op de productiehost (LAN)
 export LLM_BASE_URL=http://<host>:11434/v1
 export LLM_MODEL=gemma3:4b
 export EMBEDDING_DEVICE=cpu
@@ -72,7 +72,7 @@ Stop: Ctrl+C of `docker rm -f jarvisje-test`.
 ### Wanneer image rebuilden + deployen?
 
 - Wijzigingen aan Dockerfile, requirements, of packaging.
-- Stabiele release naar productie `.15`.
+- Stabiele release naar de productiehost.
 
 Niet bij elke UI/API-regelwijziging tijdens lokale Python-dev.
 
@@ -138,7 +138,7 @@ for r in results:
 
 | Rol | Model | Waar |
 |-----|--------|------|
-| LLM | `gemma3:4b` (Ollama Q4) | Host `.15`, GPU |
+| LLM | `gemma3:4b` (Ollama Q4) | Productiehost, GPU |
 | Embeddings | `BAAI/bge-m3` | App-container, CPU |
 
 Laatst bijgewerkt: 2026-09-14

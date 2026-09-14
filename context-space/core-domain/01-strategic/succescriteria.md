@@ -22,12 +22,12 @@ Klaar als:
 4. Geen antwoorden grounded in sogyo.nl of andere geschrapte bronnen.
 5. Dark én light mode volgens *Edwin Blog*; embed volgt het parent-thema.
 6. Nieuwe content handmatig toevoegbaar via [ingestion](/core-domain/04-delivery/use-cases/bronnen-indexeren.md) (reset na bronwijziging).
-7. Stack op `.15` (app + Ollama + data), publiek via jarvisje.com.
+7. Stack op de productiehost (app + Ollama + data), publiek via jarvisje.com.
 
 ## Niet-functioneel
 
 - Elke bewering: minstens één concrete bron met link op een toegestaan host.
-- Responstijd acceptabel op `.15` (geen harde SLA).
+- Responstijd acceptabel op de productiehost (geen harde SLA).
 - Geen Sogyo-productreferenties in UI, prompts, package of infra-namen (na cutover).
 
 ## Kwalitatief

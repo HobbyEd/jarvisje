@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 #
-# Lean deploy: rsync sources → build Docker image on <host> → recreate app.
-# Requires SSH key access as <user>; user must be in the docker group (no sudo).
+# Lean deploy: rsync sources → build Docker image on the production host → recreate app.
+# SSH target and host paths come from gitignored `.env` (ADR-011):
+#   DEPLOY_USER, DEPLOY_HOST, optional DEPLOY_SSH, HOST_HOME
+# User must be in the docker group (no sudo).
 #
-# Secrets (ADR-011): copies local .env to the host compose dir (not into the image).
+# Secrets: copies local .env to the host compose dir (not into the image).
 # Does not recreate Ollama / Gemma (container sogyo-ollama).
 #
 # Usage (from repo root):
@@ -13,7 +15,6 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-HOST="${DEPLOY_HOST:-<user>@<host>}"
 TAG="${1:-latest}"
 REMOTE_BASE="jarvisje-chatbot"
 APP_CONTAINER="jarvisje-chatbot-app"
@@ -22,12 +23,24 @@ IMAGE="jarvisje"
 cd "$ROOT"
 
 if [[ ! -f "$ROOT/.env" ]]; then
-  echo "WARNING: no local .env found. UI indexering requires INGEST_TOKEN (ADR-011)." >&2
-  echo "         cp .env.example .env  &&  edit INGEST_TOKEN=..." >&2
-else
-  if ! grep -qE '^(INGEST_TOKEN|INDEX_TOKEN)=.+' "$ROOT/.env"; then
-    echo "WARNING: .env has no non-empty INGEST_TOKEN/INDEX_TOKEN." >&2
-  fi
+  echo "ERROR: missing .env — cp .env.example .env and set DEPLOY_USER, DEPLOY_HOST, HOST_HOME, INGEST_TOKEN." >&2
+  exit 1
+fi
+
+set -a
+# shellcheck disable=SC1091
+source "$ROOT/.env"
+set +a
+
+if [[ -z "${DEPLOY_USER:-}" || -z "${DEPLOY_HOST:-}" ]]; then
+  echo "ERROR: .env must set DEPLOY_USER and DEPLOY_HOST." >&2
+  exit 1
+fi
+HOST="${DEPLOY_SSH:-${DEPLOY_USER}@${DEPLOY_HOST}}"
+HOST_HOME="${HOST_HOME:-/home/${DEPLOY_USER}}"
+
+if ! grep -qE '^(INGEST_TOKEN|INDEX_TOKEN)=.+' "$ROOT/.env"; then
+  echo "WARNING: .env has no non-empty INGEST_TOKEN/INDEX_TOKEN." >&2
 fi
 
 echo "==> Rsync source to $HOST:~/$REMOTE_BASE/build-src"
@@ -51,13 +64,9 @@ scp -o BatchMode=yes \
   infra/ubuntu-x64/docker-compose.prod-local.yaml \
   "$HOST:~/$REMOTE_BASE/docker-compose.yaml"
 
-if [[ -f "$ROOT/.env" ]]; then
-  echo "==> Install host .env (mode 600, not in image) — ADR-011"
-  scp -o BatchMode=yes "$ROOT/.env" "$HOST:~/$REMOTE_BASE/.env"
-  ssh -o BatchMode=yes "$HOST" "chmod 600 ~/$REMOTE_BASE/.env"
-else
-  echo "==> Skipping .env deploy (file missing locally)"
-fi
+echo "==> Install host .env (mode 600, not in image) — ADR-011"
+scp -o BatchMode=yes "$ROOT/.env" "$HOST:~/$REMOTE_BASE/.env"
+ssh -o BatchMode=yes "$HOST" "chmod 600 ~/$REMOTE_BASE/.env"
 
 echo "==> Build & recreate app on server (tag=$TAG) — Ollama not touched"
 ssh -o BatchMode=yes "$HOST" bash -s <<EOF
@@ -80,10 +89,6 @@ curl -sf --max-time 10 http://127.0.0.1:8080/health | head -c 300 || true
 echo
 docker ps --filter name=${APP_CONTAINER} --format '{{.Names}} {{.Status}} {{.Image}}'
 docker exec ${APP_CONTAINER} python -c "import os; t=(os.getenv('INGEST_TOKEN') or os.getenv('INDEX_TOKEN') or ''); print('INGEST_TOKEN configured:', bool(t), 'len=', len(t))"
-if docker exec ${APP_CONTAINER} grep -R '<old-token-fragment>' /app/src 2>/dev/null; then
-  echo "ERROR: old hardcoded token fragment still in image source" >&2
-  exit 1
-fi
 if [[ "\$ok" -ne 1 ]]; then
   echo "WARNING: health not ready yet; check docker logs ${APP_CONTAINER}" >&2
   exit 1

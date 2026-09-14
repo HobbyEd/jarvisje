@@ -12,14 +12,14 @@ timestamp: 2026-07-05T00:00:00Z
 
 ## Doel
 
-Levend operationeel overzicht: componentdiagram, lokale dev-setup, Ollama op `.15`, Cloudflare, deploy. Bedoeld voor operators — niet voor agent-beleid.
+Levend operationeel overzicht: componentdiagram, lokale dev-setup, Ollama op de productiehost, Cloudflare, deploy. Bedoeld voor operators — niet voor agent-beleid.
 
 ## Secties (verplicht)
 
 1. **Overzicht** — UI, FastAPI, Chroma, Ollama, ingestion
 2. **Architectuur** — ADRs + productiehost
 3. **Platform starten** — venv, ingest, `run_api.py`, env vars (Ollama)
-4. **Deployment** — ADR-009 + `infra/runbooks/deployment.md` + `.15`
+4. **Deployment** — ADR-009 + `infra/runbooks/deployment.md` + de productiehost
 
 ## Bij elke update controleren
 

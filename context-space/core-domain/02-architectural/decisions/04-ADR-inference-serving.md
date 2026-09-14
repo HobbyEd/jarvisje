@@ -20,17 +20,17 @@ Accepted (geactualiseerd 2026-09-14)
 ## Context
 We willen lokaal infereren: volledige controle, geen cloud-API voor de kern, flexibele modelkeuze, streaming en bruikbare structured output.
 
-Oorspronkelijk (2026-06) was NVIDIA Spark DGX `<host>` de beoogde GPU-host met vLLM.  
+Oorspronkelijk (2026-06) was NVIDIA Spark DGX `<legacy-host>` de beoogde GPU-host met vLLM.  
 Sinds 2026-08 draait **Jarvisje** op host **`<host>`** (RTX 5060 Ti 16 GB). De DGX is **geen** productie- of optioneel deploydoel meer.
 
 ## Decision
 
 ### Productie (Jarvisje, 2026-08+)
-- **Ollama** op dezelfde host als de app (`enterprise` / `.15`).
+- **Ollama** op dezelfde host als de app (de productiehost).
 - Model: **`gemma3:4b`** (OpenAI-compatible API op poort 11434).
 - Backend configureert `LLM_BASE_URL` + `LLM_MODEL` via compose-env (niet hard in image).
 - Embeddings: **BGE-M3** lokaal in de app-container (CPU tot PyTorch Blackwell-support).
-- Client blijft OpenAI-compatible: wissel endpoint/model via env **op `.15`**.
+- Client blijft OpenAI-compatible: wissel endpoint/model via env **op de productiehost**.
 
 **Constante eis:** OpenAI-compatibele chat-completions API naar de backend.
 
@@ -47,7 +47,7 @@ Sinds 2026-08 draait **Jarvisje** op host **`<host>`** (RTX 5060 Ti 16 GB). De D
 
 ## Reality check (2026-09)
 
-Productie **draait** op Ollama `gemma3:4b` op `.15`. Structured output werkt via OpenAI-compatible JSON mode + backend parsing. vLLM op `<host>` is geen runtime-afhankelijkheid en geen deploydoel.
+Productie **draait** op Ollama `gemma3:4b` op de productiehost. Structured output werkt via OpenAI-compatible JSON mode + backend parsing. vLLM op `<legacy-host>` is geen runtime-afhankelijkheid en geen deploydoel.
 
 ## Alternatives Considered
 - **Alleen cloud APIs** (OpenAI, Anthropic, Grok, etc.): Verworpen vanwege kosten en controle.

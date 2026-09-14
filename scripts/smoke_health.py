@@ -3,7 +3,7 @@
 
 Usage:
   python scripts/smoke_health.py
-  API_BASE_URL=http://<host>:8080 python scripts/smoke_health.py
+  API_BASE_URL=http://$DEPLOY_HOST:8080 python scripts/smoke_health.py
 """
 from __future__ import annotations
 

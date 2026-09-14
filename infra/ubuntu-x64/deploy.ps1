@@ -9,20 +9,47 @@
 #   Falls back to scp with live progress polling (remote file size every 3s).
 # - Small files: same robocopy-over-SMB path, else scp.
 #
-# SMB root defaults to \\<host>\<user> (maps to ~ on the server).
-# Override when your share name differs: .\deploy.ps1 -SmbRoot '\\<host>\home'
+# SSH target and HOST_HOME come from repo-root .env (DEPLOY_USER, DEPLOY_HOST, HOST_HOME).
+# SMB root defaults to \\<host>\<DEPLOY_USER>. Override: .\deploy.ps1 -SmbRoot '\\<host>\home'
 #
 # One-time service setup: infra/ubuntu-x64/setup-sogyo-service.sh
-# Production host: <host> (enterprise). Prefer SSH keys over password.
+# Prefer SSH keys over password.
 
 param(
-    [string]$Server = "<user>@<host>",
+    [string]$Server = "",
     [string]$SmbRoot = ""
 )
 
 . (Join-Path $PSScriptRoot "Copy-ToDeployServer.ps1")
 
-$RemoteBase = "~/jarvisje-chatbot"
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$envFile = Join-Path $repoRoot ".env"
+if (Test-Path $envFile) {
+    Get-Content $envFile | ForEach-Object {
+        if ($_ -match '^\s*#' -or $_ -notmatch '=') { return }
+        $k, $v = $_.Split('=', 2)
+        $k = $k.Trim()
+        $v = $v.Trim().Trim("'").Trim('"')
+        if ($k -and -not [Environment]::GetEnvironmentVariable($k)) {
+            [Environment]::SetEnvironmentVariable($k, $v)
+            Set-Item -Path "Env:$k" -Value $v
+        }
+    }
+}
+
+if (-not $Server) {
+    $u = $env:DEPLOY_USER
+    $h = $env:DEPLOY_HOST
+    if ($env:DEPLOY_SSH) { $Server = $env:DEPLOY_SSH }
+    elseif ($u -and $h) { $Server = "$u@$h" }
+    else {
+        Write-Error "Set DEPLOY_USER and DEPLOY_HOST in .env (or pass -Server)."
+        exit 1
+    }
+}
+
+$hostHome = if ($env:HOST_HOME) { $env:HOST_HOME } else { "/home/$($env:DEPLOY_USER)" }
+$RemoteBase = "$hostHome/jarvisje-chatbot"
 $RemoteArtifacts = "$RemoteBase/deploy-artifacts"
 $ResolvedSmbRoot = Resolve-DeploySmbRoot -Server $Server -SmbRoot $SmbRoot
 $deployStarted = Get-Date

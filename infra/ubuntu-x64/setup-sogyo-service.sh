@@ -1,24 +1,22 @@
 #!/bin/bash
 #
-# One-time setup for systemd units on the Ubuntu production host (.15):
+# One-time setup for systemd units on the Ubuntu production host:
 #   - sogyo-ollama.service   → docker compose up -d ollama
 #   - sogyo-chatbot.service  → docker compose up -d app  (After ollama)
 #
 # Unit names stay sogyo-* (live Gemma network + existing enablement).
-# WorkingDirectory is ~/jarvisje-chatbot (actual compose dir).
+# Host identity from env (ADR-011): DEPLOY_USER, HOST_HOME
+#   or detected as SUDO_USER / current user.
 #
 # Run ONCE on the server (with sudo):
 #   sudo bash setup-sogyo-service.sh
 #
-# Manual control after install:
-#   sudo systemctl status sogyo-ollama sogyo-chatbot
-#   sudo systemctl restart sogyo-ollama
-#   sudo systemctl restart sogyo-chatbot
-#
 
 set -euo pipefail
 
-APP_DIR="~/jarvisje-chatbot"
+DEPLOY_USER="${DEPLOY_USER:-${SUDO_USER:-$(id -un)}}"
+HOST_HOME="${HOST_HOME:-/home/${DEPLOY_USER}}"
+APP_DIR="${HOST_HOME}/jarvisje-chatbot"
 OLLAMA_UNIT="/etc/systemd/system/sogyo-ollama.service"
 CHATBOT_UNIT="/etc/systemd/system/sogyo-chatbot.service"
 
@@ -26,27 +24,24 @@ echo "==> Configuring systemd services for Jarvisje stack"
 echo "    Ollama unit:  $OLLAMA_UNIT"
 echo "    Chatbot unit: $CHATBOT_UNIT"
 echo "    Compose dir:  $APP_DIR"
+echo "    Deploy user:  $DEPLOY_USER"
 
 mkdir -p "$APP_DIR" \
-  ~/jarvisje-chatbot-data \
-  ~/sogyo-ollama
+  "${HOST_HOME}/jarvisje-chatbot-data" \
+  "${HOST_HOME}/sogyo-ollama"
 
 if [[ ! -f "$APP_DIR/docker-compose.yaml" ]]; then
   echo "WARNING: $APP_DIR/docker-compose.yaml not found."
   echo "Copy infra/ubuntu-x64/docker-compose.prod-local.yaml there first."
 fi
 
-# Optional: copy server-deploy helper if present next to this script
 if [[ -f "$(dirname "$0")/server-deploy.sh" ]]; then
   cp "$(dirname "$0")/server-deploy.sh" "$APP_DIR/server-deploy.sh"
   chmod +x "$APP_DIR/server-deploy.sh"
   echo "Copied server-deploy.sh to $APP_DIR/"
 fi
 
-# ---------------------------------------------------------------------------
-# sogyo-ollama.service — starts only the ollama compose service
-# ---------------------------------------------------------------------------
-tee "$OLLAMA_UNIT" > /dev/null << 'EOF'
+tee "$OLLAMA_UNIT" > /dev/null << EOF
 [Unit]
 Description=Ollama (Gemma 3 4B) Docker Compose Service
 Documentation=https://github.com/ollama/ollama
@@ -59,8 +54,8 @@ Type=oneshot
 RemainAfterExit=yes
 User=root
 Group=root
-WorkingDirectory=~/jarvisje-chatbot
-Environment=HOME=~
+WorkingDirectory=${APP_DIR}
+Environment=HOME=${HOST_HOME}
 Environment=IMAGE_TAG=latest
 
 ExecStart=/usr/bin/docker compose up -d ollama
@@ -74,13 +69,10 @@ TimeoutStopSec=120
 WantedBy=multi-user.target
 EOF
 
-# ---------------------------------------------------------------------------
-# sogyo-chatbot.service — starts only the app; waits for ollama unit
-# ---------------------------------------------------------------------------
-tee "$CHATBOT_UNIT" > /dev/null << 'EOF'
+tee "$CHATBOT_UNIT" > /dev/null << EOF
 [Unit]
 Description=Jarvisje Chatbot Docker Compose Service
-Documentation=file://~/jarvisje-chatbot/docker-compose.yaml
+Documentation=file://${APP_DIR}/docker-compose.yaml
 Requires=docker.service sogyo-ollama.service
 After=docker.service network-online.target sogyo-ollama.service
 Wants=network-online.target
@@ -90,8 +82,8 @@ Type=oneshot
 RemainAfterExit=yes
 User=root
 Group=root
-WorkingDirectory=~/jarvisje-chatbot
-Environment=HOME=~
+WorkingDirectory=${APP_DIR}
+Environment=HOME=${HOST_HOME}
 Environment=IMAGE_TAG=latest
 
 ExecStart=/usr/bin/docker compose up -d app

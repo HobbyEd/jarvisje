@@ -19,8 +19,7 @@ Natuurlijke gesprekken voeren, altijd met concrete citations naar die twee blogs
 | Item | Waarde |
 |------|--------|
 | **Publiek** | https://jarvisje.com (Cloudflare Tunnel) |
-| **LAN** | http://<host>:8080 |
-| **Host** | `<user>@<host>` (hostname `enterprise`, Ubuntu 26.04) |
+| **LAN / SSH** | `DEPLOY_HOST` / `DEPLOY_USER` in gitignored `.env` |
 | **GPU** | NVIDIA RTX 5060 Ti 16 GB |
 | **LLM** | Ollama `gemma3:4b` (lokaal, OpenAI-compatible op `:11434`) |
 | **Embeddings** | BGE-M3 (CPU; Blackwell sm_120 nog niet in PyTorch 2.6+cu124) |
@@ -50,7 +49,7 @@ Operationeel: [infra/runbooks/infrastructure.md](infra/runbooks/infrastructure.m
 ├── scripts/                # run_api, ingest, deploy-to-15.sh, smoke_health
 ├── web/                    # UI (geserveerd door FastAPI)
 ├── infra/
-│   ├── ubuntu-x64/         # Productie .15 (compose, Dockerfile, PS1 helpers)
+│   ├── ubuntu-x64/         # Productie (compose, Dockerfile, PS1 helpers)
 │   └── runbooks/
 └── requirements.txt
 ```
@@ -64,15 +63,10 @@ python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-# Secrets (ADR-011) — never commit .env
+# Secrets + host (ADR-011) — never commit .env
 cp .env.example .env
-# Zet in .env:  INGEST_TOKEN=<lang-willekeurig-secret>
-# Nodig om indexering via UI/API te starten.
-
-# LLM: productieserver Ollama of andere OpenAI-compatible endpoint
-export LLM_BASE_URL=http://<host>:11434/v1
-export LLM_MODEL=gemma3:4b
-export EMBEDDING_DEVICE=cpu
+# Zet o.a.: INGEST_TOKEN, DEPLOY_USER, DEPLOY_HOST, HOST_HOME
+# LLM: optioneel LLM_BASE_URL=http://$DEPLOY_HOST:11434/v1 in .env
 
 python scripts/run_api.py
 # → http://localhost:8001
@@ -98,6 +92,6 @@ Werkwijze en domeinkennis staan in **`context-space/`**. Start met [`context-spa
 - jeroenteunisse.nl  
 
 ## Status
-Productie op `.15` met lokaal Gemma 3 4B + Cloudflare. Indexering via UI; embeddings op CPU tot PyTorch Blackwell-support.
+Productie met lokaal Gemma 3 4B + Cloudflare. Indexering via UI; embeddings op CPU tot PyTorch Blackwell-support. Host-identiteit staat in `.env`.
 
 Laatst bijgewerkt: 2026-09-14

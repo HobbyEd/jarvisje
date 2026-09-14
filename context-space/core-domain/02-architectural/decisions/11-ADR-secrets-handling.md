@@ -45,7 +45,7 @@ Dat schendt fundamentele securityhygiëne en is onacceptabel, ook voor een MVP.
 | `.env` op de app-host naast compose (mode `600`) | Default-waarden met echte tokens in code |
 | `.env.example` met **placeholders** | `.env` in Docker image layers |
 | Env vars via compose `env_file` / `environment` | Tokens in UI-HTML hardcoden of in git hooks logs |
-| Documentatie: *welke* keys bestaan | Documentatie: *echte* key-waarden |
+| Documentatie: *welke* keys bestaan | Documentatie: *echte* key-waarden, SSH-user, LAN-IP, hostname |
 
 ### 2. Ingest / index-token
 
@@ -62,15 +62,17 @@ Dat schendt fundamentele securityhygiëne en is onacceptabel, ook voor een MVP.
 
 ```bash
 cp .env.example .env
-# vul INGEST_TOKEN=... (sterk, uniek secret)
+# vul INGEST_TOKEN, DEPLOY_USER, DEPLOY_HOST, HOST_HOME
 ```
 
 App laadt `.env` via `python-dotenv` bij start (`config.py`), daarna `os.environ`.
 
-**Productie (`.15`):**
+Host-identiteit (niet in git): `DEPLOY_USER`, `DEPLOY_HOST`, optioneel `DEPLOY_SSH`, `HOST_HOME`.
+
+**Productie:**
 
 - Bestand: `~/jarvisje-chatbot/.env` (naast `docker-compose.yaml`)
-- Rechten: eigenaar `<user>` (of root), mode **`600`**
+- Rechten: eigenaar `$DEPLOY_USER` (of root), mode **`600`**
 - Compose: `env_file: .env` op de `app`-service (injecteert in container-proces, niet in image)
 - Deploy-script (`scripts/deploy-to-15.sh`) kopieert **alleen** een lokaal bestaande `.env` via `scp` naar die host-locatie — **niet** via rsync van de build-context, **niet** in de Docker build
 

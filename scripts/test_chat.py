@@ -6,7 +6,7 @@ Usage:
     python scripts/test_chat.py "Wat is intentie-gedreven engineering?"
 
     # Against production app on LAN
-    API_BASE_URL=http://<host>:8080 \
+    API_BASE_URL=http://$DEPLOY_HOST:8080 \
     python scripts/test_chat.py "Hoe ontwikkel je veranderkracht?"
 
 Also:
@@ -60,7 +60,7 @@ def main():
 
     except httpx.HTTPError as e:
         print(f"Failed to reach API: {e}")
-        print("Tip: python scripts/run_api.py  (LLM via Ollama on .15 or local)")
+        print("Tip: python scripts/run_api.py  (LLM via Ollama on the production host or local)")
 
 
 if __name__ == "__main__":

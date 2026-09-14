@@ -1,11 +1,11 @@
-# Deploy — Ubuntu x64 productie (`<host>`)
+# Deploy — Ubuntu x64 productie
 
-Productiehost voor Jarvisje (hostname **enterprise**).
+SSH-user, host-IP en `HOST_HOME` staan in gitignored `.env` (`DEPLOY_USER`, `DEPLOY_HOST`). Zie `.env.example`.
 
 | | |
 |--|--|
-| SSH | `<user>@<host>` |
-| UI LAN | http://<host>:8080 |
+| SSH | `$DEPLOY_USER@$DEPLOY_HOST` |
+| UI LAN | `http://$DEPLOY_HOST:8080` |
 | UI publiek | https://jarvisje.com |
 | LLM | Ollama `gemma3:4b` op dezelfde host |
 | Compose | `docker-compose.prod-local.yaml` → server: `~/jarvisje-chatbot/docker-compose.yaml` |

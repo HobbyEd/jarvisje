@@ -2,11 +2,11 @@
 Run the Jarvisje API locally (RAG backend + web/index.html UI at /).
 
 Usage:
-    # Default: Ollama on production host (.15) — must be reachable from your machine
+    # Default: LLM_BASE_URL from .env, else local Ollama
     python scripts/run_api.py
 
-    # Explicit production Ollama
-    LLM_BASE_URL=http://<host>:11434/v1 \
+    # Ollama on the production host (set DEPLOY_HOST in .env)
+    LLM_BASE_URL=http://$DEPLOY_HOST:11434/v1 \
     LLM_MODEL=gemma3:4b \
     EMBEDDING_DEVICE=cpu \
     python scripts/run_api.py
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     import uvicorn
     from jarvisje.api.app import app
 
-    base_url = os.getenv("LLM_BASE_URL", "http://<host>:11434/v1")
+    base_url = os.getenv("LLM_BASE_URL", "http://127.0.0.1:11434/v1")
     model = os.getenv("LLM_MODEL", "gemma3:4b")
 
     print("Starting Jarvisje API on http://localhost:8001")

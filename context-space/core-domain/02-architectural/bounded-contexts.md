@@ -48,7 +48,7 @@ Verantwoordelijk voor ophalen, chunken, embedden en vullen van de vector store. 
 | Relatie tot core | Conformist — OpenAI-compatible API |
 | Beslissing | [ADR-004](/core-domain/02-architectural/decisions/04-ADR-inference-serving.md) |
 
-Ollama `gemma3:4b` op `.15` levert completions. De chatbot stuurt prompts en ontvangt structured output; modelkeuze en GPU-config horen in Actualization Space. Geen DGX-deploy.
+Ollama `gemma3:4b` op de productiehost levert completions. De chatbot stuurt prompts en ontvangt structured output; modelkeuze en GPU-config horen in Actualization Space. Geen DGX-deploy.
 
 ## Agent-sturing (AE.nl lens)
 

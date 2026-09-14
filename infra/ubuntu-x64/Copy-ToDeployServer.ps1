@@ -66,7 +66,8 @@ function Convert-RemoteDirToUnc {
         [string]$SmbRoot,
         [string]$RemoteDir
     )
-    $relative = $RemoteDir -replace '^~/?', '' -replace '/', '\'
+    $homePrefix = if ($env:HOST_HOME) { [regex]::Escape($env:HOST_HOME.TrimEnd('/')) } else { '/home/[^/]+' }
+    $relative = $RemoteDir -replace "^$homePrefix/?", '' -replace '/', '\'
     if ($relative) {
         return Join-Path $SmbRoot $relative
     }
@@ -409,5 +410,6 @@ function Resolve-DeploySmbRoot {
     )
     if ($SmbRoot) { return $SmbRoot }
     $hostPart = Get-SshHostFromServer -Server $Server
-    return "\\$hostPart\<user>"
+    $share = if ($env:DEPLOY_USER) { $env:DEPLOY_USER } else { 'home' }
+    return "\\$hostPart\$share"
 }

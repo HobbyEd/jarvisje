@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Server-side deploy script.
-# Copied by deploy.ps1 and executed on the production host (<host>).
+# Copied by deploy.ps1 and executed on the production host.
 #
 # It:
 #   - Loads the new docker image from the tarball
@@ -20,13 +20,15 @@
 
 set -euo pipefail
 
-DEPLOY_DIR="~/jarvisje-chatbot"
+DEPLOY_USER="${DEPLOY_USER:-${SUDO_USER:-$(id -un)}}"
+HOST_HOME="${HOST_HOME:-/home/${DEPLOY_USER}}"
+DEPLOY_DIR="${HOST_HOME}/jarvisje-chatbot"
 ARTIFACTS_DIR="$DEPLOY_DIR/deploy-artifacts"
 IMAGE="jarvisje"
 APP_CONTAINER="jarvisje-chatbot-app"
 
 # Ensure the deploy directory is owned by the normal user (in case previous docker/sudo runs left root-owned files)
-sudo chown -R <user>:<user> "$DEPLOY_DIR" 2>/dev/null || true
+sudo chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "$DEPLOY_DIR" 2>/dev/null || true
 
 cd "$DEPLOY_DIR"
 

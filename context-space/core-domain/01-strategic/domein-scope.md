@@ -61,7 +61,7 @@ traces_to:
 
 ## Beperkingen
 
-- Eén host `.15`, image + compose ([ADR-009](/core-domain/02-architectural/decisions/09-ADR-image-compose-deployment.md)).
+- Eén de productiehost, image + compose ([ADR-009](/core-domain/02-architectural/decisions/09-ADR-image-compose-deployment.md)).
 - RAG-first, geen fine-tuning ([ADR-001](/core-domain/02-architectural/decisions/01-ADR-knowledge-strategy.md)).
 - Lightweight Python.
 

@@ -34,6 +34,6 @@ Geen aparte persona-modes (sollicitant vs bedrijf).
 - Visueel één geheel met *Edwin Blog* (dark en light).
 - Compact iframe in een gereserveerde WordPress-regio; beheer op jarvisje.com.
 - Gematigde [guardrails](/core-domain/03-technical/ubiquitous-language.md) binnen het onderwerp van de twee bronnen.
-- Draait lokaal op `.15` (zie [ADR-009](/core-domain/02-architectural/decisions/09-ADR-image-compose-deployment.md), [ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md)).
+- Draait lokaal op de productiehost (zie [ADR-009](/core-domain/02-architectural/decisions/09-ADR-image-compose-deployment.md), [ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md)).
 
 Zie [software-design.md](/core-domain/02-architectural/software-design.md) voor architectuur.

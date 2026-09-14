@@ -27,7 +27,7 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 - Uitgebreide chat-sessies zijn toegestaan.
 - Her-ingestie van kennisbasis (UI/worker; doel 4-6 uur).
 - Er komt een evaluatieset om kwaliteit (in-domein + citations) te meten.
-- Alles draait op **één host `.15`**: app, embeddings, Chroma en Ollama. NVIDIA Spark DGX is geen deploydoel (historisch: ADR-005).
+- Alles draait op **één de productiehost**: app, embeddings, Chroma en Ollama. NVIDIA Spark DGX is geen deploydoel (historisch: ADR-005).
 
 ## 2. Domein en Scope
 
@@ -66,7 +66,7 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 - **Taal**: Hoofdzakelijk Nederlands.
 - **Onderhoud**: Kennisbasis wordt elke 4-6 uur ververst.
 - **Evalueren**: Er komt een testset met vragen + verwachte gedrag (in-domein + citations).
-- **Technisch**: Lokaal-first op host `.15` (Ollama + FastAPI + Chroma). Geen remote GPU-host.
+- **Technisch**: Lokaal-first op de productiehost (Ollama + FastAPI + Chroma). Geen remote GPU-host.
 
 ## 4. High-Level Architecture
 
@@ -85,7 +85,7 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 └─────────────────────────────────┘
 ```
 
-**Huidige realiteit**: één host. Geen split naar NVIDIA Spark DGX `<host>`.
+**Huidige realiteit**: één host. Geen split naar NVIDIA Spark DGX `<legacy-host>`.
 
 ## 5. Kerncomponenten
 
@@ -106,7 +106,7 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 - Strict prompting + retrieval-only beleid.
 
 ### 5.4 LLM Orchestration
-- Hoofdmodel op `.15` via OpenAI-compatibele API (Ollama `gemma3:4b`).
+- Hoofdmodel op de productiehost via OpenAI-compatibele API (Ollama `gemma3:4b`).
 - Ondersteuning voor lange context / history.
 - Structured output voor citations.
 
@@ -141,7 +141,7 @@ Kort samengevat:
 ## 8. Technologie Stack (Initiële Richting)
 
 - **Backend**: FastAPI (Python)
-- **LLM Serving**: Ollama (OpenAI-compatibele endpoint) op `.15`
+- **LLM Serving**: Ollama (OpenAI-compatibele endpoint) op de productiehost
 - **Embeddings**: Lokale sentence-transformers / BGE-M3 (CPU tot Blackwell-support)
 - **Vector DB**: Chroma (persistente host-volume)
 - **Orchestration**: Lichtgewicht custom (Pydantic + httpx)
@@ -163,7 +163,7 @@ Zie ook ADR-08 over citations.
 
 ## 10. Risico's en Open Issues
 
-- Groter lokaal model op `.15` als VRAM/kwaliteit dat toelaat (ADR-004).
+- Groter lokaal model op de productiehost als VRAM/kwaliteit dat toelaat (ADR-004).
 - Kwaliteit van retrieval op abstracte/filosofische content.
 - Consistentie van Nederlandse antwoorden.
 - Onderhoud van de ingestion pipeline bij veranderingen in de bronnen.

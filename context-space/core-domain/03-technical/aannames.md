@@ -14,8 +14,8 @@ Dit document bevat expliciete aannames die gemaakt zijn tijdens de implementatie
 
 ## Algemene aannames
 
-- Productie-LLM: Ollama `gemma3:4b` op host `.15` (`http://ollama:11434/v1` in compose, `http://<host>:11434/v1` vanaf LAN). Zie `infra/runbooks/infrastructure.md`.
-- NVIDIA Spark DGX `<host>` / vLLM is **geen** deploydoel (historisch; ADR-004/005).
+- Productie-LLM: Ollama `gemma3:4b` op de productiehost (`http://ollama:11434/v1` in compose, `http://<host>:11434/v1` vanaf LAN). Zie `infra/runbooks/infrastructure.md`.
+- NVIDIA Spark DGX `<legacy-host>` / vLLM is **geen** deploydoel (historisch; ADR-004/005).
 - Voor de MVP is er geen persistente user session state nodig; history wordt door de client meegegeven.
 - "Hints na ieder antwoord" worden **in dezelfde LLM call** gegenereerd via structured output (zoals besloten in [domein-scope](/core-domain/01-strategic/domein-scope.md)).
 
@@ -61,7 +61,7 @@ Dit document bevat expliciete aannames die gemaakt zijn tijdens de implementatie
 ## Open punten / Later te herzien
 
 - Hoe precies "ADR compliance" automatisch gecheckt wordt (huidig: eenvoudige heuristieken).
-- Modelwissel op `.15` (groter Ollama-model) als VRAM/kwaliteit dat toelaat.
+- Modelwissel op de productiehost (groter Ollama-model) als VRAM/kwaliteit dat toelaat.
 - Frontend UX details (wordt basic gehouden).
 - Performance / caching van retrieval in de API.
 

@@ -5,7 +5,7 @@ Embeddings support.
 - Remote: call OpenAI-compatible /v1/embeddings when EMBEDDING_API_BASE is set
 
 When EMBEDDING_API_BASE is set, embeddings are outsourced (no local model needed in container).
-Production on .15 uses local BGE-M3 on CPU (EMBEDDING_DEVICE=cpu).
+Production on the production host uses local BGE-M3 on CPU (EMBEDDING_DEVICE=cpu).
 """
 from __future__ import annotations
 
