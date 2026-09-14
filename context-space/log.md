@@ -1,5 +1,9 @@
 # Context Space Update Log
 
+## 2026-09-14
+
+* **Uitlegpagina (voorstel):** [pagina-hoe-jarvisje-werkt.md](core-domain/04-delivery/pagina-hoe-jarvisje-werkt.md) — inhoudelijke opzet voor vervanging van de tab Chatbot Opbouw; nog niet gebouwd. UI **v1.0.7**.
+
 ## 2026-08-08
 
 * **Incrementele indexering**: zonder reset alleen nieuw/gewijzigd (sitemap lastmod vs Chroma); reset = full rebuild; UI **v0.8.1**.

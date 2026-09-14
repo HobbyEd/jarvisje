@@ -20,7 +20,7 @@ Single source of truth voor **wat** we bouwen en **waarom**. Inhoud in [core-dom
 * [01 Strategic](core-domain/01-strategic/) — vision, scope, succescriteria  
 * [02 Architectural](core-domain/02-architectural/) — ADRs, software design  
 * [03 Technical](core-domain/03-technical/) — taal, bronnen, aannames  
-* [04 Delivery](core-domain/04-delivery/) — werkwijze, [roadmap](core-domain/04-delivery/roadmap.md), use cases  
+* [04 Delivery](core-domain/04-delivery/) — werkwijze, [roadmap](core-domain/04-delivery/roadmap.md), [uitlegpagina](core-domain/04-delivery/pagina-hoe-jarvisje-werkt.md), use cases  
 
 ## Projecties & harnessing
 

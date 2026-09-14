@@ -26,6 +26,7 @@ Single source of truth — **wat & waarom**. Vier kennislagen (augmentedengineer
 
 * [Werkwijze](04-delivery/werkwijze.md) - verplicht proces per stap
 * [Roadmap](04-delivery/roadmap.md) - huidige staat en volgende stappen
+* [Pagina: Hoe Jarvisje werkt](04-delivery/pagina-hoe-jarvisje-werkt.md) - opzet publieke uitlegpagina (nog niet gebouwd)
 * [Use cases](04-delivery/use-cases/) - onboarding, chat, indexering
 
 # Buiten core-domain (gerelateerd)
