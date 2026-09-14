@@ -1,10 +1,10 @@
 """
-Chroma vector store wrapper (MVP: start with Chroma, migrate path to Qdrant documented).
+Chroma vector store wrapper.
 
 Provides:
 - get collection
 - upsert list of chunk documents
-- basic similarity search (for testing in Fase 0/1)
+- basic similarity search
 """
 from __future__ import annotations
 

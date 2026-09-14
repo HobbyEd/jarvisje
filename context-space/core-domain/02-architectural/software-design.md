@@ -186,14 +186,7 @@ Alle significante beslissingen worden vastgelegd in losse ADR-bestanden in [deci
 - `11-ADR-secrets-handling.md`
 - `12-ADR-jarvisje-rebrand.md`
 
-## 12. Volgende Stappen (voorstel)
-
-1. ADRs reviewen en accorderen.
-2. Eerste versie van de ingestion pipeline bouwen.
-3. Vector DB vullen + retrieval testen.
-4. Eenvoudige FastAPI + LLM endpoint prototypen (lokaal / `.15`).
-5. Guardrails implementeren en testen met de evaluatieset.
-6. Embed-view + standalone beheer.
+Open werk staat in de [roadmap](/core-domain/04-delivery/roadmap.md), niet in dit ontwerp.
 
 ---
 

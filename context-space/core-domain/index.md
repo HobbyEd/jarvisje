@@ -7,7 +7,6 @@ Single source of truth — **wat & waarom**. Vier kennislagen (augmentedengineer
 * [Vision](01-strategic/vision.md) - kernbelofte en doelgroepen
 * [Domein-scope](01-strategic/domein-scope.md) - MVP in/out scope
 * [Succescriteria](01-strategic/succescriteria.md) - Definition of Done
-* [Open beslissingen](01-strategic/open-beslissingen.md) - scope-interview archief
 
 # Architectural
 

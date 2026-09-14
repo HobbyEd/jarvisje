@@ -52,7 +52,7 @@ Voor **iedere stap** die we uitvoeren (wijziging in code, docs, structuur, etc.)
 ## Extra richtlijnen
 
 - Voeg geen nieuwe dependencies toe zonder check tegen lightweight principe (en update designer checks indien nodig).
-- Test lokaal: start vLLM + Python stack + API.
+- Test lokaal: Python API (`scripts/run_api.py`) tegen Ollama op `.15` of lokaal.
 - Update altijd de visualisatie en start-instructies in projections/output bij architectuurwijzigingen.
 - Als er twijfel is over een nieuwe ADR: maak er een aan in `context-space/core-domain/02-architectural/decisions/`.
 

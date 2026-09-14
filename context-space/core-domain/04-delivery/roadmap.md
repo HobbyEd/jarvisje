@@ -11,7 +11,7 @@ traces_to:
 
 # Product roadmap — Jarvisje
 
-## Huidige staat (2026-08)
+## Huidige staat (2026-09)
 
 | Item | Status |
 |------|--------|
@@ -38,7 +38,7 @@ MVP end-to-end is **operationeel**. Verdere fasen zijn kwaliteit, onderhoud en s
 
 ### P0 — stabiliteit & operatie
 - [x] **ADR-010**: ingestion worker buiten chat-API-proces + status in UI
-- [ ] Herindexering alle bronnen (hoge max / full crawl) en controleren page counts
+- [x] Herindexering twee blogs (reset + crawl; ~340 pagina’s op `.15`)
 - [ ] Geplande ingest (cron/systemd timer) via dezelfde worker-entrypoint
 - [ ] Backup van `jarvisje-chatbot-data` documenteren/automatiseren
 

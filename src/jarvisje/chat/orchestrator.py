@@ -96,7 +96,7 @@ class ChatOrchestrator:
         )
 
     def _call_llm(self, system: str, user: str) -> str:
-        """Call the OpenAI-compatible vLLM endpoint and return raw content."""
+        """Call the OpenAI-compatible LLM endpoint and return raw content."""
         if httpx is None:
             raise RuntimeError("httpx is required for LLM calls. Please install requirements.")
 

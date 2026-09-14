@@ -1,7 +1,7 @@
 # Installs the post-commit hook for the Software Designer Agent
 $hookContent = @'
 #!/bin/sh
-# Sogyo Software Designer Agent - post-commit hook
+# Jarvisje Software Designer Agent - post-commit hook
 # Runs after every local commit.
 
 # Ensure the src package is importable when running from repo root

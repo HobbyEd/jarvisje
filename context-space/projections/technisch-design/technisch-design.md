@@ -4,7 +4,7 @@
 |------|--------|
 | **Versie** | 0.5 |
 | **Status** | Productrebrand Jarvisje (ADR-012); productie op <host> — Ollama gemma3:4b + Cloudflare jarvisje.com |
-| **Datum** | 2026-09-13 |
+| **Datum** | 2026-09-14 |
 | **Gerelateerde docs** | [Platform-overzicht](platform-overzicht.html), `infra/runbooks/` |
 
 ---
@@ -24,7 +24,7 @@ Het document volgt het **4+1 architectuurmodel** van Philippe Kruchten. Dat mode
 | **Scenarios (+1)** | Hoe zien concrete use cases er stap voor stap uit? |
 
 **In scope:** indexering, Chroma, embedding-model, retrieval, chat-orchestratie, FastAPI, web-UI.  
-**Buiten scope:** deploy-runbooks (zie platform-overzicht), designer-agent tooling, toekomstige Qdrant-migratie (alleen genoemd als evolutiepad).
+**Buiten scope:** deploy-runbooks (zie platform-overzicht), designer-agent tooling.
 
 ### Begrippenlijst
 
@@ -174,7 +174,7 @@ Chroma is de **persistente vector store** voor MVP.
 }
 ```
 
-**Evolutiepad:** in code staat een migratiepad naar Qdrant gedocumenteerd; MVP blijft bij Chroma vanwege eenvoud en embedded persistent storage.
+MVP blijft bij Chroma vanwege eenvoud en embedded persistent storage.
 
 ### 1.5 Chunking-strategie
 
@@ -512,10 +512,9 @@ Onderwerpen die alle views raken.
 
 | Onderwerp | Richting |
 |-----------|----------|
-| Vector DB | Chroma → Qdrant (documented in code comments) |
 | Chunking | Heading/token-aware |
-| Embeddings | GPU op GB10 wanneer PyTorch/container ondersteuning stabiel is |
-| Streaming | Echte LLM token-stream van vLLM |
+| Embeddings | GPU op `.15` wanneer PyTorch sm_120 ondersteunt |
+| Streaming | Echte LLM token-stream van Ollama |
 | Auth | API-key of SSO voor productie |
 
 ---
@@ -623,9 +622,9 @@ sequenceDiagram
 
 ### 6.2 Use case: Gebruiker communiceert met de app
 
-**Doel:** Een bezoeker stelt een vraag over Sogyo/traineeship/AI en ontvangt een onderbouwd antwoord met bronverwijzingen.
+**Doel:** Een bezoeker stelt een vraag over de twee blogs en ontvangt een onderbouwd antwoord met bronverwijzingen.
 
-**Actoren:** Gebruiker, Web UI, FastAPI, ChatOrchestrator, Retriever, Embedder, Chroma, vLLM.
+**Actoren:** Gebruiker, Web UI, FastAPI, ChatOrchestrator, Retriever, Embedder, Chroma, Ollama.
 
 **Triggers:** Gebruiker typt bericht en klikt "Verstuur".
 
@@ -633,7 +632,7 @@ sequenceDiagram
 
 - App healthy (`/health` ok)  
 - Chroma bevat geïndexeerde chunks  
-- vLLM bereikbaar op `LLM_BASE_URL`  
+- Ollama bereikbaar op `LLM_BASE_URL`  
 
 **Postcondities:**
 
@@ -651,7 +650,7 @@ sequenceDiagram
     participant Ret as retriever.py
     participant Emb as Embedder
     participant Chroma as Chroma
-    participant LLM as vLLM Gemma
+    participant LLM as Ollama gemma3:4b
 
     Gebruiker->>UI: Typ vraag + Verstuur
     UI->>UI: Toon "denk"-indicator
@@ -670,7 +669,7 @@ sequenceDiagram
     Orch->>Orch: build_system_prompt(role, hits)
     Orch->>Orch: build_user_prompt(history, message)
     Orch->>LLM: POST /chat/completions (JSON mode)
-    Note over LLM: model=Gemma-4<br/>system + user messages
+    Note over LLM: model=gemma3:4b<br/>system + user messages
     LLM-->>Orch: JSON string
 
     Orch->>Orch: parse ChatResponse (of fallback)
@@ -691,8 +690,8 @@ sequenceDiagram
 1. **Client** — `session_id` in `sessionStorage`; history array wordt meegegeven.  
 2. **Retrieval** — Vraag wordt geëmbed; Chroma zoekt 6 dichtstbijzijnde chunks (cosine).  
 3. **Prompt** — System prompt bevat rolcontext + tot 6 bronfragmenten (max ~800 tekens elk in prompt). LLM moet JSON teruggeven met antwoord, citaten en hints.  
-4. **LLM** — Externe call naar vLLM; timeout configureerbaar (`LLM_TIMEOUT`, default 120s).  
-5. **Streaming** — Antwoord wordt na afloop in stukken gestuurd voor UX; geen echte token-stream van vLLM.  
+4. **LLM** — Call naar Ollama (`LLM_BASE_URL`); timeout configureerbaar (`LLM_TIMEOUT`, default 180s).  
+5. **Streaming** — Antwoord wordt na afloop in stukken gestuurd voor UX; geen echte token-stream van Ollama.  
 6. **Final** — Client ontvangt gestructureerde citaten voor weergave onder het antwoord.  
 
 ---

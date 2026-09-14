@@ -65,6 +65,6 @@ traces_to:
 - RAG-first, geen fine-tuning ([ADR-001](/core-domain/02-architectural/decisions/01-ADR-knowledge-strategy.md)).
 - Lightweight Python.
 
-## Beslissingen (archief)
+## Beslissingen
 
-Interviewbeslissingen uit de oorspronkelijke Sogyo-scope-sessie staan in [open-beslissingen.md](open-beslissingen.md). Productkader sinds 2026-09-13: [ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md).
+Productkader: [ADR-012](/core-domain/02-architectural/decisions/12-ADR-jarvisje-rebrand.md). Overige keuzes in [decisions/](/core-domain/02-architectural/decisions/).
