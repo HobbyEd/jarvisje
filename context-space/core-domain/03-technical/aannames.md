@@ -14,11 +14,8 @@ Dit document bevat expliciete aannames die gemaakt zijn tijdens de implementatie
 
 ## Algemene aannames
 
-- De vLLM server draait op de DGX op een OpenAI-compatibele endpoint (default `http://<host>:8001/v1`, Gemma model).
-- Modellen op de DGX (kunnen naast elkaar draaien dankzij quantisatie):
-  - Chatbot (Sogyo): nvidia/Gemma-4-26B-A4B-NVFP4 (op 8001) — gekozen omdat het kwalitatief sterker is voor RAG + Nederlands + structured output.
-  - Coding/general: Qwen/Qwen2.5-7B-Instruct (op 8002) — gebruikt voor coding/algemeen of als fallback.
-  Productie (2026-08): Ollama `gemma3:4b` op host `.15`. Zie `infra/runbooks/infrastructure.md`.
+- Productie-LLM: Ollama `gemma3:4b` op host `.15` (`http://ollama:11434/v1` in compose, `http://<host>:11434/v1` vanaf LAN). Zie `infra/runbooks/infrastructure.md`.
+- NVIDIA Spark DGX `<host>` / vLLM is **geen** deploydoel (historisch; ADR-004/005).
 - Voor de MVP is er geen persistente user session state nodig; history wordt door de client meegegeven.
 - "Hints na ieder antwoord" worden **in dezelfde LLM call** gegenereerd via structured output (zoals besloten in [domein-scope](/core-domain/01-strategic/domein-scope.md)).
 
@@ -35,7 +32,7 @@ Dit document bevat expliciete aannames die gemaakt zijn tijdens de implementatie
 
 ## Prompts & Structured Output
 
-- Structured output via instructies + Pydantic (of response_format waar ondersteund door de vLLM model).
+- Structured output via instructies + Pydantic (of response_format waar ondersteund door het OpenAI-compatible model).
 - Onboarding flow:
   1. Vraag rol (sollicitant/student vs bedrijf)
   2. Vraag interessegebied
@@ -56,7 +53,7 @@ Dit document bevat expliciete aannames die gemaakt zijn tijdens de implementatie
 - Embedding model: BGE-M3 (1024 dim). Collection naam is model-specifiek om dim-conflicten te voorkomen.
 - LLM client: `httpx` + OpenAI-compatibele `/chat/completions` (of `openai` library als die al in env zit).
 - Geen LangChain/LlamaIndex.
-- Voor development kan de LLM tijdelijk gemockt worden (of een dummy vLLM draaien).
+- Voor development kan de LLM tijdelijk gemockt worden (of een lokale Ollama).
 - Post-commit hook is een eenvoudige shell script die `python -m jarvisje.designer.cli` aanroept.
 - Alle code blijft in `src/jarvisje/`.
 - Commits na iedere logische bouwstap.
@@ -64,8 +61,8 @@ Dit document bevat expliciete aannames die gemaakt zijn tijdens de implementatie
 ## Open punten / Later te herzien
 
 - Hoe precies "ADR compliance" automatisch gecheckt wordt (huidig: eenvoudige heuristieken).
-- Volledige integratie met echte vLLM (momenteel aangenomen dat hij draait).
+- Modelwissel op `.15` (groter Ollama-model) als VRAM/kwaliteit dat toelaat.
 - Frontend UX details (wordt basic gehouden).
 - Performance / caching van retrieval in de API.
 
-Laatste update: 2026-06-27
+Laatste update: 2026-09-14

@@ -1,8 +1,8 @@
-# Runbook: Infrastructure — Sogyo Kennis Chatbot
+# Runbook: Infrastructure — Jarvisje
 
 **Type:** Runbook (Actualization Space)  
-**Gerelateerd:** [deployment.md](deployment.md), ADR-004, ADR-009  
-**Laatst bijgewerkt:** 2026-08-08
+**Gerelateerd:** [deployment.md](deployment.md), ADR-004, ADR-009, ADR-012  
+**Laatst bijgewerkt:** 2026-09-14
 
 ---
 
@@ -21,20 +21,23 @@
 | Publiek | https://jarvisje.com |
 | LAN UI | http://<host>:8080 |
 
+Geen tweede GPU-host. NVIDIA Spark DGX `<host>` is **geen** deploydoel.
+
 ### Runtime-stack op de host
 
 | Component | Hoe | Poort / pad |
 |-----------|-----|-------------|
-| **Ollama** | Docker service `ollama` | host `11434` |
+| **Ollama** | Docker service `ollama`, container `sogyo-ollama` | host `11434` |
 | **Model** | `gemma3:4b` | `~/sogyo-ollama` |
-| **Chatbot app** | Docker service `app` | host `8080` → container `8001` |
+| **Chatbot app** | Docker service `app`, container `jarvisje-chatbot-app` | host `8080` → container `8001` |
+| **Image** | `jarvisje:<tag>` | — |
 | **Data** | volume | `~/jarvisje-chatbot-data` |
-| **Compose** | | `~/jarvisje-chatbot/docker-compose.yaml` |
+| **Compose** | projectnaam `sogyo-chatbot` | `~/jarvisje-chatbot/docker-compose.yaml` |
 | **Cloudflare Tunnel** | native `cloudflared` | → `http://127.0.0.1:8080` |
 
 **Canonieke compose (productie):**  
 `infra/ubuntu-x64/docker-compose.prod-local.yaml`  
-(op de server: `~/sogyo-chatbot/docker-compose.yaml`)
+(op de server: `~/jarvisje-chatbot/docker-compose.yaml`)
 
 ### Systemd (boot)
 
@@ -44,6 +47,8 @@ docker.service
     → sogyo-chatbot.service # docker compose up -d app
   → cloudflared.service     # tunnel naar localhost:8080
 ```
+
+Units behouden de bestaande namen; WorkingDirectory is `~/jarvisje-chatbot`. Tot de units met sudo zijn herschreven bestaat symlink `~/sogyo-chatbot` → `~/jarvisje-chatbot`.
 
 ```bash
 sudo systemctl status sogyo-ollama sogyo-chatbot cloudflared
@@ -100,8 +105,9 @@ TeslaMate (poorten 3000, 4000, 1883) — geen conflict met 8080/11434.
 curl -s http://127.0.0.1:8080/health
 curl -s https://jarvisje.com/health
 nvidia-smi
-docker ps --filter name=sogyo
-docker stats sogyo-chatbot-app sogyo-ollama
+docker ps --filter name=jarvisje-chatbot-app
+docker ps --filter name=sogyo-ollama
+docker stats jarvisje-chatbot-app sogyo-ollama
 ```
 
 ---
@@ -115,6 +121,7 @@ FastAPI (`src/jarvisje/api/app.py`) serveert `web/index.html` op `/`.
 | Lokaal | http://localhost:8001 |
 | LAN | http://<host>:8080 |
 | Publiek | https://jarvisje.com |
+| Embed | `https://jarvisje.com/?embed=1&theme=dark` (iframe op edwinvandillen.nl) |
 
 API o.a.: `POST /chat`, `POST /chat/sync`, `GET /health`, ingest-endpoints, `/sources`.
 
@@ -142,5 +149,6 @@ Internet ──HTTPS──► Cloudflare ──tunnel──► cloudflared@enter
 - Eventueel groter lokaal model als VRAM/kwaliteit dat toelaat.
 - Nightly ingest (cron) i.p.v. alleen UI-trigger.
 - Metrics (Prometheus/Grafana) optioneel.
+- Systemd-units hernoemen (sudo).
 
-Laatst bijgewerkt: 2026-08-08
+Laatst bijgewerkt: 2026-09-14

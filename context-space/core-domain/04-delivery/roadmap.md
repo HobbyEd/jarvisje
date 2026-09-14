@@ -9,7 +9,7 @@ traces_to:
   - /core-domain/01-strategic/vision.md
 ---
 
-# Product roadmap — Sogyo Kennis-Chatbot
+# Product roadmap — Jarvisje
 
 ## Huidige staat (2026-08)
 
@@ -21,7 +21,7 @@ traces_to:
 | LLM | Ollama `gemma3:4b` (GPU, lokaal) |
 | Embeddings | BGE-M3 (CPU tot Blackwell/torch-support) |
 | Indexering | ADR-010 async worker; ADR-011 `INGEST_TOKEN` via `.env`; sitemap-first |
-| Deploy | Docker Compose + systemd (`sogyo-ollama`, `sogyo-chatbot`, `cloudflared`) |
+| Deploy | Docker Compose + systemd (`sogyo-ollama`, `sogyo-chatbot`, `cloudflared`); paden `~/jarvisje-chatbot` |
 | UI-versie | zie badge in `web/index.html` |
 
 MVP end-to-end is **operationeel**. Verdere fasen zijn kwaliteit, onderhoud en schaal — geen “from scratch” meer.
@@ -40,7 +40,7 @@ MVP end-to-end is **operationeel**. Verdere fasen zijn kwaliteit, onderhoud en s
 - [x] **ADR-010**: ingestion worker buiten chat-API-proces + status in UI
 - [ ] Herindexering alle bronnen (hoge max / full crawl) en controleren page counts
 - [ ] Geplande ingest (cron/systemd timer) via dezelfde worker-entrypoint
-- [ ] Backup van `sogyo-chatbot-data` documenteren/automatiseren
+- [ ] Backup van `jarvisje-chatbot-data` documenteren/automatiseren
 
 ### P1 — kwaliteit
 - [ ] Evaluatieset (20–25 vragen) + handmatige scoring

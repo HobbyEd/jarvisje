@@ -2,9 +2,10 @@
 Embeddings support.
 
 - Local: sentence-transformers (BGE-M3 etc) on GPU/CPU
-- Remote: call OpenAI-compatible /v1/embeddings on DGX (recommended on heavy hardware)
+- Remote: call OpenAI-compatible /v1/embeddings when EMBEDDING_API_BASE is set
 
-When EMBEDDING_API_BASE is set, embeddings are outsourced to the DGX (no local model needed in container).
+When EMBEDDING_API_BASE is set, embeddings are outsourced (no local model needed in container).
+Production on .15 uses local BGE-M3 on CPU (EMBEDDING_DEVICE=cpu).
 """
 from __future__ import annotations
 
@@ -56,7 +57,7 @@ def get_embedder() -> SentenceTransformer:
 
 
 def _embed_remote(texts: List[str], batch_size: int = 64) -> List[List[float]]:
-    """Call remote embeddings API (vLLM /v1/embeddings or compatible)."""
+    """Call remote embeddings API (OpenAI-compatible /v1/embeddings)."""
     base = settings.embedding_api_base.rstrip("/")
     url = f"{base}/embeddings"
     all_embs: List[List[float]] = []
@@ -85,7 +86,7 @@ def _embed_remote(texts: List[str], batch_size: int = 64) -> List[List[float]]:
 def embed_chunks(texts: List[str], batch_size: int | None = None) -> List[List[float]]:
     """Return list of embedding vectors for the given texts.
 
-    If EMBEDDING_API_BASE is set, embeddings are outsourced to the DGX
+    If EMBEDDING_API_BASE is set, embeddings are outsourced
     (no local heavy model required in the container).
     """
     if getattr(settings, "embedding_api_base", ""):

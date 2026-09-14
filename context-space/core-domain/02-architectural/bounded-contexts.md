@@ -1,6 +1,6 @@
 ---
 type: Bounded Context
-title: "Bounded contexts — Sogyo Kennis-Chatbot"
+title: "Bounded contexts — Jarvisje"
 description: "Domeingrenzen en classificatie van de chatbot en ondersteunende contexten."
 tags: [ddd, architecture]
 timestamp: 2026-07-05T00:00:00Z
@@ -17,7 +17,7 @@ Voor de MVP modelleren we één **core** bounded context met twee **supporting**
 | Eigenschap | Waarde |
 |------------|--------|
 | Type | Core domain (MVP) |
-| Doel | Gesprek voeren binnen Sogyo-domein met grounded antwoorden en citations |
+| Doel | Gesprek voeren binnen het AI-domein van de twee blogs, met grounded antwoorden en citations |
 | Ubiquitous language | [ubiquitous-language.md](/core-domain/03-technical/ubiquitous-language.md) |
 | Harnessing | Gematigde guardrails + citation-forcing + Designer Agent |
 
@@ -48,7 +48,7 @@ Verantwoordelijk voor ophalen, chunken, embedden en vullen van de vector store. 
 | Relatie tot core | Conformist — OpenAI-compatible API |
 | Beslissing | [ADR-004](/core-domain/02-architectural/decisions/04-ADR-inference-serving.md) |
 
-vLLM op DGX levert completions. De chatbot stuurt prompts en ontvangt structured output; modelkeuze en GPU-config horen in Actualization Space.
+Ollama `gemma3:4b` op `.15` levert completions. De chatbot stuurt prompts en ontvangt structured output; modelkeuze en GPU-config horen in Actualization Space. Geen DGX-deploy.
 
 ## Agent-sturing (AE.nl lens)
 
@@ -56,6 +56,6 @@ vLLM op DGX levert completions. De chatbot stuurt prompts en ontvangt structured
 |---------|--------------|
 | Kennis-Chatbot | Diep modelleren; ADR-compliance; projections bij architectuurwijzigingen |
 | Content-Ingestion | Respecteer ADR-007; geen chat-guardrails |
-| Inference-Serving | Integreer via vast contract; geen wijzigingen aan vLLM zonder ADR |
+| Inference-Serving | Integreer via vast contract; geen wijzigingen aan Ollama/model zonder ADR |
 
 Zie [context-map.md](context-map.md) voor relaties tussen contexten.

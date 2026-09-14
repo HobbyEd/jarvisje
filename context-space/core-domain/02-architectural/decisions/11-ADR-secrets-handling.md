@@ -69,7 +69,7 @@ App laadt `.env` via `python-dotenv` bij start (`config.py`), daarna `os.environ
 
 **Productie (`.15`):**
 
-- Bestand: `~/sogyo-chatbot/.env` (naast `docker-compose.yaml`)
+- Bestand: `~/jarvisje-chatbot/.env` (naast `docker-compose.yaml`)
 - Rechten: eigenaar `<user>` (of root), mode **`600`**
 - Compose: `env_file: .env` op de `app`-service (injecteert in container-proces, niet in image)
 - Deploy-script (`scripts/deploy-to-15.sh`) kopieert **alleen** een lokaal bestaande `.env` via `scp` naar die host-locatie — **niet** via rsync van de build-context, **niet** in de Docker build

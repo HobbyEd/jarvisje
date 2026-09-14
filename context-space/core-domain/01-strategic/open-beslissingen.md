@@ -16,7 +16,7 @@ timestamp: 2026-06-26T00:00:00Z
 - [x] Broad coverage scraping, geen strenge pagina-prioritering.
 - [x] Scraper: Python + BeautifulSoup/Trafilatura/Playwright; respect robots.txt.
 - [x] Vector store: start Chroma, optioneel Qdrant later.
-- [x] Model: sterk NL + lange context (uiteindelijk Gemma-4 op DGX).
+- [x] Model: sterk NL + lange context. Productie: Ollama `gemma3:4b` op `.15` (niet DGX).
 - [x] Geen LangChain/LlamaIndex — pure Python + Pydantic + httpx; Software Designer Agent.
 - [x] Evaluatieset: 20–25 handmatige vragen.
 - [x] Consent/share-session: alleen bij lastige gevallen; opslag in `gebruikers-feedback/`.

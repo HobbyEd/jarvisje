@@ -12,17 +12,17 @@ traces_to:
 # ADR-009: Image + Compose Deployment Strategy
 
 ## Status
-Accepted (geactualiseerd 2026-08-08). **Paden en unitnamen** worden hernoemd naar Jarvisje volgens [ADR-012](12-ADR-jarvisje-rebrand.md); image + compose + data-buiten-image blijft.
+Accepted (geactualiseerd 2026-09-14). Hostpaden, image en app-container zijn Jarvisje ([ADR-012](12-ADR-jarvisje-rebrand.md)); compose-projectnaam + Ollama-container blijven `sogyo-*` voor het bestaande Gemma-netwerk.
 
 ## Datum
-2026-06-27 · update 2026-08-08
+2026-06-27 · update 2026-08-08 · update 2026-09-14
 
 ## Context
 
 De bestaande deployment (`infra/deploy.ps1` + build op de server) faalde regelmatig door DNS/pip-problemen op de oude host `.10`, gebruikte geen declaratieve compose-stack, en bood geen heldere scheiding tussen immutable app-image en mutable data (Chroma vector store).
 
 **Oorspronkelijk (2026-06):** app op `.10`, LLM op DGX `.128`.  
-**Huidig (2026-08):** app + lokaal LLM (Ollama `gemma3:4b`) op **`<host>`**, publiek via Cloudflare Tunnel (`jarvisje.com`). Data-persistentie bij image-updates blijft verplicht.
+**Huidig (2026-09):** app + lokaal LLM (Ollama `gemma3:4b`) op **`<host>`**, publiek via Cloudflare Tunnel (`jarvisje.com`). DGX `.128` is geen deploydoel. Data-persistentie bij image-updates blijft verplicht.
 
 Zie ook ADR-005 (Temporary Deployment) en ADR-004 (Inference Serving).
 
@@ -33,9 +33,9 @@ We kiezen voor een **image-first deployment** met **docker-compose** als declara
 1. **Image bouwen** — bij voorkeur op de productieserver (amd64) of lokaal + rsync tarball.
 2. **Transfer (optioneel)** — Image als `tar.gz` + compose-file naar de server.
 3. **Server: load + compose up** — `docker load` gevolgd door `docker compose up -d` (of systemd).
-4. **Data buiten image** — Chroma op host-pad `~/jarvisje-chatbot-data` (was `sogyo-chatbot-data`; ADR-012).
-5. **LLM buiten app-image** — Ollama als aparte compose-service; `LLM_BASE_URL` / `LLM_MODEL` via env. Model store blijft `~/sogyo-ollama` (Gemma niet meeverhuizen).
-6. **Boot via systemd** — `sogyo-ollama.service` + `sogyo-chatbot.service` (+ host `cloudflared` voor het domein). Compose-dir: `~/jarvisje-chatbot` (symlink `~/sogyo-chatbot` tot units met sudo zijn bijgewerkt).
+4. **Data buiten image** — Chroma op host-pad `~/jarvisje-chatbot-data`.
+5. **LLM buiten app-image** — Ollama als aparte compose-service (`container_name: sogyo-ollama`); `LLM_BASE_URL` / `LLM_MODEL` via env. Model store blijft `~/sogyo-ollama` (Gemma niet meeverhuizen). Compose-projectnaam blijft `sogyo-chatbot` (Docker-netwerk).
+6. **Boot via systemd** — `sogyo-ollama.service` + `sogyo-chatbot.service` (+ host `cloudflared` voor het domein). Compose-dir: `~/jarvisje-chatbot`. Image: `jarvisje:<tag>`. App-container: `jarvisje-chatbot-app`. Unitnamen blijven `sogyo-*` tot een sudo-rename; WorkingDirectory is `~/jarvisje-chatbot`.
 
 Productie-compose: `infra/ubuntu-x64/docker-compose.prod-local.yaml`.
 

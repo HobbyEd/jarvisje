@@ -4,7 +4,7 @@
 **Beslissing:** [ADR-009](../../context-space/core-domain/02-architectural/decisions/09-ADR-image-compose-deployment.md)  
 **Productiehost:** `<user>@<host>`  
 **Compose (productie):** `infra/ubuntu-x64/docker-compose.prod-local.yaml`  
-**Laatst bijgewerkt:** 2026-08-08
+**Laatst bijgewerkt:** 2026-09-14
 
 ---
 
@@ -15,7 +15,9 @@
 - **LLM:** aparte compose-service `ollama` (niet in de app-image); model in `~/sogyo-ollama` (niet hernoemd — Gemma blijft staan).
 - **LLM-config via env** in compose: `LLM_BASE_URL`, `LLM_MODEL`, `EMBEDDING_DEVICE`.
 
-Productiestack start via **systemd** (`sogyo-ollama` + `sogyo-chatbot`), niet handmatig elke boot.
+Productiestack start via **systemd** (`sogyo-ollama` + `sogyo-chatbot`), niet handmatig elke boot. Compose-dir: `~/jarvisje-chatbot`.
+
+Geen deploydoel naar NVIDIA Spark DGX `<host>`. Alles (app + embeddings + LLM) draait op `.15`.
 
 ---
 
@@ -26,14 +28,16 @@ Productiestack start via **systemd** (`sogyo-ollama` + `sogyo-chatbot`), niet ha
 De productie-host is **amd64**. Bouwen op de server vermijdt cross-arch issues.
 
 ```bash
+# lean (vanaf repo-root, geen sudo):
+./scripts/deploy-to-15.sh 1.0.7
+
+# of handmatig:
 ssh <user>@<host>
-# source in ~/sogyo-chatbot/build-src of rsync verse code
-cd ~/sogyo-chatbot/build-src
-docker build -t sogyo-chatbot:latest -f Dockerfile .
-cd ~/sogyo-chatbot
-# compose gebruikt IMAGE_TAG=latest
-sudo systemctl restart sogyo-chatbot
-# of: IMAGE_TAG=latest docker compose up -d app
+cd ~/jarvisje-chatbot/build-src
+docker build -t jarvisje:latest -f Dockerfile .
+cd ~/jarvisje-chatbot
+IMAGE_TAG=latest docker compose up -d --no-deps --force-recreate app
+# of: sudo systemctl restart sogyo-chatbot
 ```
 
 ### B. Build lokaal + transfer (Windows/amd64 of buildx)
@@ -44,14 +48,14 @@ pwsh -ExecutionPolicy Bypass -File infra/ubuntu-x64/deploy.ps1
 # Default server: <user>@<host>
 ```
 
-Op de server laadt `server-deploy.sh` de tarball en start compose (app).  
-Zorg dat **`docker-compose.prod-local.yaml`** als `~/sogyo-chatbot/docker-compose.yaml` staat (ollama + app + juiste env).
+Op de server laadt `server-deploy.sh` de tarball en start de **app** (Ollama blijft staan).  
+Zorg dat **`docker-compose.prod-local.yaml`** als `~/jarvisje-chatbot/docker-compose.yaml` staat.
 
 ### C. Alleen compose/env wijzigen
 
 ```bash
 # na scp van bijgewerkte docker-compose.yaml
-cd ~/sogyo-chatbot
+cd ~/jarvisje-chatbot
 docker compose up -d
 # of per service via systemd:
 sudo systemctl restart sogyo-ollama
@@ -64,10 +68,12 @@ sudo systemctl restart sogyo-chatbot
 
 Bestand: `infra/ubuntu-x64/docker-compose.prod-local.yaml`
 
-| Service | Image | Host-poort | GPU |
-|---------|-------|------------|-----|
-| `ollama` | `ollama/ollama` | 11434 | ja (runtime nvidia) |
-| `app` | `sogyo-chatbot:latest` | 8080→8001 | nee (embeddings CPU) |
+| Service | Image / container | Host-poort | GPU |
+|---------|-------------------|------------|-----|
+| `ollama` | `ollama/ollama` / `sogyo-ollama` | 11434 | ja (runtime nvidia) |
+| `app` | `jarvisje:latest` / `jarvisje-chatbot-app` | 8080→8001 | nee (embeddings CPU) |
+
+Compose-projectnaam blijft `sogyo-chatbot` (Docker-netwerk van Gemma).
 
 Belangrijke env app:
 
@@ -90,7 +96,7 @@ docker exec sogyo-ollama ollama pull gemma3:4b
 - `PYTHONPATH=/app/src`
 - LLM-URL **niet** hard coded als enige optie — runtime env wint
 - Image bevat **geen** Chroma-data
-- Tagging: `sogyo-chatbot:latest` + optioneel git-SHA
+- Tagging: `jarvisje:latest` + optioneel git-SHA / UI-semver
 
 ---
 
@@ -102,7 +108,7 @@ docker exec sogyo-ollama ollama pull gemma3:4b
 │   ├── docker-compose.yaml
 │   ├── build-src/
 │   └── .env                     # INGEST_TOKEN (mode 600)
-├── sogyo-chatbot → jarvisje-chatbot   # symlink tot systemd-units met sudo zijn bijgewerkt
+├── sogyo-chatbot → jarvisje-chatbot   # symlink tot systemd WorkingDirectory met sudo is bijgewerkt
 ├── jarvisje-chatbot-data/       # persistent app data (Chroma, raw)
 │   ├── chroma/
 │   └── raw/
@@ -113,7 +119,7 @@ docker exec sogyo-ollama ollama pull gemma3:4b
 
 ## 6. Data-persistentie & backup
 
-- Host data: `~/sogyo-chatbot-data`
+- Host data: `~/jarvisje-chatbot-data`
 - Backup: `tar`/`rsync` van die map (+ eventueel `sogyo-ollama` voor model-cache)
 - Image update raakt data niet als volume gelijk blijft
 
@@ -124,14 +130,14 @@ docker exec sogyo-ollama ollama pull gemma3:4b
 **Update app**
 
 1. Nieuw image (`latest` of tagged)
-2. `docker compose up -d app` of `systemctl restart sogyo-chatbot`
+2. `docker compose up -d --no-deps app` of `systemctl restart sogyo-chatbot`
 3. `curl -s http://127.0.0.1:8080/health` en https://jarvisje.com/health
 
 **Rollback**
 
 ```bash
-docker tag sogyo-chatbot:<oude-tag> sogyo-chatbot:latest
-# of: IMAGE_TAG=<oude-tag> docker compose up -d app
+docker tag jarvisje:<oude-tag> jarvisje:latest
+# of: IMAGE_TAG=<oude-tag> docker compose up -d --no-deps app
 sudo systemctl restart sogyo-chatbot
 ```
 
@@ -143,14 +149,15 @@ sudo systemctl restart sogyo-chatbot
 
 ```bash
 systemctl is-active sogyo-ollama sogyo-chatbot cloudflared
-docker ps --filter name=sogyo
+docker ps --filter name=jarvisje-chatbot-app
+docker ps --filter name=sogyo-ollama
 curl -s http://127.0.0.1:8080/health
 curl -s http://127.0.0.1:11434/api/tags
 curl -s https://jarvisje.com/health
 # optioneel chat:
 curl -sN -X POST http://127.0.0.1:8080/chat \
   -H 'Content-Type: application/json' \
-  -d '{"message":"Wat is Sogyo?"}' | head
+  -d '{"message":"Ben je er?"}' | head
 ```
 
 ---
@@ -160,5 +167,6 @@ curl -sN -X POST http://127.0.0.1:8080/chat \
 1. Automatische nightly ingest
 2. PyTorch upgrade voor GPU-embeddings op Blackwell
 3. Optionele CI image-build (amd64) + registry
+4. Systemd-units hernoemen (sudo) — WorkingDirectory staat al op `~/jarvisje-chatbot`
 
-Laatst bijgewerkt: 2026-08-08
+Laatst bijgewerkt: 2026-09-14

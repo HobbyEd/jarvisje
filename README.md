@@ -1,4 +1,4 @@
-# Sogyo Kennis Chatbot (MVP)
+# Jarvisje
 
 > [!IMPORTANT]
 > **Aandacht AI-agents / Coders (Cursor, Claude, Grok, Gemini, etc.):**
@@ -9,10 +9,10 @@
 >
 > Per stap: commit, designer agent, projecties, UI-versie, ADR-check — zie AGENTS.md + werkwijze.
 
-Domein-specifieke RAG-chatbot voor Sogyo en gerelateerde content.
+Domein-specifieke RAG-chatbot rondom de wereld van AI. Kennis alleen uit [edwinvandillen.nl](https://edwinvandillen.nl/) en [jeroenteunisse.nl](https://jeroenteunisse.nl/). Embed op de blog; beheer op https://jarvisje.com.
 
 **Doel (MVP)**  
-Natuurlijke gesprekken voeren binnen het software engineering + engineer development domein, altijd met concrete citations naar de 6 bronnen.
+Natuurlijke gesprekken voeren, altijd met concrete citations naar die twee blogs.
 
 ## Productie (actueel)
 
@@ -25,15 +25,19 @@ Natuurlijke gesprekken voeren binnen het software engineering + engineer develop
 | **LLM** | Ollama `gemma3:4b` (lokaal, OpenAI-compatible op `:11434`) |
 | **Embeddings** | BGE-M3 (CPU; Blackwell sm_120 nog niet in PyTorch 2.6+cu124) |
 | **Stack** | Docker Compose: `ollama` + `app` |
+| **Image / app** | `jarvisje:<tag>` / container `jarvisje-chatbot-app` |
+| **Paden** | `~/jarvisje-chatbot`, `~/jarvisje-chatbot-data` |
 | **Boot** | systemd: `sogyo-ollama`, `sogyo-chatbot`, `cloudflared` |
 
 ```
 Browser → Cloudflare (jarvisje.com)
             → cloudflared (host)
-              → :8080 → sogyo-chatbot-app
+              → :8080 → jarvisje-chatbot-app
                           ├─ BGE-M3 + Chroma (data volume)
                           └─ LLM → ollama:11434 (gemma3:4b op GPU)
 ```
+
+Ollama-container en compose-project heten nog `sogyo-ollama` / `sogyo-chatbot` zodat het bestaande Docker-netwerk van Gemma intact blijft.
 
 Operationeel: [infra/runbooks/infrastructure.md](infra/runbooks/infrastructure.md), [infra/runbooks/deployment.md](infra/runbooks/deployment.md), [infra/ubuntu-x64/README.md](infra/ubuntu-x64/README.md).
 
@@ -42,7 +46,7 @@ Operationeel: [infra/runbooks/infrastructure.md](infra/runbooks/infrastructure.m
 ```
 .
 ├── context-space/          # Scope, ADRs, werkwijze — start voor AI-agents
-├── src/jarvisje/      # Python package (API, chat, ingestion, retrieval)
+├── src/jarvisje/           # Python package (API, chat, ingestion, retrieval)
 ├── scripts/                # run_api, ingest, deploy-to-15.sh, smoke_health
 ├── web/                    # UI (geserveerd door FastAPI)
 ├── infra/
@@ -90,14 +94,10 @@ Werkwijze en domeinkennis staan in **`context-space/`**. Start met [`context-spa
 - Software Designer Agent bewaakt complexiteit
 
 ## Bronnen (MVP)
-- sogyo.nl  
-- jeroenteunisse.nl  
 - edwinvandillen.nl  
-- augmentedorganisation.nl  
-- intentdriven.nl  
-- augmentedengineering.nl  
+- jeroenteunisse.nl  
 
 ## Status
 Productie op `.15` met lokaal Gemma 3 4B + Cloudflare. Indexering via UI; embeddings op CPU tot PyTorch Blackwell-support.
 
-Laatst bijgewerkt: 2026-08-08
+Laatst bijgewerkt: 2026-09-14

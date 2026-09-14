@@ -1,4 +1,4 @@
-# Deploy the latest locally built Sogyo Chatbot image to the server
+# Deploy the latest locally built Jarvisje image to the server
 # Uses the .tar.gz from build-local-image.ps1
 #
 # Resilient copy strategy:
@@ -22,12 +22,12 @@ param(
 
 . (Join-Path $PSScriptRoot "Copy-ToDeployServer.ps1")
 
-$RemoteBase = "~/sogyo-chatbot"
+$RemoteBase = "~/jarvisje-chatbot"
 $RemoteArtifacts = "$RemoteBase/deploy-artifacts"
 $ResolvedSmbRoot = Resolve-DeploySmbRoot -Server $Server -SmbRoot $SmbRoot
 $deployStarted = Get-Date
 
-Write-DeployLog "=== Sogyo Chatbot Deploy ===" -Level Step
+Write-DeployLog "=== Jarvisje Deploy ===" -Level Step
 Write-DeployLog "Server: $Server" -Level Info
 Write-DeployLog "Tip: SSH key auth avoids silent password waits during scp" -Level Info
 
@@ -35,7 +35,7 @@ Write-DeployLog "Tip: SSH key auth avoids silent password waits during scp" -Lev
 # frequently cause "string missing terminator" parser errors on Windows.
 
 $artifactsDir = "deploy-artifacts"
-$artifact = Get-ChildItem $artifactsDir -Filter "sogyo-chatbot-*.tar.gz" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+$artifact = Get-ChildItem $artifactsDir -Filter "jarvisje-*.tar.gz" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 
 if (-not $artifact) {
     Write-Error "No artifact found in $artifactsDir. Run build-local-image.ps1 first."
@@ -118,7 +118,7 @@ $totalMins = [int][math]::Round(((Get-Date) - $deployStarted).TotalMinutes)
 Write-DeployLog "Deployment complete (total ~${totalMins} min)" -Level Ok
 
 Write-DeployLog "Cleaning up old local artifacts (keep last 2)..." -Level Step
-$localTars = Get-ChildItem $artifactsDir -Filter "sogyo-chatbot-*.tar.gz" | Sort-Object LastWriteTime -Descending
+$localTars = Get-ChildItem $artifactsDir -Filter "jarvisje-*.tar.gz" | Sort-Object LastWriteTime -Descending
 if ($localTars.Count -gt 2) {
     $localTars | Select-Object -Skip 2 | Remove-Item -Force -ErrorAction SilentlyContinue
 }

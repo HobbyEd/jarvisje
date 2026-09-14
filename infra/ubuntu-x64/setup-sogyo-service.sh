@@ -4,6 +4,9 @@
 #   - sogyo-ollama.service   → docker compose up -d ollama
 #   - sogyo-chatbot.service  → docker compose up -d app  (After ollama)
 #
+# Unit names stay sogyo-* (live Gemma network + existing enablement).
+# WorkingDirectory is ~/jarvisje-chatbot (actual compose dir).
+#
 # Run ONCE on the server (with sudo):
 #   sudo bash setup-sogyo-service.sh
 #
@@ -15,17 +18,17 @@
 
 set -euo pipefail
 
-APP_DIR="~/sogyo-chatbot"
+APP_DIR="~/jarvisje-chatbot"
 OLLAMA_UNIT="/etc/systemd/system/sogyo-ollama.service"
 CHATBOT_UNIT="/etc/systemd/system/sogyo-chatbot.service"
 
-echo "==> Configuring systemd services for Sogyo stack"
+echo "==> Configuring systemd services for Jarvisje stack"
 echo "    Ollama unit:  $OLLAMA_UNIT"
 echo "    Chatbot unit: $CHATBOT_UNIT"
 echo "    Compose dir:  $APP_DIR"
 
 mkdir -p "$APP_DIR" \
-  ~/sogyo-chatbot-data \
+  ~/jarvisje-chatbot-data \
   ~/sogyo-ollama
 
 if [[ ! -f "$APP_DIR/docker-compose.yaml" ]]; then
@@ -45,7 +48,7 @@ fi
 # ---------------------------------------------------------------------------
 tee "$OLLAMA_UNIT" > /dev/null << 'EOF'
 [Unit]
-Description=Sogyo Ollama (Gemma 3 4B) Docker Compose Service
+Description=Ollama (Gemma 3 4B) Docker Compose Service
 Documentation=https://github.com/ollama/ollama
 Requires=docker.service
 After=docker.service network-online.target
@@ -56,7 +59,7 @@ Type=oneshot
 RemainAfterExit=yes
 User=root
 Group=root
-WorkingDirectory=~/sogyo-chatbot
+WorkingDirectory=~/jarvisje-chatbot
 Environment=HOME=~
 Environment=IMAGE_TAG=latest
 
@@ -76,8 +79,8 @@ EOF
 # ---------------------------------------------------------------------------
 tee "$CHATBOT_UNIT" > /dev/null << 'EOF'
 [Unit]
-Description=Sogyo Chatbot Docker Compose Service
-Documentation=file://~/sogyo-chatbot/docker-compose.yaml
+Description=Jarvisje Chatbot Docker Compose Service
+Documentation=file://~/jarvisje-chatbot/docker-compose.yaml
 Requires=docker.service sogyo-ollama.service
 After=docker.service network-online.target sogyo-ollama.service
 Wants=network-online.target
@@ -87,7 +90,7 @@ Type=oneshot
 RemainAfterExit=yes
 User=root
 Group=root
-WorkingDirectory=~/sogyo-chatbot
+WorkingDirectory=~/jarvisje-chatbot
 Environment=HOME=~
 Environment=IMAGE_TAG=latest
 

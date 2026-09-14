@@ -34,7 +34,7 @@ Gevolg in productie:
 1. **Chat blijft beschikbaar** terwijl indexering loopt (of degradeert alleen mild, niet “plat”).
 2. Indexering is startbaar via **UI/API (token)** en later via **cron/systemd timer** zonder code-fork.
 3. Status van de run is **zichtbaar** in de web-UI (minimaal: “indexer draait in de achtergrond”).
-4. Zelfde data-volume en embedding-model als nu (`sogyo-chatbot-data`, BGE-M3).
+4. Zelfde data-volume en embedding-model als nu (`jarvisje-chatbot-data`, BGE-M3).
 5. Lightweight: geen zwaar message-bus product tenzij later nodig.
 
 Gerelateerd: [ADR-007](07-ADR-ingestion-cadence.md) (wanneer), [ADR-009](09-ADR-image-compose-deployment.md) (waar/deploy).
@@ -47,13 +47,13 @@ We scheiden **chat-API** en **ingestion worker** in **aparte processen** (en bij
 
 | Rol | Verantwoordelijkheid | Voorbeeld runtime |
 |-----|----------------------|-------------------|
-| **API (chat)** | UI, `/chat`, `/sources` (read), lichte status-read | `sogyo-chatbot-app` |
-| **Worker (ingest)** | scrape/embed/upsert; schrijft status | CLI-module of `sogyo-ingest` service |
+| **API (chat)** | UI, `/chat`, `/sources` (read), lichte status-read | `jarvisje-chatbot-app` |
+| **Worker (ingest)** | scrape/embed/upsert; schrijft status | CLI-module of compose-profile `ingest` |
 
 De worker deelt **geen** Python-proces met de API. Wel:
 
 - **Zelfde image** mag (entrypoint verschilt), of dunne hergebruik van `src/jarvisje/ingestion/`.
-- **Zelfde volume** voor Chroma/raw (`~/sogyo-chatbot-data`).
+- **Zelfde volume** voor Chroma/raw (`~/jarvisje-chatbot-data`).
 - **Status-bestand** (of kleine state store) op het volume of een afgesproken pad, leesbaar door de API.
 
 ### 2. Startpaden (één contract)

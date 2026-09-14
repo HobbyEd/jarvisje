@@ -6,7 +6,7 @@ from .agent import run_agent
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Sogyo Software Designer Agent")
+    parser = argparse.ArgumentParser(description="Jarvisje Software Designer Agent")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
     args = parser.parse_args()
 

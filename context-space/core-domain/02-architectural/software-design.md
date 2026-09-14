@@ -21,13 +21,13 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 - edwinvandillen.nl
 - jeroenteunisse.nl
 
-**Kernuitgangspunten** (vastgelegd op 26 juni 2026):
+**Kernuitgangspunten** (vastgelegd op 26 juni 2026, geactualiseerd 2026-09):
 - Hoofdzakelijk Nederlands.
 - Gematigde guardrails: alles wat met software engineering en engineers te maken heeft mag, alles wat daar ver buiten ligt wordt uitgesloten.
 - Uitgebreide chat-sessies zijn toegestaan.
-- Her-ingestie van kennisbasis elke 4-6 uur.
+- Her-ingestie van kennisbasis (UI/worker; doel 4-6 uur).
 - Er komt een evaluatieset om kwaliteit (in-domein + citations) te meten.
-- De DGX is momenteel niet direct bereikbaar vanuit de hosting. De oplossing wordt eerst gebouwd, connectiviteit komt later.
+- Alles draait op **één host `.15`**: app, embeddings, Chroma en Ollama. NVIDIA Spark DGX is geen deploydoel (historisch: ADR-005).
 
 ## 2. Domein en Scope
 
@@ -66,40 +66,31 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 - **Taal**: Hoofdzakelijk Nederlands.
 - **Onderhoud**: Kennisbasis wordt elke 4-6 uur ververst.
 - **Evalueren**: Er komt een testset met vragen + verwachte gedrag (in-domein + citations).
-- **Technisch**: Lokaal draaien op NVIDIA DGX waar mogelijk. Python op de web-hosting.
+- **Technisch**: Lokaal-first op host `.15` (Ollama + FastAPI + Chroma). Geen remote GPU-host.
 
 ## 4. High-Level Architecture
 
 ```
-┌─────────────────────────────┐
-│   sogyo.nl (Website)        │
-│   + Chat Widget (JS)        │
-└──────────────┬──────────────┘
-               │ HTTPS + streaming
-┌──────────────▼──────────────┐
-│  FastAPI Backend            │
-│  (Python hosting)           │
-│  - API endpoints            │
-│  - Conversation orchestration│
-│  - Guardrail checks         │
-└──────────────┬──────────────┘
-               │ (later: netwerk)
-               │ (nu: dev via lokale/DGX toegang)
-┌──────────────▼──────────────┐
-│  DGX (Inference & Storage)  │
-│  - vLLM (of equivalent)     │
-│  - Embeddings model         │
-│  - Vector DB (Qdrant)       │
-│  - Ingestion pipeline       │
-└─────────────────────────────┘
+┌─────────────────────────────────┐
+│  edwinvandillen.nl (iframe)     │
+│  jarvisje.com (standalone)      │
+└──────────────┬──────────────────┘
+               │ HTTPS + SSE
+┌──────────────▼──────────────────┐
+│  Host <host>            │
+│  FastAPI (jarvisje-chatbot-app) │
+│  - API, orchestratie, guardrails│
+│  - BGE-M3 + Chroma (CPU)        │
+│  - Ollama gemma3:4b (GPU)       │
+└─────────────────────────────────┘
 ```
 
-**Tijdelijke realiteit**: Omdat de DGX niet direct bereikbaar is, starten we met een setup waarbij de backend en/of volledige stack lokaal of op de DGX zelf ontwikkeld en getest kan worden. De split tussen hosting en DGX wordt later gerealiseerd.
+**Huidige realiteit**: één host. Geen split naar NVIDIA Spark DGX `<host>`.
 
 ## 5. Kerncomponenten
 
 ### 5.1 Ingestion Pipeline
-- Periodiek (4-6 uur) ophalen van content van de 6 bronnen.
+- Periodiek ophalen van content van de 2 blogs.
 - Schone extractie van tekst + structuur.
 - Intelligente chunking met rijke metadata (url, title, section, type, date, audience hints).
 - Embedding + opslag in vector DB.
@@ -115,7 +106,7 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 - Strict prompting + retrieval-only beleid.
 
 ### 5.4 LLM Orchestration
-- Hoofdmodel op DGX via OpenAI-compatibele API (vLLM aanbevolen).
+- Hoofdmodel op `.15` via OpenAI-compatibele API (Ollama `gemma3:4b`).
 - Ondersteuning voor lange context / history.
 - Structured output voor citations.
 
@@ -126,14 +117,14 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 - Houdt minimale state.
 
 ### 5.6 Frontend Widget
-- Lichtgewicht JavaScript widget.
-- Embedded op sogyo.nl.
+- `web/index.html` (standalone + embed-modus).
+- Iframe op edwinvandillen.nl (`/?embed=1`).
 - Toont bronverwijzingen netjes.
 - Ondersteunt lange gesprekken.
 
 ## 6. Data & Kennisbasis
 
-- Primaire bron: De 6 websites.
+- Primaire bron: de twee blogs (ADR-012).
 - Vector DB met metadata-rijke chunks.
 - Geen fine-tuning in eerste versie (RAG-first).
 - Herlaadcyclus: 4-6 uur (zie ADR-07).
@@ -143,18 +134,18 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 Zie ADR-02 voor details.
 
 Kort samengevat:
-- In-domein: Software engineering, engineers ontwikkelen, AI-augmentatie in dit vakgebied, intent-driven werkwijzen, IT-landschap, veranderkracht binnen engineering context, Sogyo-traineeship en bijbehorende filosofie.
+- In-domein: Software engineering, engineers ontwikkelen, AI-augmentatie in dit vakgebied, intent-driven werkwijzen, IT-landschap, veranderkracht binnen engineering context, inhoud van de twee blogs.
 - Uitgesloten: Algemene codehulp, andere AI-tools, persoonlijke coaching, ongerelateerde onderwerpen.
 - Strategie: Gelaagd (classifier + retrieval-only + citation forcing + optionele validator).
 
 ## 8. Technologie Stack (Initiële Richting)
 
 - **Backend**: FastAPI (Python)
-- **LLM Serving**: vLLM (OpenAI compatibele endpoint) op DGX
-- **Embeddings**: Lokale sentence-transformers / BGE of vergelijkbaar (Nederlands-competent)
-- **Vector DB**: Qdrant (sterke metadata support)
-- **Orchestration**: Lichtgewicht custom (Pydantic + httpx) of minimale LangChain/LlamaIndex indien nuttig
-- **Frontend**: Custom JS widget met Server-Sent Events / streaming
+- **LLM Serving**: Ollama (OpenAI-compatibele endpoint) op `.15`
+- **Embeddings**: Lokale sentence-transformers / BGE-M3 (CPU tot Blackwell-support)
+- **Vector DB**: Chroma (persistente host-volume)
+- **Orchestration**: Lichtgewicht custom (Pydantic + httpx)
+- **Frontend**: Custom HTML/JS met Server-Sent Events / streaming
 - **Ingestion**: Python script (BeautifulSoup / Trafilatura + markdown parsing)
 
 Modelkeuze: Open voor verschillende families. Ervaring aanwezig met Gemma. Sterke Nederlandse modellen hebben voorkeur, maar performance op domein weegt zwaarder.
@@ -172,7 +163,7 @@ Zie ook ADR-08 over citations.
 
 ## 10. Risico's en Open Issues
 
-- Netwerktoegang DGX → later oplossen (ADR-05).
+- Groter lokaal model op `.15` als VRAM/kwaliteit dat toelaat (ADR-004).
 - Kwaliteit van retrieval op abstracte/filosofische content.
 - Consistentie van Nederlandse antwoorden.
 - Onderhoud van de ingestion pipeline bij veranderingen in de bronnen.
@@ -191,16 +182,18 @@ Alle significante beslissingen worden vastgelegd in losse ADR-bestanden in [deci
 - `07-ADR-ingestion-cadence.md`
 - `08-ADR-citations-grounding.md`
 - `09-ADR-image-compose-deployment.md`
+- `10-ADR-async-ingestion-worker.md`
+- `11-ADR-secrets-handling.md`
+- `12-ADR-jarvisje-rebrand.md`
 
 ## 12. Volgende Stappen (voorstel)
 
 1. ADRs reviewen en accorderen.
 2. Eerste versie van de ingestion pipeline bouwen.
 3. Vector DB vullen + retrieval testen.
-4. Eenvoudige FastAPI + LLM endpoint prototypen (eerst lokaal/DGX).
+4. Eenvoudige FastAPI + LLM endpoint prototypen (lokaal / `.15`).
 5. Guardrails implementeren en testen met de evaluatieset.
-6. Widget prototypen.
-7. Connectiviteitsoplossing later toevoegen.
+6. Embed-view + standalone beheer.
 
 ---
 

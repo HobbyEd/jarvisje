@@ -1,6 +1,6 @@
 # Deploy — Ubuntu x64 productie (`<host>`)
 
-Productiehost voor de Sogyo Chatbot (hostname **enterprise**).
+Productiehost voor Jarvisje (hostname **enterprise**).
 
 | | |
 |--|--|
@@ -8,9 +8,13 @@ Productiehost voor de Sogyo Chatbot (hostname **enterprise**).
 | UI LAN | http://<host>:8080 |
 | UI publiek | https://jarvisje.com |
 | LLM | Ollama `gemma3:4b` op dezelfde host |
-| Compose | `docker-compose.prod-local.yaml` → server: `~/sogyo-chatbot/docker-compose.yaml` |
+| Compose | `docker-compose.prod-local.yaml` → server: `~/jarvisje-chatbot/docker-compose.yaml` |
+| Image | `jarvisje:<tag>` |
+| App-container | `jarvisje-chatbot-app` |
 
 Zie ook: [runbooks/infrastructure.md](../runbooks/infrastructure.md), [runbooks/deployment.md](../runbooks/deployment.md).
+
+Live Gemma blijft in container `sogyo-ollama` (volume `~/sogyo-ollama`). Compose-projectnaam blijft `sogyo-chatbot` zodat dat Docker-netwerk niet breekt. Systemd-units heten nog `sogyo-ollama` en `sogyo-chatbot`; WorkingDirectory is `~/jarvisje-chatbot`.
 
 ---
 
@@ -21,7 +25,7 @@ Zie ook: [runbooks/infrastructure.md](../runbooks/infrastructure.md), [runbooks/
 3. Mappen:
 
 ```bash
-mkdir -p ~/sogyo-chatbot ~/sogyo-chatbot-data ~/sogyo-ollama
+mkdir -p ~/jarvisje-chatbot ~/jarvisje-chatbot-data ~/sogyo-ollama
 ```
 
 4. Compose + scripts plaatsen:
@@ -30,25 +34,26 @@ mkdir -p ~/sogyo-chatbot ~/sogyo-chatbot-data ~/sogyo-ollama
 scp infra/ubuntu-x64/docker-compose.prod-local.yaml \
     infra/ubuntu-x64/server-deploy.sh \
     infra/ubuntu-x64/setup-sogyo-service.sh \
-    <user>@<host>:~/sogyo-chatbot/
+    <user>@<host>:~/jarvisje-chatbot/
 # op server:
-mv ~/sogyo-chatbot/docker-compose.prod-local.yaml ~/sogyo-chatbot/docker-compose.yaml
+mv ~/jarvisje-chatbot/docker-compose.prod-local.yaml ~/jarvisje-chatbot/docker-compose.yaml
 ```
 
 5. Image bouwen of laden, model pullen:
 
 ```bash
-docker compose -f ~/sogyo-chatbot/docker-compose.yaml up -d ollama
+docker compose -f ~/jarvisje-chatbot/docker-compose.yaml up -d ollama
 docker exec sogyo-ollama ollama pull gemma3:4b
 # image: build in build-src of docker load tarball
-docker compose -f ~/sogyo-chatbot/docker-compose.yaml up -d app
+docker compose -f ~/jarvisje-chatbot/docker-compose.yaml up -d app
 ```
 
 6. Systemd:
 
 ```bash
-sudo bash ~/sogyo-chatbot/setup-sogyo-service.sh
+sudo bash ~/jarvisje-chatbot/setup-sogyo-service.sh
 # units: sogyo-ollama.service, sogyo-chatbot.service
+# WorkingDirectory: ~/jarvisje-chatbot
 ```
 
 7. Cloudflare Tunnel (host, **niet** in app-image):
@@ -68,10 +73,10 @@ Vanaf de repo-root (Mac/Linux, SSH-key, geen sudo):
 ```bash
 ./scripts/deploy-to-15.sh
 # of met tag:
-./scripts/deploy-to-15.sh 0.8.0
+./scripts/deploy-to-15.sh 1.0.7
 ```
 
-Dit rsync’t bronnen, bouwt op de server en herstart alleen de app-container.
+Dit rsync’t bronnen, bouwt op de server en herstart alleen de app-container (`jarvisje-chatbot-app`). Ollama / Gemma blijft staan.
 
 ### Alternatief: PowerShell + image tarball
 
@@ -80,7 +85,7 @@ pwsh -ExecutionPolicy Bypass -File infra/ubuntu-x64/full-deploy.ps1
 ```
 
 Default target: `<user>@<host>`.  
-Repo-compose: `docker-compose.prod-local.yaml` → server: `~/sogyo-chatbot/docker-compose.yaml`.
+Repo-compose: `docker-compose.prod-local.yaml` → server: `~/jarvisje-chatbot/docker-compose.yaml`.
 
 ---
 
@@ -91,8 +96,8 @@ sudo systemctl status sogyo-ollama sogyo-chatbot cloudflared
 sudo systemctl restart sogyo-chatbot
 sudo systemctl restart sogyo-ollama
 
-cd ~/sogyo-chatbot && docker compose ps
-docker logs -f sogyo-chatbot-app
+cd ~/jarvisje-chatbot && docker compose ps
+docker logs -f jarvisje-chatbot-app
 docker exec sogyo-ollama ollama list
 ```
 
@@ -108,7 +113,7 @@ docker exec sogyo-ollama ollama list
    INGEST_TOKEN=<lang-willekeurig-secret>
    ```
 
-2. `./scripts/deploy-to-15.sh` kopieert `.env` naar **`~/sogyo-chatbot/.env`** op de host (`chmod 600`) en **niet** naar de build-context.
+2. `./scripts/deploy-to-15.sh` kopieert `.env` naar **`~/jarvisje-chatbot/.env`** op de host (`chmod 600`) en **niet** naar de build-context.
 3. Compose laadt die file via `env_file: .env` op de `app`-service.
 4. UI: zelfde token invullen bij “Indexeringstoken”.
 
@@ -122,12 +127,12 @@ Indexering draait **buiten** de chat request-thread:
 - **CLI op server (zelfde image, one-shot)** — geen HTTP-token nodig:
 
 ```bash
-cd ~/sogyo-chatbot
+cd ~/jarvisje-chatbot
 docker compose --profile ingest run --rm ingest --max-pages 500
 # eventueel: --reset
 ```
 
-- **Log worker (UI-spawn)**: `~/sogyo-chatbot-data/ingest_worker.log`
+- **Log worker (UI-spawn)**: `~/jarvisje-chatbot-data/ingest_worker.log`
 
 Chat blijft beschikbaar tijdens indexeren (aparte proces; embeddings CPU).
 
@@ -139,8 +144,8 @@ Chat blijft beschikbaar tijdens indexeren (aparte proces; embeddings CPU).
 |---------|-----|
 | `docker-compose.prod-local.yaml` | **Productie:** ollama + app (+ profile `ingest`) → server: `docker-compose.yaml` |
 | `Dockerfile` | App-image (Python, torch, BGE-M3 preload) |
-| `setup-sogyo-service.sh` | systemd units ollama + chatbot |
-| `server-deploy.sh` | load tarball + compose up (server-side) |
+| `setup-sogyo-service.sh` | systemd units ollama + chatbot (WorkingDirectory jarvisje) |
+| `server-deploy.sh` | load tarball + compose up app (server-side) |
 | `build-local-image.ps1` | lokale image + tar.gz |
 | `deploy.ps1` / `full-deploy.ps1` | transfer + remote deploy |
 | `Copy-ToDeployServer.ps1` | copy helpers |
@@ -155,4 +160,4 @@ LLM_MODEL=gemma3:4b
 EMBEDDING_DEVICE=cpu
 ```
 
-Laatst bijgewerkt: 2026-08-08
+Laatst bijgewerkt: 2026-09-14

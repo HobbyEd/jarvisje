@@ -38,7 +38,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Jarvisje API", lifespan=lifespan)
 
 # Serve static assets from the web/ directory (e.g. logo)
-# This allows /static/sogyo-30-jaar.png etc.
 app.mount("/static", StaticFiles(directory="web"), name="static")
 
 # CORS for testing from other ports/domains

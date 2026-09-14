@@ -17,9 +17,9 @@ traces_to:
 ## Datum
 2026-06-26 · reality check 2026-08-08
 
-## Reality check (2026-08)
+## Reality check (2026-08 · 2026-09-14)
 
-De “later split API vs DGX” is **niet** de productierichting geworden. Alles (app + Ollama LLM + data + Cloudflare tunnel) draait op **één host `.15`**. Deze ADR blijft als historisch besluit.
+De “later split API vs DGX” is **niet** de productierichting geworden. Alles (app + Ollama LLM + data + Cloudflare tunnel) draait op **één host `.15`**. NVIDIA Spark DGX `<host>` is **geen** deploydoel. Deze ADR blijft als historisch besluit.
 
 ## Context
 De NVIDIA DGX is op dit moment **niet echt bereikbaar** vanuit de Python-hosting omgeving van de website.

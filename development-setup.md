@@ -1,4 +1,4 @@
-# Development Setup — Sogyo Chatbot MVP
+# Development Setup — Jarvisje
 
 Lokale ontwikkeling en testen. Productie-details: [infra/runbooks/infrastructure.md](infra/runbooks/infrastructure.md).
 
@@ -46,17 +46,17 @@ export LLM_MODEL=gemma3:4b
 ### Lokale Docker-test
 
 ```bash
-docker build -f infra/ubuntu-x64/Dockerfile -t sogyo-chatbot:local-test .
+docker build -f infra/ubuntu-x64/Dockerfile -t jarvisje:local-test .
 
 docker run --rm -p 8080:8001 \
   -e LLM_BASE_URL=http://<host>:11434/v1 \
   -e LLM_MODEL=gemma3:4b \
   -e EMBEDDING_DEVICE=cpu \
-  --name sogyo-test sogyo-chatbot:local-test
+  --name jarvisje-test jarvisje:local-test
 ```
 
 Open http://localhost:8080  
-Stop: Ctrl+C of `docker rm -f sogyo-test`.
+Stop: Ctrl+C of `docker rm -f jarvisje-test`.
 
 > Op Apple Silicon: build is arm64; productie-host is **amd64**. Voor image-pariteit: build op de server of `docker buildx --platform linux/amd64`.
 
@@ -86,7 +86,7 @@ Niet bij elke UI/API-regelwijziging tijdens lokale Python-dev.
 ## Projectstructuur
 
 ```
-sogyo-chatbot/
+jarvisje/
 ├── context-space/
 ├── src/jarvisje/
 │   ├── api/           # FastAPI + UI serve
@@ -132,7 +132,7 @@ for r in results:
 
 - `EMBEDDING_DEVICE=cpu` op productie (Blackwell); lokaal mag `cuda` als je GPU + passende torch hebt.
 - Ingest blokkeert de event loop deels — health kan tijdens zware scrape traag zijn.
-- `data/raw/` en `data/chroma/` voor debugging; op server: `~/sogyo-chatbot-data`.
+- `data/raw/` en `data/chroma/` voor debugging; op server: `~/jarvisje-chatbot-data`.
 
 ## Modelkeuzes (productie)
 
@@ -141,4 +141,4 @@ for r in results:
 | LLM | `gemma3:4b` (Ollama Q4) | Host `.15`, GPU |
 | Embeddings | `BAAI/bge-m3` | App-container, CPU |
 
-Laatst bijgewerkt: 2026-08-08
+Laatst bijgewerkt: 2026-09-14

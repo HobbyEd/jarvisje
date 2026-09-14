@@ -1,4 +1,4 @@
-# Combined build + deploy + configure script for Sogyo Chatbot
+# Combined build + deploy + configure script for Jarvisje
 #
 # Smart behavior:
 # - If a tarball for the *current* git commit already exists in deploy-artifacts/
@@ -13,7 +13,7 @@
 # Prerequisites on server (one time):
 #   - Run infra/setup-sogyo-service.sh once to create the systemctl service
 #
-# After running this, the latest image will be loaded and running on the .10 server.
+# After running this, the latest image will be loaded and running on <host>.
 
 param(
     [string]$Tag
@@ -21,7 +21,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "=== Sogyo Chatbot - Full Build + Deploy ===" -ForegroundColor Cyan
+Write-Host "=== Jarvisje - Full Build + Deploy ===" -ForegroundColor Cyan
 Write-Host ""
 
 # Determine current git-based tag (same logic as build-local-image.ps1)
@@ -32,7 +32,7 @@ if (-not $Tag) {
         $shortSha = git rev-parse --short HEAD
         $branch = git rev-parse --abbrev-ref HEAD
         $computedTag = "$branch-$shortSha"
-        $expectedArtifact = "deploy-artifacts\sogyo-chatbot-$computedTag.tar.gz"
+        $expectedArtifact = "deploy-artifacts\jarvisje-$computedTag.tar.gz"
     } catch {
         $computedTag = $null
     }
@@ -73,7 +73,7 @@ Write-Host ""
 Write-Host "=== Full deploy finished ===" -ForegroundColor Green
 Write-Host "The server should now be running the latest image."
 Write-Host "Check with: ssh <user>@<host> 'systemctl status sogyo-ollama sogyo-chatbot --no-pager'"
-Write-Host "Or:          ssh <user>@<host> 'docker compose -f ~/sogyo-chatbot/docker-compose.yaml ps'"
+Write-Host "Or:          ssh <user>@<host> 'docker compose -f ~/jarvisje-chatbot/docker-compose.yaml ps'"
 Write-Host "Public:      https://jarvisje.com/health"
 Write-Host ""
 Write-Host "Tip: If SSH drops during transfer of the large image tarball, just run this command again."

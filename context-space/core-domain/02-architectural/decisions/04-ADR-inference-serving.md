@@ -1,7 +1,7 @@
 ---
 type: ADR
 title: "Inference OpenAI-compatible lokaal"
-description: "Productie: Ollama gemma3:4b op .15; DGX/vLLM optioneel."
+description: "Productie: Ollama gemma3:4b op .15. Geen DGX-deploy."
 status: accepted
 tags: [ollama, vllm, inference]
 timestamp: 2026-06-26T00:00:00Z
@@ -12,50 +12,46 @@ traces_to:
 # ADR-004: Inference Serving Strategy
 
 ## Status
-Accepted (geactualiseerd 2026-08-08)
+Accepted (geactualiseerd 2026-09-14)
 
 ## Datum
-2026-06-26 · update 2026-08-08
+2026-06-26 · update 2026-08-08 · update 2026-09-14
 
 ## Context
 We willen lokaal infereren: volledige controle, geen cloud-API voor de kern, flexibele modelkeuze, streaming en bruikbare structured output.
 
-Oorspronkelijk (2026-06) was de DGX de primaire GPU-host met vLLM.  
-Sinds 2026-08 draait de **productie-Sogyo-chatbot** op host **`<host>`** (RTX 5060 Ti 16 GB) met een kleiner model voor latency en operationele eenvoud.
+Oorspronkelijk (2026-06) was NVIDIA Spark DGX `<host>` de beoogde GPU-host met vLLM.  
+Sinds 2026-08 draait **Jarvisje** op host **`<host>`** (RTX 5060 Ti 16 GB). De DGX is **geen** productie- of optioneel deploydoel meer.
 
 ## Decision
 
-### Productie (Sogyo chatbot, 2026-08)
+### Productie (Jarvisje, 2026-08+)
 - **Ollama** op dezelfde host als de app (`enterprise` / `.15`).
 - Model: **`gemma3:4b`** (OpenAI-compatible API op poort 11434).
 - Backend configureert `LLM_BASE_URL` + `LLM_MODEL` via compose-env (niet hard in image).
 - Embeddings: **BGE-M3** lokaal in de app-container (CPU tot PyTorch Blackwell-support).
-
-### Optioneel / zware workloads
-- **vLLM op de DGX** blijft beschikbaar voor grotere models en experimenten.
-- Client blijft OpenAI-compatible: wissel endpoint/model via env.
+- Client blijft OpenAI-compatible: wissel endpoint/model via env **op `.15`**.
 
 **Constante eis:** OpenAI-compatibele chat-completions API naar de backend.
 
 ## Consequences
 ### Positief
 - Volledige controle en privacy (geen cloud-API voor kern).
-- Productie-stack op één machine (eenvoudiger dan app + remote DGX).
+- Productie-stack op één machine.
 - Modelwissel zonder app-image rebuild (Ollama pull).
-- DGX optioneel voor zwaardere quality-paden.
 
 ### Negatief / Risico's
-- 4B-model: lagere kwaliteit dan grote DGX-models.
+- 4B-model: lagere kwaliteit dan grotere GPU-modellen.
 - Resource management GPU (Ollama + eventueel andere containers).
 - Embeddings tijdelijk op CPU (torch vs. sm_120).
 
-## Reality check (2026-08)
+## Reality check (2026-09)
 
-Productie **draait** op Ollama `gemma3:4b` op `.15`. Structured output werkt via OpenAI-compatible JSON mode + backend parsing. vLLM/DGX is geen runtime-afhankelijkheid meer van de Sogyo-app.
+Productie **draait** op Ollama `gemma3:4b` op `.15`. Structured output werkt via OpenAI-compatible JSON mode + backend parsing. vLLM op `<host>` is geen runtime-afhankelijkheid en geen deploydoel.
 
 ## Alternatives Considered
 - **Alleen cloud APIs** (OpenAI, Anthropic, Grok, etc.): Verworpen vanwege kosten en controle.
-- **vLLM op DGX als primary**: Geschikt voor zware models; operationeel zwaarder; niet meer de productiestandaard.
+- **vLLM op DGX als primary**: Historisch overwogen; operationeel zwaarder; **niet** de productiestandaard en **niet** meer in de deploy-descriptors.
 - **Externe inference + RAG lokaal**: Niet gewenst als primaire oplossing.
 
 ## Modelkeuze

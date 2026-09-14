@@ -3,6 +3,8 @@
 ## 2026-09-14
 
 * **Uitlegpagina (voorstel):** [pagina-hoe-jarvisje-werkt.md](core-domain/04-delivery/pagina-hoe-jarvisje-werkt.md) — inhoudelijke opzet voor vervanging van de tab Chatbot Opbouw; nog niet gebouwd. UI **v1.0.7**.
+* **Deploy-descriptors = live:** hostpaden `~/jarvisje-chatbot` + `~/jarvisje-chatbot-data`, image `jarvisje`, container `jarvisje-chatbot-app`. Compose-projectnaam en Ollama blijven `sogyo-*` (Gemma-netwerk). Systemd-unitnamen blijven `sogyo-*` tot sudo-rename; WorkingDirectory → jarvisje.
+* **Geen DGX-deploy:** NVIDIA Spark DGX `<host>` / vLLM uit aannames, ADR-004 current-status, software-design, runbooks. ADR-005 blijft historisch/superseded.
 
 ## 2026-08-08
 

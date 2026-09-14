@@ -212,7 +212,7 @@ HEADER = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Technisch Design — Sogyo Kennis-Chatbot</title>
+    <title>Technisch Design — Jarvisje</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
@@ -231,11 +231,11 @@ HEADER = """<!DOCTYPE html>
         <div class="flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-x-3">
                 <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <span class="text-[#003366] font-bold text-2xl logo-font">S</span>
+                    <span class="text-[#003366] font-bold text-2xl logo-font">J</span>
                 </div>
                 <div>
-                    <div class="logo-font text-3xl font-semibold tracking-tight">Sogyo</div>
-                    <div class="text-[10px] text-blue-200 -mt-1">SOFTWARE INNOVATORS</div>
+                    <div class="logo-font text-3xl font-semibold tracking-tight">Jarvisje</div>
+                    <div class="text-[10px] text-blue-200 -mt-1">een chatbot rondom de wereld van AI</div>
                 </div>
             </div>
             <div class="flex items-center gap-x-4 text-sm flex-wrap">
@@ -261,10 +261,10 @@ HEADER = """<!DOCTYPE html>
 
 FOOTER = """
 <footer class="pt-8 border-t text-xs text-slate-500 mt-8">
-    Technisch design Sogyo Kennis-Chatbot (Jarvisje). Zie ook
+    Technisch design Jarvisje. Zie ook
     <a href="platform-overzicht.html" class="text-blue-600 underline">Platform Overzicht</a>
     voor deploy &amp; infrastructuur.
-    <br>Laatste update: 2026-07-01
+    <br>Laatste update: 2026-09-14
 </footer>
 </div>
 <script>

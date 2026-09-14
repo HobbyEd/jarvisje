@@ -35,7 +35,7 @@ RAG, citations, lokale inference op `.15` en de werkwijze (commit, designer, pro
 3. **Doelgroep.** Lezers van die blogs, niet sollicitanten/bedrijven. Geen rol-onboarding (sollicitant vs bedrijf).
 4. **Look & feel.** Design tokens 1-op-1 van *Edwin Blog* (dark default, `[data-theme="light"]`). Geen Sogyo-groen.
 5. **Embed.** Compacte chat-only view via `/?embed=1` in een iframe op edwinvandillen.nl. Thema-sync: initiële `?theme=` plus `postMessage` `{ type: "edwin-theme", theme: "dark"|"light" }` van de parent. Standalone `jarvisje.com` blijft voor beheer (bronnen, indexering, opbouw).
-6. **Rebrand-diepte.** Inclusief Python-package (`jarvisje`), compose/image/container-namen, systemd-units en hostpaden op `.15`. Cutover is een geplande ops-stap. Git-historie en artikeltekst in de twee blogs worden niet herschreven.
+6. **Rebrand-diepte.** Inclusief Python-package (`jarvisje`), image (`jarvisje`), app-container (`jarvisje-chatbot-app`) en hostpaden (`~/jarvisje-chatbot`, `~/jarvisje-chatbot-data`) op `.15`. Compose-projectnaam en Ollama-container blijven `sogyo-chatbot` / `sogyo-ollama` zodat het bestaande Gemma-netwerk intact blijft. Systemd-unitnamen blijven `sogyo-*` tot een sudo-rename. Git-historie en artikeltekst in de twee blogs worden niet herschreven.
 7. **Frame policy.** Alleen `'self'` en `https://edwinvandillen.nl` mogen framen (`Content-Security-Policy: frame-ancestors`).
 
 ## Consequences

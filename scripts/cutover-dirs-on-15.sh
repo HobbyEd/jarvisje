@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
-# One-time host cutover on <host> (enterprise):
+# One-time host cutover on <host> (enterprise) — already applied.
 #   ~/sogyo-chatbot      → ~/jarvisje-chatbot
 #   ~/sogyo-chatbot-data → ~/jarvisje-chatbot-data
+# Do not re-run; live dirs are jarvisje-*. Keep this script as the historical cutover.
 #
 # Leaves ~/sogyo-ollama and container sogyo-ollama (Gemma) running.
 # Creates a symlink ~/sogyo-chatbot → ~/jarvisje-chatbot so existing

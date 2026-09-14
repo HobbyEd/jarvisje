@@ -1,6 +1,6 @@
 # build-local-image.ps1
 #
-# Builds the Sogyo Chatbot Docker image locally from the current git state
+# Builds the Jarvisje Docker image locally from the current git state
 # (recommended to be on main) and prepares a transfer-ready artifact.
 #
 # This script only builds and exports the image locally.
@@ -15,8 +15,8 @@
 #   .\infra\build-local-image.ps1 -Tag "v0.2-myfeature"
 #
 # Output:
-#   - Local Docker image tagged sogyo-chatbot:<tag>
-#   - deploy-artifacts/sogyo-chatbot-<tag>.tar.gz  (ready for later rsync + docker load)
+#   - Local Docker image tagged jarvisje:<tag>
+#   - deploy-artifacts/jarvisje-<tag>.tar.gz  (ready for later rsync + docker load)
 
 param(
     [string]$Tag
@@ -24,7 +24,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "=== Sogyo Chatbot - Local Image Builder ===" -ForegroundColor Green
+Write-Host "=== Jarvisje - Local Image Builder ===" -ForegroundColor Green
 Write-Host "This prepares a Docker image from the current git checkout." -ForegroundColor Yellow
 Write-Host "Run this from the project root." -ForegroundColor Yellow
 Write-Host ""
@@ -50,14 +50,14 @@ if (-not $Tag) {
     }
 }
 
-$ImageName = "sogyo-chatbot"
+$ImageName = "jarvisje"
 $FullImage = "${ImageName}:${Tag}"
 
 # Use absolute paths based on current git root to avoid relative path resolution issues
 # (especially important on Windows with complex paths like Google Drive folders)
 $projectRoot = (Get-Location).Path
 $ArtifactsDir = Join-Path $projectRoot "deploy-artifacts"
-$TarFile = Join-Path $ArtifactsDir "sogyo-chatbot-$Tag.tar.gz"
+$TarFile = Join-Path $ArtifactsDir "jarvisje-$Tag.tar.gz"
 
 Write-Host "Git state:"
 git log -1 --oneline

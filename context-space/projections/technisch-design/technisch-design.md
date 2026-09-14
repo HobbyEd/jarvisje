@@ -98,7 +98,7 @@ De logical view beschrijft **wat** het systeem doet, los van deployment en besta
 |------|------|--------------|
 | `url` | string | Volledige pagina-URL |
 | `title` | string | Paginatitel (HTML `<title>` of fallback) |
-| `source` | string | Domeinnaam (bijv. `sogyo.nl`) |
+| `source` | string | Domeinnaam (bijv. `edwinvandillen.nl`) |
 | `text` | string | Geëxtraheerde platte tekst |
 | `ingested_at` | ISO datetime | Tijdstip van verwerking |
 
@@ -122,7 +122,7 @@ De logical view beschrijft **wat** het systeem doet, los van deployment en besta
 
 #### Collection
 
-- Naam: `sogyo_knowledge_{model_safe}` — afgeleid van `settings.embedding_model`
+- Naam: `jarvisje_knowledge` (plus model-suffix in code indien van toepassing)
 - Reden voor model-prefix: voorkomt dimensie-mismatch bij wisselen van embedding-model
 - Metadata op collection-niveau: `{"hnsw:space": "cosine"}`
 
@@ -142,7 +142,7 @@ Het embedding-model zet tekst om in vectoren voor similarity search.
 
 - **Lokaal (default):** `sentence-transformers` met `BAAI/bge-m3`
 - **Device:** `cuda` als beschikbaar, anders `cpu`; overschrijfbaar via `EMBEDDING_DEVICE`
-- **Remote (optioneel):** bij `EMBEDDING_API_BASE` worden embeddings uitbesteed naar een OpenAI-compatible `/v1/embeddings` endpoint (bijv. vLLM op DGX)
+- **Remote (optioneel):** bij `EMBEDDING_API_BASE` worden embeddings uitbesteed naar een OpenAI-compatible `/v1/embeddings` endpoint. Productie op `.15` gebruikt lokale BGE-M3.
 - **Batching:** GPU-batch tot 128; CPU via `embedding_batch_size` (default 32)
 - **Singleton:** `get_embedder()` laadt het model één keer en hergebruikt de instantie
 
@@ -166,9 +166,9 @@ Chroma is de **persistente vector store** voor MVP.
 
 ```json
 {
-  "url": "https://sogyo.nl/traineeship",
-  "title": "Traineeship bij Sogyo",
-  "source": "sogyo.nl",
+  "url": "https://edwinvandillen.nl/voorbeeld",
+  "title": "Voorbeeldartikel",
+  "source": "edwinvandillen.nl",
   "chunk_id": 0,
   "ingested_at": "2026-07-01T12:00:00"
 }
@@ -326,7 +326,7 @@ De development view beschrijft **codestructuur** en waar ontwikkelaars wat vinde
 ### 3.1 Repository-structuur (relevant deel)
 
 ```
-sogyo-chatbot/
+jarvisje/
 ├── src/jarvisje/
 │   ├── config.py              # Settings, env vars, paden
 │   ├── ingestion/
@@ -385,7 +385,7 @@ Centraal in `config.py` (`Settings`), overschrijfbaar via environment variables:
 | Variabele | Default | Rol |
 |-----------|---------|-----|
 | `LLM_BASE_URL` | `http://ollama:11434/v1` (compose) | Ollama OpenAI API |
-| `LLM_MODEL` | `nvidia/Gemma-4-26B-A4B-NVFP4` | Chat-model |
+| `LLM_MODEL` | `gemma3:4b` | Chat-model |
 | `EMBEDDING_DEVICE` | `auto` | `cpu` / `cuda` / `auto` |
 | `EMBEDDING_API_BASE` | (leeg) | Remote embeddings |
 | `embedding_model` | `BAAI/bge-m3` | In code (Settings field) |
@@ -423,15 +423,15 @@ flowchart TB
     Browser[Browser jarvisje.com]
     CF[cloudflared]
     subgraph host [enterprise <host>]
-        subgraph appc [Docker sogyo-chatbot-app]
+        subgraph appc [Docker jarvisje-chatbot-app]
             API[FastAPI :8001]
             CHROMA[(Chroma /app/data)]
             EMB[Embedder CPU BGE-M3]
         end
-        VOL[~/sogyo-chatbot-data]
+        VOL[~/jarvisje-chatbot-data]
         OLL[Ollama gemma3:4b :11434]
     end
-    WEBS[(sogyo.nl + 5 domeinen)]
+    WEBS[(edwinvandillen.nl + jeroenteunisse.nl)]
 
     Browser --> CF -->|localhost:8080| API
     API --> CHROMA
@@ -443,8 +443,8 @@ flowchart TB
 
 | Component | Host/locatie | Poort |
 |-----------|--------------|-------|
-| Web-UI + API | Container `sogyo-chatbot-app` | 8001 intern, **8080** host |
-| Chroma data | Volume `sogyo-chatbot-data` → `/app/data` | — |
+| Web-UI + API | Container `jarvisje-chatbot-app` | 8001 intern, **8080** host |
+| Chroma data | Volume `jarvisje-chatbot-data` → `/app/data` | — |
 | Ollama LLM | Zelfde host (container) | **11434** |
 | Cloudflare Tunnel | Host `cloudflared` | — |
 | Bronwebsites | Internet | 443 |
@@ -462,7 +462,7 @@ flowchart TB
 
 | Richting | Doel | Wanneer nodig |
 |----------|------|---------------|
-| Uitgaand HTTPS | sogyo.nl e.d. | Indexering |
+| Uitgaand HTTPS | edwinvandillen.nl, jeroenteunisse.nl | Indexering |
 | Uitgaand HTTP | `LLM_BASE_URL` | Elke chat |
 | Uitgaand HTTPS | huggingface.co | Eerste embedder-load (indien niet gecached) |
 | Inkomend | Browser → :8080 | Gebruik |
@@ -474,7 +474,7 @@ flowchart TB
 | Embedder preload | Hoog (kort) | ~1–2 GB | BGE-M3 op CPU |
 | Indexering | Matig–hoog | Pieken bij embed | Per-domein verwerking beperkt pieken |
 | Chat retrieval | Laag | Embedder al geladen | Eén query-embedding |
-| LLM-call | Laag in container | — | Werk bij vLLM |
+| LLM-call | Laag in container | — | Werk bij Ollama |
 
 ---
 
