@@ -1,10 +1,10 @@
 ---
 type: Content Design
 title: "Pagina — Hoe Jarvisje werkt"
-description: "Inhoudelijke opzet voor de publieke uitlegpagina (huidige tab Chatbot Opbouw). Nog niet gebouwd."
+description: "Inhoudelijke opzet voor de publieke uitlegpagina (tab Hoe Jarvisje werkt)."
 tags: [ui, rag, uitleg, delivery]
 timestamp: 2026-09-14T00:00:00Z
-status: proposed
+status: implemented
 traces_to:
   - /core-domain/01-strategic/vision.md
   - /core-domain/02-architectural/decisions/01-ADR-knowledge-strategy.md
@@ -17,7 +17,7 @@ traces_to:
 
 # Pagina: Hoe Jarvisje werkt
 
-**Status:** voorstel — nog niet gebouwd. Huidige tab *Chatbot Opbouw* in `web/index.html` wordt bij bouw **geheel vervangen**.
+**Status:** gebouwd in `web/index.html` (tab *Hoe Jarvisje werkt*, UI v1.1.0). Walker en live artikel-aantal zitten in v1.
 
 **Doel:** de bezoeker van jarvisje.com meenemen in hoe Jarvisje is opgebouwd: kort functioneel, daarna hoe een vraag tot een antwoord komt, daarna hoe de kennisbank gevuld wordt, daarna de technische stekkerdoos.
 
@@ -286,12 +286,12 @@ Aanbevolen derde tekening. Beantwoordt: Gemma zit niet in de app-container.
 - Echte token-streaming vanuit Ollama (productwerk, geen uitlegpagina).
 - 3D-animatie van vectorruimte.
 
-## Open keuzes bij bouw
+## Keuzes bij bouw
 
-- Walker in v1: ja / nee.
-- Live artikel-aantal in v1: ja / nee.
-- Tab-naam **Hoe Jarvisje werkt** is het voorstel; bevestigen bij bouw.
+- Walker in v1: ja.
+- Live artikel-aantal in v1: ja (`GET /sources`).
+- Tab-naam: **Hoe Jarvisje werkt**.
 
-## Bouwnotitie (wanneer we dit doen)
+## Bouwnotitie
 
-Implementatie zit in Software Space (`web/index.html`, tab `architecture`). Dit document is de bron voor *wat* die tab moet vertellen. Na bouw: UI-semver bump (minor: nieuwe uitlegpagina), designer agent, projecties alleen als het platform-overzicht de publieke uitleg noemt. Geen nieuwe ADR tenzij de pagina een architectuurkeuze wijzigt — uitleg van bestaande keuzes is geen ADR.
+Implementatie zit in Software Space (`web/index.html`, tab `architecture`, label *Hoe Jarvisje werkt*). Dit document blijft de bron voor *wat* de tab moet vertellen. Geen nieuwe ADR: uitleg van bestaande keuzes, geen architectuurwijziging.

@@ -46,7 +46,7 @@ MVP end-to-end is **operationeel**. Verdere fasen zijn kwaliteit, onderhoud en s
 - [ ] Evaluatieset (20–25 vragen) + handmatige scoring
 - [ ] PyTorch met sm_120 → embeddings weer op GPU
 - [ ] Eventueel groter lokaal model als VRAM/kwaliteit dat toelaat
-- [ ] Publieke uitlegpagina *Hoe Jarvisje werkt* (tab Chatbot Opbouw vervangen) — opzet: [pagina-hoe-jarvisje-werkt.md](pagina-hoe-jarvisje-werkt.md)
+- [x] Publieke uitlegpagina *Hoe Jarvisje werkt* (tab Chatbot Opbouw vervangen) — opzet: [pagina-hoe-jarvisje-werkt.md](pagina-hoe-jarvisje-werkt.md)
 
 ### P2 — engineering hygiene
 - [ ] Minimale automated smoke tests (health + chat/sync mock of live)

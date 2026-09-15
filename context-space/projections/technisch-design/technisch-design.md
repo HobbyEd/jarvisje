@@ -228,9 +228,9 @@ De web-app is een **single-page application** zonder build-stap (`web/index.html
 |-----|---------|-----------|
 | **Chat** | Gesprek met Jarvisje | `POST /chat` (SSE) |
 | **Bronnen & Meta-data** | Indexering starten/stoppen, bronnentabel | `/ingest/*`, `GET /sources` |
-| **Chatbot Opbouw** | Statische uitleg over architectuur | Geen (of Mermaid inline) |
+| **Hoe Jarvisje werkt** | Uitleg: vraag→antwoord, crawler, runtime (CSS-diagrammen + walker) | `GET /sources` (artikel-aantal) |
 
-Technologie: vanilla JavaScript, Tailwind CSS (CDN), Mermaid (CDN). Static assets (logo) via FastAPI mount op `/static`.
+Technologie: vanilla JavaScript, Tailwind CSS (CDN). Static assets (logo) via FastAPI mount op `/static`.
 
 ---
 

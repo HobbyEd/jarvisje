@@ -1,5 +1,9 @@
 # Context Space Update Log
 
+## 2026-09-15
+
+* **Uitlegpagina gebouwd:** tab *Hoe Jarvisje werkt* vervangt Chatbot Opbouw — zeven blokken, drie CSS-tekeningen, walker, live artikel-aantal. Mermaid verwijderd. UI **v1.1.0**.
+
 ## 2026-09-14
 
 * **Host-identiteit uit git:** `DEPLOY_USER`, `DEPLOY_HOST`, `HOST_HOME` in `.env` / `.env.example`. Geen SSH-user of LAN-IP meer in bron/docs. UI **v1.0.9**.

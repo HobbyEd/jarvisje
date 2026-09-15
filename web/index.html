@@ -20,7 +20,6 @@
 })();
 </script>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
   :root {
     --bg-page:    #0d1b2a;
@@ -209,6 +208,177 @@
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Hoe Jarvisje werkt */
+  .how-block {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem 1.35rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--s-08);
+    border-radius: 1rem;
+  }
+  .how-block h2 {
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--text-heading);
+    margin-bottom: 0.4rem;
+  }
+  .how-block h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-heading);
+    margin-bottom: 0.45rem;
+  }
+  .how-lead { color: var(--text-2); font-size: 0.95rem; }
+  #how-index-stat { font-size: 0.85rem; color: var(--text-2); margin-top: 0.65rem; }
+  .how-two, .how-got {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .how-mini {
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--s-08);
+    border-radius: var(--radius-card);
+    background: var(--s-04);
+  }
+  .how-mini h4 { font-weight: 600; color: var(--blue); font-size: 0.9rem; margin-bottom: 0.2rem; }
+  .how-mini p { font-size: 0.8rem; color: var(--text-2); margin: 0; line-height: 1.5; }
+  .how-query {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+  .flow-node {
+    background: var(--s-04);
+    border: 1px solid var(--s-08);
+    border-radius: var(--radius-card);
+    padding: 0.65rem 0.85rem;
+    transition: border-color .25s, box-shadow .25s, background .25s;
+  }
+  .flow-node .kicker {
+    font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3);
+  }
+  .flow-node .title { font-weight: 600; color: var(--text-heading); font-size: 0.92rem; line-height: 1.3; }
+  .flow-node .sub { font-size: 11px; color: var(--text-3); line-height: 1.4; }
+  .flow-node.is-on {
+    border-color: var(--blue);
+    background: rgba(74, 144, 226, 0.12);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.16);
+  }
+  .flow-arrow {
+    text-align: center;
+    color: var(--blue);
+    font-size: 0.8rem;
+    line-height: 1.25;
+    padding: 0.12rem 0 0.2rem;
+  }
+  .flow-arrow span { display: block; font-size: 10px; color: var(--text-3); }
+  .how-steps { list-style: none; padding: 0; margin: 0; }
+  .how-steps li {
+    padding: 0.42rem 0.55rem 0.42rem 0.7rem;
+    border-left: 2px solid var(--s-08);
+    margin-bottom: 0.12rem;
+    font-size: 0.86rem;
+    color: var(--text-2);
+    border-radius: 0 6px 6px 0;
+    transition: background .25s, border-color .25s, color .25s;
+  }
+  .how-steps li.is-on {
+    border-left-color: var(--blue);
+    background: rgba(74, 144, 226, 0.10);
+    color: var(--text-1);
+  }
+  .how-steps li strong { color: var(--text-heading); }
+  .how-walk-bar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.35rem 0 0.75rem; }
+  .how-caption { font-size: 0.8rem; color: var(--text-2); min-height: 1.35em; }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--s-12);
+    color: var(--text-1);
+    border-radius: 0.7rem;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+  .btn-ghost[aria-pressed="true"] {
+    border-color: var(--blue);
+    background: rgba(74, 144, 226, 0.12);
+    color: var(--blue);
+  }
+  .embed-space {
+    position: relative;
+    height: 168px;
+    border: 1px dashed var(--s-12);
+    border-radius: var(--radius-card);
+    background: var(--s-04);
+    margin-top: 0.75rem;
+    overflow: hidden;
+  }
+  .embed-dot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    width: 7.6rem;
+  }
+  .embed-dot i {
+    display: block;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    margin: 0 auto 4px;
+    background: var(--blue);
+  }
+  .embed-dot.far i { background: var(--text-3); }
+  .embed-dot label { font-size: 11px; color: var(--text-2); line-height: 1.3; display: block; }
+  .stack-tunnel {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-2);
+    margin-bottom: 0.55rem;
+  }
+  .stack-host {
+    border: 1px dashed var(--s-12);
+    border-radius: var(--radius-card);
+    padding: 0.85rem;
+    background: var(--s-04);
+  }
+  .stack-host .host-label {
+    font-size: 11px; color: var(--text-3); margin-bottom: 0.6rem; text-align: center;
+  }
+  .stack-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  .stack-box {
+    border: 1px solid var(--s-08);
+    border-radius: var(--radius-card);
+    padding: 0.75rem 0.85rem;
+    background: var(--bg-surface);
+  }
+  .stack-box.gpu { border-color: var(--blue); }
+  .stack-box h4 { font-size: 0.88rem; font-weight: 600; color: var(--text-heading); }
+  .stack-box p { font-size: 11px; color: var(--text-3); margin: 0.2rem 0 0; line-height: 1.45; }
+  .stack-http {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--blue); font-size: 11px; font-weight: 600; writing-mode: horizontal-tb;
+  }
+  .stack-vol { font-size: 11px; color: var(--text-3); text-align: center; margin-top: 0.65rem; }
+  .how-tech { margin-top: 0.8rem; font-size: 12px; color: var(--text-3); }
+  .how-tech summary { cursor: pointer; color: var(--text-2); font-weight: 500; }
+  .how-tech ul { padding-left: 1.15rem; margin-top: 0.4rem; }
+  .how-note { font-size: 11px; color: var(--text-3); margin-top: 0.7rem; }
+  @media (max-width: 800px) {
+    .how-query { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .how-two, .how-got { grid-template-columns: 1fr; }
+    .stack-row { grid-template-columns: 1fr; }
+    .stack-http { padding: 0.15rem 0; }
+  }
 </style>
 </head>
 <body>
@@ -235,7 +405,7 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
         </button>
-        <span class="version-badge">v1.0.9</span>
+        <span class="version-badge">v1.1.0</span>
       </div>
     </div>
   </header>
@@ -245,7 +415,7 @@
     <div class="flex border-b border-slate-200" id="tabs">
       <button data-tab="chat" class="tab-button px-4 py-2 font-medium text-sm active">Chat</button>
       <button data-tab="sources" class="tab-button px-4 py-2 font-medium text-sm">Bronnen &amp; Meta-data</button>
-      <button data-tab="architecture" class="tab-button px-4 py-2 font-medium text-sm">Chatbot Opbouw</button>
+      <button data-tab="architecture" class="tab-button px-4 py-2 font-medium text-sm">Hoe Jarvisje werkt</button>
     </div>
   </div>
 
@@ -386,151 +556,205 @@
     </div>
   </div>
 
-  <!-- Architecture tab content -->
+  <!-- How Jarvisje works -->
   <div id="architecture-view" class="tab-content hidden max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
-    <div class="mb-8">
-      <h2 class="text-2xl font-semibold accent mb-2">Chatbot Architectuur</h2>
-      <p class="text-slate-600">Overzicht van de end-to-end flow van Jarvisje, van browser tot LLM en het indexeringsproces.</p>
+
+    <div class="how-block">
+      <h2>Hoe Jarvisje werkt</h2>
+      <p class="how-lead">
+        Jarvisje is een chatbot rondom de wereld van AI — geen algemene assistent.
+        Hij kent de artikelen op
+        <a href="https://edwinvandillen.nl" target="_blank" rel="noopener">edwinvandillen.nl</a>
+        en
+        <a href="https://jeroenteunisse.nl" target="_blank" rel="noopener">jeroenteunisse.nl</a>,
+        verwijst naar concrete posts en verzint geen derde bron.
+        Je vraag blijft lokaal: niet naar ChatGPT of Claude.
+      </p>
+      <p id="how-index-stat">Kennisbank wordt geladen…</p>
     </div>
 
-    <!-- High level flow -->
-    <div class="mb-8 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
-      <h3 class="font-semibold mb-4 text-lg">Globale Flow</h3>
-      <div class="mermaid">
-flowchart LR
-    subgraph Client
-      Browser[🌐 Browser<br/>jarvisje.com via Cloudflare]
-    end
-
-    subgraph Host["Productiehost"]
-      CF[cloudflared]
-      HostPort[Poort 8080]
-      Container[Docker<br/>jarvisje-chatbot-app<br/>Poort 8001]
-      App[FastAPI<br/>Chat + Ingestion]
-      Embed[BGE-M3<br/>embeddings CPU]
-      Chroma[(Chroma<br/>persist volume)]
-      Ollama[Ollama<br/>gemma3:4b GPU]
-    end
-
-    Browser -- HTTPS via Tunnel --> CF
-    CF --> HostPort
-    HostPort --> Container
-    Container --> App
-    App --> Embed
-    Embed --> Chroma
-    App -- Retrieval --> Chroma
-    App -- Chat completion --> Ollama
-    Ollama -- Streaming antwoord --> App --> Browser
+    <div class="how-block">
+      <h3>Twee bewegingen, dezelfde kennisbank</h3>
+      <p class="how-lead" style="margin-bottom:0.75rem">Het model is niet getraind op de blogs. Eerst zoekt de app fragmenten; pas daarna mag Gemma antwoorden.</p>
+      <div class="how-two">
+        <div class="how-mini">
+          <h4>Als jij vraagt</h4>
+          <p>De app embedt je vraag, zoekt in wat al gelezen is, bouwt een prompt en laat Gemma daar een antwoord van maken.</p>
+        </div>
+        <div class="how-mini">
+          <h4>Als de kennisbank bijwerkt</h4>
+          <p>Een crawler leest de blogs. Het embedding-model legt betekenis vast. Zonder deze loop heeft Gemma niets om op te steunen.</p>
+        </div>
       </div>
+    </div>
 
-      <div class="mt-4 text-sm text-slate-700 space-y-2">
-        <p><strong>Hoe de flow werkt (stap voor stap):</strong></p>
-        <ol class="list-decimal pl-5 space-y-1">
-          <li><strong>Browser</strong>: Gebruiker opent jarvisje.com. Cloudflare Tunnel stuurt veilig door naar de host (poort 8080).</li>
-          <li><strong>Host &amp; Container</strong>: Docker container jarvisje-chatbot-app (8001). FastAPI serveert UI en API.</li>
-          <li><strong>Chat / Retrieval</strong>: Query wordt ge-embedded met BGE-M3 (CPU) en gezocht in Chroma.</li>
-          <li><strong>Lokaal LLM</strong>: Context + vraag naar Ollama gemma3:4b op de GPU van dezelfde server.</li>
-          <li><strong>Antwoord</strong>: Streaming tokens + bronnen terug naar de browser.</li>
+    <div class="how-block">
+      <h3>Van vraag naar antwoord</h3>
+      <p class="how-lead">De kennisbank zit tussen jou en Gemma in. Gemma ziet alleen wat de app heeft opgehaald — ze zoekt niet zelf.</p>
+      <div class="how-walk-bar">
+        <button type="button" id="how-walk-btn" class="btn-ghost" aria-pressed="false">Volg een vraag: “Wat is harnessing?”</button>
+        <span id="how-walk-caption" class="how-caption" aria-live="polite"></span>
+      </div>
+      <div class="how-query">
+        <div>
+          <div class="flow-node" data-how-step="1">
+            <div class="kicker">1</div>
+            <div class="title">Browser</div>
+            <div class="sub">jarvisje.com, of iframe op edwinvandillen.nl</div>
+          </div>
+          <div class="flow-arrow">↓<span>HTTPS · de chat</span></div>
+          <div class="flow-node" data-how-step="2">
+            <div class="kicker">2</div>
+            <div class="title">Webtoepassing</div>
+            <div class="sub">ontvangt de vraag — Gemma ziet hem nog niet</div>
+          </div>
+          <div class="flow-arrow">↓<span>embed de vraag</span></div>
+          <div class="flow-node" data-how-step="3">
+            <div class="kicker">3</div>
+            <div class="title">Embedding</div>
+            <div class="sub">vraag wordt een vector (zelfde model als bij indexeren)</div>
+          </div>
+          <div class="flow-arrow">↓<span>dichtstbijzijnde betekenis</span></div>
+          <div class="flow-node" data-how-step="4">
+            <div class="kicker">4</div>
+            <div class="title">Kennisbank</div>
+            <div class="sub">alleen fragmenten van de twee blogs</div>
+          </div>
+          <div class="flow-arrow">↓<span>fragmenten + urls</span></div>
+          <div class="flow-node" data-how-step="5">
+            <div class="kicker">5</div>
+            <div class="title">Prompt bouwen</div>
+            <div class="sub">systeem + context + vraag + geschiedenis</div>
+          </div>
+          <div class="flow-arrow">↓<span>HTTP naar het taalmodel</span></div>
+          <div class="flow-node" data-how-step="6">
+            <div class="kicker">6</div>
+            <div class="title">Gemma</div>
+            <div class="sub">aparte GPU-container · schrijft antwoord, bronnen, hints</div>
+          </div>
+          <div class="flow-arrow">↓<span>terug naar de browser</span></div>
+        </div>
+        <ol class="how-steps">
+          <li data-how-step="1"><strong>Browser.</strong> Jij opent de webtoepassing en stelt een vraag.</li>
+          <li data-how-step="2"><strong>Webapp.</strong> De chat komt binnen. Nog geen taalmodel.</li>
+          <li data-how-step="3"><strong>Vector.</strong> Dezelfde embedding als bij indexeren zet de vraag om in ligging.</li>
+          <li data-how-step="4"><strong>Zoeken.</strong> De kennisbank geeft de fragmenten die het dichtst bij de vraag liggen.</li>
+          <li data-how-step="5"><strong>Prompt.</strong> Die fragmenten plus de vraag gaan naar Gemma — niet de hele blogs.</li>
+          <li data-how-step="6"><strong>Antwoord.</strong> Gemma maakt daar een lopende tekst van, met bronnen en vervolghints.</li>
         </ol>
-        <p class="text-xs text-slate-500">Alles draait op één host: app, embeddings, vector store en LLM.</p>
       </div>
+      <details class="how-tech">
+        <summary>Technisch</summary>
+        <ul>
+          <li>Embedding in de app (CPU); zoeken op betekenis in de vector-index.</li>
+          <li>Gemma draait in een aparte container op de GPU en krijgt alleen de opgehaalde fragmenten.</li>
+          <li>Antwoord in een vast formaat: tekst, lijst met bronnen (titel + url), hints.</li>
+        </ul>
+      </details>
+    </div>
 
-      <!-- Extra mooie visualisatie van de flow -->
-      <div class="mt-6">
-        <h4 class="font-medium mb-3 text-sm">Visuele weergave – Stapsgewijze flow</h4>
-        <div class="flex flex-col md:flex-row items-center gap-2 text-center">
-          <!-- Step 1: Browser -->
-          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
-            <div class="text-2xl mb-1">🌐</div>
-            <div class="font-semibold accent">1. Browser</div>
-            <div class="text-[10px] text-slate-500">jarvisje.com (Cloudflare Tunnel)</div>
+    <div class="how-block">
+      <h3>Wat is een embedding?</h3>
+      <p class="how-lead">
+        Een embedding zet tekst om in een ligging: betekenis als plek.
+        “Harnessing” en “AI betrouwbaar maken” liggen dicht bij elkaar.
+        “Pasta recepten” ligt ver weg en wordt niet opgehaald.
+      </p>
+      <div class="embed-space" aria-hidden="true">
+        <div class="embed-dot" style="left:28%; top:34%;">
+          <i></i><label>“harnessing AI”</label>
+        </div>
+        <div class="embed-dot" style="left:54%; top:28%;">
+          <i></i><label>“AI betrouwbaar maken”</label>
+        </div>
+        <div class="embed-dot far" style="left:74%; top:74%;">
+          <i></i><label>“pasta recepten”</label>
+        </div>
+      </div>
+      <p class="how-note">Zonder hetzelfde embedding-model bij vragen én indexeren zou zoeken op betekenis niet werken.</p>
+    </div>
+
+    <div class="how-block">
+      <h3>Hoe de crawler de kennisbank vult</h3>
+      <p class="how-lead" style="margin-bottom:0.75rem">Dit gebeurt niet tijdens het chatten. Indexeren leest de blogs; daarna kan Gemma erop steunen.</p>
+      <div class="how-two">
+        <div>
+          <div class="flow-node">
+            <div class="title">Twee blogs</div>
+            <div class="sub">edwinvandillen.nl · jeroenteunisse.nl</div>
           </div>
-          <div class="accent text-xl hidden md:block">→</div>
-          <div class="accent text-xl md:hidden">↓</div>
-
-          <!-- Step 2: Host -->
-          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
-            <div class="text-2xl mb-1">🖥️</div>
-            <div class="font-semibold accent">2. Server Host</div>
-            <div class="text-[10px] text-slate-500">Poort 8080 → Docker</div>
+          <div class="flow-arrow">↓<span>sitemap, nette extractie</span></div>
+          <div class="flow-node">
+            <div class="title">Crawler</div>
+            <div class="sub">haalt schone artikeltekst op</div>
           </div>
-          <div class="accent text-xl hidden md:block">→</div>
-          <div class="accent text-xl md:hidden">↓</div>
-
-          <!-- Step 3: Container + App -->
-          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
-            <div class="text-2xl mb-1">🐳</div>
-            <div class="font-semibold accent">3. Container</div>
-            <div class="text-[10px] text-slate-500">FastAPI (8001)<br/>Chat + Index</div>
+          <div class="flow-arrow">↓<span>knippen + overlap</span></div>
+          <div class="flow-node">
+            <div class="title">Fragmenten</div>
+            <div class="sub">tekststukken met url, titel, datum</div>
           </div>
-          <div class="accent text-xl hidden md:block">→</div>
-          <div class="accent text-xl md:hidden">↓</div>
-
-          <!-- Step 4: Retrieval / LLM -->
-          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
-            <div class="text-2xl mb-1">🔍 / 🤖</div>
-            <div class="font-semibold accent">4. Verwerking</div>
-            <div class="text-[10px] text-slate-500">BGE-M3 + Chroma<br/>→ Ollama Gemma 4B</div>
-          </div>
-          <div class="accent text-xl hidden md:block">→</div>
-          <div class="accent text-xl md:hidden">↓</div>
-
-          <!-- Step 5: Response -->
-          <div class="flex-1 p-3 bg-white border border-[var(--blue)] rounded-xl shadow-sm">
-            <div class="text-2xl mb-1">💬</div>
-            <div class="font-semibold accent">5. Antwoord</div>
-            <div class="text-[10px] text-slate-500">Stream via SSE<br/>+ bronnen</div>
+          <div class="flow-arrow">↓<span>zelfde embedding-model</span></div>
+          <div class="flow-node">
+            <div class="title">Vector + kennisbank</div>
+            <div class="sub">hier zoekt de chat later in (tekening hierboven)</div>
           </div>
         </div>
-        <p class="mt-2 text-[10px] text-center text-slate-500">Elke stap is traceerbaar: van vraag tot antwoord, volledig op de lokale server.</p>
+        <div>
+          <p class="how-lead">Nieuwe posts komen binnen via indexeren, niet via hertrainen van Gemma. Als de kennisbank leeg is, zegt de chat dat eerlijk.</p>
+          <details class="how-tech">
+            <summary>Technisch</summary>
+            <ul>
+              <li>Sitemap-first crawl; indexeren draait in een apart proces zodat chat bereikbaar blijft.</li>
+              <li>Standaard alleen nieuw of gewijzigd; volledig opnieuw kan via Bronnen.</li>
+              <li>Beheer (starten, token) staat op het tabblad Bronnen, niet hier.</li>
+            </ul>
+          </details>
+        </div>
       </div>
     </div>
 
-    <!-- Chat flow -->
-    <div class="mb-8 p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
-      <h3 class="font-semibold mb-3">1. Chat Flow (Vraag → Antwoord)</h3>
-      <ol class="list-decimal pl-5 space-y-1 text-sm">
-        <li>Gebruiker stelt vraag in de browser</li>
-        <li>Request via Cloudflare Tunnel naar host:8080 → container:8001</li>
-        <li>FastAPI ontvangt POST /chat</li>
-        <li><strong>Retrieval</strong>: Vraag → BGE-M3 embedding → Chroma similarity search</li>
-        <li>Context + vraag → Ollama gemma3:4b (OpenAI-compatible, lokaal op GPU)</li>
-        <li>LLM streamt tokens terug via SSE</li>
-        <li>Browser toont antwoord met bronnen</li>
-      </ol>
-      <p class="text-xs text-slate-500 mt-2">Retrieval en LLM draaien lokaal op de productieserver.</p>
-    </div>
-
-    <!-- Indexing flow -->
-    <div class="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm">
-      <h3 class="font-semibold mb-3">2. Indexeringsproces (Kennisbank opbouwen)</h3>
-      <div class="mermaid">
-flowchart TB
-    subgraph Ingestion
-      direction TB
-      Start[Admin klikt 'Start indexering']
-      Scrape[Scraper<br/>sitemaps + trafilatura<br/>+ fallback]
-      Chunk[Chunker<br/>800 chars + overlap]
-      Embed2[BGE-M3 Embedder<br/>lokaal CPU]
-      Store[Upsert in Chroma]
-    end
-
-    Start --> Scrape
-    Scrape --> Chunk
-    Chunk --> Embed2
-    Embed2 --> Store
+    <div class="how-block">
+      <h3>Waar het draait</h3>
+      <p class="how-lead" style="margin-bottom:0.75rem">Eén pagina, geen zwaar frontend-framework. Gemma zit niet in de app-container.</p>
+      <div class="stack-tunnel">Internet → Cloudflare Tunnel → de server</div>
+      <div class="stack-host">
+        <div class="host-label">Twee containers op dezelfde machine</div>
+        <div class="stack-row">
+          <div class="stack-box">
+            <h4>App</h4>
+            <p>UI, orchestratie, embeddings (CPU), kennisbank. De crawler-worker is een apart proces in dezelfde image.</p>
+          </div>
+          <div class="stack-http">HTTP →</div>
+          <div class="stack-box gpu">
+            <h4>Ollama · Gemma</h4>
+            <p>Alleen het taalmodel, rechtstreeks op de GPU. Model wisselen zonder de app opnieuw te bouwen.</p>
+          </div>
+        </div>
+        <div class="stack-vol">Kennisbank op een volume buiten de image — overleeft updates.</div>
       </div>
-      <ul class="list-disc pl-5 mt-3 text-sm space-y-0.5">
-        <li>Start via UI → <code>POST /ingest/start</code> spawnt een <strong>apart worker-proces</strong> (ADR-010)</li>
-        <li>Worker: scrape → chunk → embed → upsert; chat-API blijft beschikbaar</li>
-        <li>Status via gedeeld bestand op data-volume; UI pollt <code>GET /ingest/status</code></li>
-        <li>Zelfde entrypoint voor CLI/cron: <code>python -m jarvisje.ingestion.worker</code></li>
-        <li>Data blijft in persistente volume <code>~/jarvisje-chatbot-data</code></li>
-      </ul>
+      <details class="how-tech">
+        <summary>Technisch</summary>
+        <ul>
+          <li>Webstack: één HTML-pagina, FastAPI voor UI en API.</li>
+          <li>Gemma via een OpenAI-compatibele HTTP-API in de Ollama-container.</li>
+          <li>Publiek bereikbaar via een tunnel op de host, niet vanuit de app-image.</li>
+        </ul>
+      </details>
     </div>
 
-    <div class="mt-6 text-xs text-slate-500">
-      <strong>Belangrijke componenten:</strong> FastAPI (backend), BGE-M3 (embeddings), Chroma (vector store), Ollama gemma3:4b (LLM op GPU), Cloudflare Tunnel (publieke exposure).
+    <div class="how-block">
+      <h3>Wat je terugkrijgt — en wat bewust ontbreekt</h3>
+      <div class="how-got">
+        <div class="how-mini">
+          <h4>Wel</h4>
+          <p>Een lopend antwoord, een eigen lijst met bronnen (niet alleen linkjes in de tekst), en hints die terugleiden naar de blogs.</p>
+        </div>
+        <div class="how-mini">
+          <h4>Niet</h4>
+          <p>Geen permanente chatgeschiedenis. Geen fine-tuning: nieuwe artikelen komen binnen via indexeren. Geen cloud-LLM.</p>
+        </div>
+      </div>
+      <p class="how-note">Het antwoord verschijnt in de chat in stukjes. Het model zelf streamt nog niet token voor token.</p>
     </div>
   </div>
 
@@ -704,11 +928,6 @@ function currentTheme() {
 function applyTheme(theme) {
   if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
   else document.documentElement.removeAttribute('data-theme');
-  if (window.mermaid) {
-    try {
-      mermaid.initialize({ startOnLoad: false, theme: theme === 'light' ? 'default' : 'dark' });
-    } catch (e) {}
-  }
 }
 
 function initThemeControls() {
@@ -732,17 +951,132 @@ window.onload = () => {
   initThemeControls();
   startOnboarding();
   initTabs();
+  initHowItWorks();
   ensureGlobalIngestPoll();
-
-  if (window.mermaid) {
-    mermaid.initialize({ startOnLoad: false, theme: currentTheme() === 'light' ? 'default' : 'dark' });
-  }
+  const params = new URLSearchParams(location.search);
+  const tab = params.get('tab');
+  if (tab === 'architecture' || tab === 'sources' || tab === 'chat') showTab(tab);
+  if (tab === 'architecture' && params.get('walk') === '1') startHowWalk();
 };
 
 // ========================
 // Tabs + Sources metadata
 // ========================
 let sourcesData = null;
+
+const HOW_WALK_CAPTIONS = [
+  "Je typt: “Wat is harnessing?”",
+  "De webapp ontvangt de chat — Gemma ziet de vraag nog niet.",
+  "Het embedding-model zet de vraag om in een vector.",
+  "De kennisbank zoekt fragmenten die in betekenis dichtbij liggen.",
+  "Die fragmenten plus de vraag worden één prompt.",
+  "Gemma schrijft een antwoord met bronnen — alleen uit die fragmenten."
+];
+const HOW_WALK_STEPS = 6;
+const HOW_WALK_MS = 1600;
+let howWalkTimer = null;
+let howWalkIndex = -1;
+
+function howStepEls() {
+  return document.querySelectorAll("#architecture-view [data-how-step]");
+}
+
+function highlightHowStep(step) {
+  howStepEls().forEach(function (el) {
+    el.classList.toggle("is-on", Number(el.getAttribute("data-how-step")) === step);
+  });
+  const cap = document.getElementById("how-walk-caption");
+  if (cap) cap.textContent = step >= 1 ? (HOW_WALK_CAPTIONS[step - 1] || "") : "";
+}
+
+function stopHowWalk() {
+  if (howWalkTimer) {
+    clearInterval(howWalkTimer);
+    howWalkTimer = null;
+  }
+  const btn = document.getElementById("how-walk-btn");
+  if (btn) {
+    btn.setAttribute("aria-pressed", "false");
+    btn.textContent = "Volg een vraag: “Wat is harnessing?”";
+  }
+}
+
+function startHowWalk() {
+  stopHowWalk();
+  howWalkIndex = 1;
+  highlightHowStep(howWalkIndex);
+  const btn = document.getElementById("how-walk-btn");
+  if (btn) {
+    btn.setAttribute("aria-pressed", "true");
+    btn.textContent = "Stop de wandeling";
+  }
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) {
+    highlightHowStep(HOW_WALK_STEPS);
+    const cap = document.getElementById("how-walk-caption");
+    if (cap) cap.textContent = HOW_WALK_CAPTIONS[HOW_WALK_STEPS - 1];
+    if (btn) {
+      btn.setAttribute("aria-pressed", "false");
+      btn.textContent = "Volg een vraag: “Wat is harnessing?”";
+    }
+    return;
+  }
+  howWalkTimer = setInterval(function () {
+    howWalkIndex += 1;
+    if (howWalkIndex > HOW_WALK_STEPS) {
+      stopHowWalk();
+      highlightHowStep(HOW_WALK_STEPS);
+      const cap = document.getElementById("how-walk-caption");
+      if (cap) cap.textContent = "Gemma heeft alleen de opgehaalde fragmenten gezien.";
+      return;
+    }
+    highlightHowStep(howWalkIndex);
+  }, HOW_WALK_MS);
+}
+
+function toggleHowWalk() {
+  if (howWalkTimer) {
+    stopHowWalk();
+    highlightHowStep(0);
+    const cap = document.getElementById("how-walk-caption");
+    if (cap) cap.textContent = "";
+    return;
+  }
+  startHowWalk();
+}
+
+function updateHowItWorksStats(data) {
+  const el = document.getElementById("how-index-stat");
+  if (!el) return;
+  const n = data && typeof data.total_unique_pages === "number" ? data.total_unique_pages : 0;
+  const blogs = ((data && data.sources) || []).length || 2;
+  if (n > 0) {
+    el.textContent = "Nu in de kennisbank: " + n + " artikelen van " + blogs + " blogs.";
+  } else {
+    el.textContent = "De kennisbank is nog leeg — indexeren gebeurt onder Bronnen.";
+  }
+}
+
+function onHowItWorksShown() {
+  if (sourcesData) {
+    updateHowItWorksStats(sourcesData);
+    return;
+  }
+  loadSources({ silent: true }).then(function () {
+    if (sourcesData) updateHowItWorksStats(sourcesData);
+    else {
+      const el = document.getElementById("how-index-stat");
+      if (el && el.textContent.indexOf("geladen") !== -1) {
+        el.textContent = "Aantal artikelen is nu niet op te halen.";
+      }
+    }
+  });
+}
+
+function initHowItWorks() {
+  const btn = document.getElementById("how-walk-btn");
+  if (btn) btn.addEventListener("click", toggleHowWalk);
+}
 
 function initTabs() {
   const buttons = document.querySelectorAll('.tab-button');
@@ -762,6 +1096,7 @@ function initTabs() {
       chatView.classList.add('hidden');
       sourcesView.classList.add('hidden');
       if (architectureView) architectureView.classList.add('hidden');
+      if (target !== 'architecture') stopHowWalk();
 
       if (target === 'chat') {
         chatView.classList.remove('hidden');
@@ -772,10 +1107,7 @@ function initTabs() {
         }
       } else if (target === 'architecture') {
         if (architectureView) architectureView.classList.remove('hidden');
-        // Initialize Mermaid if present
-        if (window.mermaid) {
-          try { window.mermaid.run(); } catch(e) {}
-        }
+        onHowItWorksShown();
       }
     });
   });
@@ -875,6 +1207,7 @@ async function loadSources(opts = {}) {
       const data = await res.json();
       sourcesData = data;
       renderSourcesTable(data);
+      updateHowItWorksStats(data);
 
       if (loading) loading.classList.add('hidden');
       if (errorBox) errorBox.classList.add('hidden');
@@ -1100,6 +1433,7 @@ function showTab(tab) {
   chatView.classList.add('hidden');
   sourcesView.classList.add('hidden');
   if (architectureView) architectureView.classList.add('hidden');
+  if (tab !== 'architecture') stopHowWalk();
 
   if (tab === 'chat') {
     chatView.classList.remove('hidden');
@@ -1113,9 +1447,7 @@ function showTab(tab) {
     });
   } else if (tab === 'architecture') {
     if (architectureView) architectureView.classList.remove('hidden');
-    if (window.mermaid) {
-      try { window.mermaid.run(); } catch(e) {}
-    }
+    onHowItWorksShown();
   }
 }
 
