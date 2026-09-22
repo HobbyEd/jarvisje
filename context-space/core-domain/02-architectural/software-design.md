@@ -80,7 +80,8 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 │  Host <host>            │
 │  FastAPI (jarvisje-chatbot-app) │
 │  - API, orchestratie, guardrails│
-│  - BGE-M3 + Chroma (CPU)        │
+│  - BGE-M3 + Chroma              │
+│    (vraag CPU, index GPU)       │
 │  - Ollama gemma3:4b (GPU)       │
 └─────────────────────────────────┘
 ```
@@ -142,7 +143,7 @@ Kort samengevat:
 
 - **Backend**: FastAPI (Python)
 - **LLM Serving**: Ollama (OpenAI-compatibele endpoint) op de productiehost
-- **Embeddings**: Lokale sentence-transformers / BGE-M3 (CPU tot Blackwell-support)
+- **Embeddings**: Lokale sentence-transformers / BGE-M3 (vraag op CPU, indexeren op GPU)
 - **Vector DB**: Chroma (persistente host-volume)
 - **Orchestration**: Lichtgewicht custom (Pydantic + httpx)
 - **Frontend**: Custom HTML/JS met Server-Sent Events / streaming

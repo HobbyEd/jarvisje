@@ -109,7 +109,7 @@ Zeg erbij: zonder deze loop heeft Gemma niets om op te steunen (lege-index-meldi
 Kort, voor de bouwer in iedereen:
 
 - Webstack: één pagina, FastAPI, geen zwaar frontend-framework.
-- **App-container** (CPU): UI, orchestratie, embeddings, kennisbank.
+- **App-container**: UI, orchestratie, vraag-embeddings (CPU), kennisbank. Indexeren op de GPU.
 - **Ollama-container** (GPU, rechtstreeks): alleen Gemma. Niet in de app-container.
 - Communicatie: HTTP op het Docker-netwerk, OpenAI-compatibel. Model wisselen zonder app-rebuild ([ADR-004](../02-architectural/decisions/04-ADR-inference-serving.md), [ADR-009](../02-architectural/decisions/09-ADR-image-compose-deployment.md)).
 - Publiek: Cloudflare Tunnel op de host, niet in de app-image.
@@ -137,7 +137,7 @@ Verplicht. Gemma staat **na** retrieval.
          │                                      ▼
          │                           ┌─────────────────────┐
          │                           │  Embedding          │
-         │                           │  (CPU, in de app)   │
+         │                           │  (CPU, vraag)       │
          │                           └──────────┬──────────┘
          │                                      │  vector van de prompt
          │                                      ▼
@@ -226,7 +226,7 @@ Aanbevolen derde tekening. Beantwoordt: Gemma zit niet in de app-container.
                    │ Tunnel (host)   │
                    └────────┬────────┘
                             │
-                         host .15
+                       productiehost
                             │
           ┌─────────────────┴──────────────────┐
           │                                    │
@@ -235,9 +235,9 @@ Aanbevolen derde tekening. Beantwoordt: Gemma zit niet in de app-container.
  │  Docker: app        │   HTTP     │  Docker: ollama     │
  │  FastAPI            │ ─────────► │  Gemma              │
  │  UI + orchestrator  │            │  NVIDIA GPU         │
- │  embeddings  CPU    │            │                     │
+ │  vraag-embed CPU    │            │                     │
  │  kennisbank (volume)│            │                     │
- │  ingest-worker *    │            │                     │
+ │  ingest-worker * GPU│            │                     │
  └──────────┬──────────┘            └─────────────────────┘
             │
             ▼
@@ -258,7 +258,7 @@ Aanbevolen derde tekening. Beantwoordt: Gemma zit niet in de app-container.
 - Citations en hints.
 - Lokaal Gemma, embeddings in de app, kennisbank persistent.
 - Crawler + embedding als de leer-loop.
-- Twee containers: app (CPU) vs Ollama (GPU).
+- Twee containers. Gemma op de GPU. Vraag-embeddings op CPU, indexeren op dezelfde GPU.
 
 **Inklappen of weglaten** (operators / Bronnen-tab)
 

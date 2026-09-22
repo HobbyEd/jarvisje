@@ -5,7 +5,8 @@ Embeddings support.
 - Remote: call OpenAI-compatible /v1/embeddings when EMBEDDING_API_BASE is set
 
 When EMBEDDING_API_BASE is set, embeddings are outsourced (no local model needed in container).
-Production on the production host uses local BGE-M3 on CPU (EMBEDDING_DEVICE=cpu).
+Production chat embeds on CPU (EMBEDDING_DEVICE=cpu). The ingest worker
+sets EMBEDDING_DEVICE=cuda (Blackwell sm_120, torch cu128).
 """
 from __future__ import annotations
 
@@ -95,9 +96,11 @@ def embed_chunks(texts: List[str], batch_size: int | None = None) -> List[List[f
 
     # Local mode (original behavior)
     model = get_embedder()
-    is_cuda = torch.cuda.is_available()
+    # Follow the model device. A visible GPU must not inflate batches while
+    # this process is pinned to CPU (the chat API, next to the ingest worker).
+    on_cuda = str(getattr(model, "device", "")).startswith("cuda")
 
-    default_bs = 128 if is_cuda else getattr(settings, "embedding_batch_size", 16)
+    default_bs = 128 if on_cuda else getattr(settings, "embedding_batch_size", 16)
     bs = batch_size or default_bs
 
     all_embeddings: List[List[float]] = []
@@ -114,7 +117,7 @@ def embed_chunks(texts: List[str], batch_size: int | None = None) -> List[List[f
 
         if (i // bs) % 3 == 0:
             gc.collect()
-            if is_cuda:
+            if on_cuda:
                 try:
                     torch.cuda.empty_cache()
                 except Exception:

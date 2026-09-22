@@ -15,7 +15,7 @@ traces_to:
 Accepted (geactualiseerd 2026-09-14)
 
 ## Datum
-2026-06-26 · update 2026-08-08 · update 2026-09-14
+2026-06-26 · update 2026-08-08 · update 2026-09-14 · update 2026-09-22
 
 ## Context
 We willen lokaal infereren: volledige controle, geen cloud-API voor de kern, flexibele modelkeuze, streaming en bruikbare structured output.
@@ -29,7 +29,10 @@ Sinds 2026-08 draait **Jarvisje** op host **`<host>`** (RTX 5060 Ti 16 GB). De D
 - **Ollama** op dezelfde host als de app (de productiehost).
 - Model: **`gemma3:4b`** (OpenAI-compatible API op poort 11434).
 - Backend configureert `LLM_BASE_URL` + `LLM_MODEL` via compose-env (niet hard in image).
-- Embeddings: **BGE-M3** lokaal in de app-container (CPU tot PyTorch Blackwell-support).
+- Embeddings: **BGE-M3** lokaal in de app-image (sentence-transformers, torch **2.11.0+cu128**, sm_120).
+  - Vraag-embedding in het API-proces: **CPU** (`EMBEDDING_DEVICE=cpu`). Eén vector per beurt; BGE blijft niet resident naast Gemma.
+  - Indexering (UI-worker én compose-profile `ingest`): **GPU** (`EMBEDDING_DEVICE=cuda`). De app-container heeft de kaart zichtbaar alleen zodat dat kindproces hem kan gebruiken.
+  - `torchvision` en `torchaudio` zitten niet in de image. De app gebruikt ze niet; een oude torchvision breekt de import van transformers tegen een nieuwere torch.
 - Client blijft OpenAI-compatible: wissel endpoint/model via env **op de productiehost**.
 
 **Constante eis:** OpenAI-compatibele chat-completions API naar de backend.
@@ -43,11 +46,13 @@ Sinds 2026-08 draait **Jarvisje** op host **`<host>`** (RTX 5060 Ti 16 GB). De D
 ### Negatief / Risico's
 - 4B-model: lagere kwaliteit dan grotere GPU-modellen.
 - Resource management GPU (Ollama + eventueel andere containers).
-- Embeddings tijdelijk op CPU (torch vs. sm_120).
+- Indexering deelt de GPU met Gemma (BGE-M3 rond 2 GB naast het 4B-model). Een groter chatmodel is het moment om indexering weer te laten wijken.
 
 ## Reality check (2026-09)
 
 Productie **draait** op Ollama `gemma3:4b` op de productiehost. Structured output werkt via OpenAI-compatible JSON mode + backend parsing. vLLM op `<legacy-host>` is geen runtime-afhankelijkheid en geen deploydoel.
+
+2026-09-22: torch 2.11.0+cu128 op de productiehost ziet de RTX 5060 Ti als capability (12, 0) en een BGE-M3-encode levert dimensie 1024. De cu124-pin was de blokkade, niet de kaart.
 
 ## Alternatives Considered
 - **Alleen cloud APIs** (OpenAI, Anthropic, Grok, etc.): Verworpen vanwege kosten en controle.

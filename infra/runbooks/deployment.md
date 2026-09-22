@@ -71,7 +71,7 @@ Bestand: `infra/ubuntu-x64/docker-compose.prod-local.yaml`
 | Service | Image / container | Host-poort | GPU |
 |---------|-------------------|------------|-----|
 | `ollama` | `ollama/ollama` / `sogyo-ollama` | 11434 | ja (runtime nvidia) |
-| `app` | `jarvisje:latest` / `jarvisje-chatbot-app` | 8080→8001 | nee (embeddings CPU) |
+| `app` | `jarvisje:latest` / `jarvisje-chatbot-app` | 8080→8001 | zichtbaar; vragen CPU, indexeren GPU |
 
 Compose-projectnaam blijft `sogyo-chatbot` (Docker-netwerk van Gemma).
 
@@ -79,7 +79,7 @@ Belangrijke env app:
 
 - `LLM_BASE_URL=http://ollama:11434/v1`
 - `LLM_MODEL=gemma3:4b`
-- `EMBEDDING_DEVICE=cpu`
+- `EMBEDDING_DEVICE=cpu` (app). De UI-worker overschrijft naar `cuda`.
 
 Eerste model-pull (eenmalig):
 
@@ -92,7 +92,7 @@ docker exec sogyo-ollama ollama pull gemma3:4b
 ## 4. Image-ontwerp
 
 - Base: `python:3.12-slim`
-- Torch CUDA wheels in image (voor toekomstige GPU-embeddings)
+- Torch 2.11+cu128 in de image (sm_120). Geen torchvision/torchaudio.
 - `PYTHONPATH=/app/src`
 - LLM-URL **niet** hard coded als enige optie — runtime env wint
 - Image bevat **geen** Chroma-data
@@ -165,8 +165,8 @@ curl -sN -X POST http://127.0.0.1:8080/chat \
 ## 9. Open punten
 
 1. Automatische nightly ingest
-2. PyTorch upgrade voor GPU-embeddings op Blackwell
+2. Vraag-embeddings op GPU alleen als één vector per beurt te traag wordt
 3. Optionele CI image-build (amd64) + registry
 4. Systemd-units hernoemen (sudo) — WorkingDirectory staat al op `~/jarvisje-chatbot`
 
-Laatst bijgewerkt: 2026-09-14
+Laatst bijgewerkt: 2026-09-22

@@ -81,12 +81,11 @@ alias ollama='docker exec -it sogyo-ollama ollama'
 |----------|-----------------|
 | `LLM_BASE_URL` | `http://ollama:11434/v1` |
 | `LLM_MODEL` | `gemma3:4b` |
-| `EMBEDDING_DEVICE` | `cpu` |
-| `CUDA_VISIBLE_DEVICES` | leeg (app) |
+| `EMBEDDING_DEVICE` | `cpu` in de app; de UI-worker zet `cuda` |
 | Data mount | `~/jarvisje-chatbot-data:/app/data` |
 
-**Waarom embeddings op CPU?**  
-PyTorch 2.6+cu124 ondersteunt GPU-arch **sm_120** (Blackwell / RTX 50) nog niet. Ollama gebruikt wél de GPU voor Gemma.
+**Waar embedden we?**  
+Vragen in het API-proces op de CPU (één vector). Indexeren op de GPU: torch 2.11+cu128 bevat sm_120. Ollama gebruikt dezelfde kaart voor Gemma. De app-container heeft de GPU zichtbaar voor dat worker-proces.
 
 ### Cloudflare Tunnel
 
@@ -138,17 +137,18 @@ Internet ──HTTPS──► Cloudflare ──tunnel──► cloudflared@produ
                                     ┌─────────┴─────────┐
                                     ▼                   ▼
                               BGE-M3 + Chroma      ollama:11434
-                              (CPU, volume)        gemma3:4b (GPU)
+                              (vraag CPU,          gemma3:4b (GPU)
+                               index GPU)
 ```
 
 ---
 
 ## Toekomst / tech debt
 
-- PyTorch met Blackwell (sm_120) → embeddings weer op GPU.
+- Eventueel vraag-embeddings ook op GPU als de chatlatentie dat nodig heeft.
 - Eventueel groter lokaal model als VRAM/kwaliteit dat toelaat.
 - Nightly ingest (cron) i.p.v. alleen UI-trigger.
 - Metrics (Prometheus/Grafana) optioneel.
 - Systemd-units hernoemen (sudo).
 
-Laatst bijgewerkt: 2026-09-14
+Laatst bijgewerkt: 2026-09-22

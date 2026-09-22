@@ -148,7 +148,7 @@ Het embedding-model zet tekst om in vectoren voor similarity search.
 
 **Preload bij startup:** FastAPI `lifespan` roept `get_embedder()` aan tenzij `embedding_api_base` is gezet. Zonder preload duurt de eerste chat 30–90 seconden (download + laden).
 
-**Productie-notitie (RTX 5060 Ti):** PyTorch 2.6+cu124 ondersteunt sm_120 (Blackwell) nog niet; embeddings op **CPU** (`EMBEDDING_DEVICE=cpu`). LLM via Ollama op GPU.
+**Productie-notitie (RTX 5060 Ti):** torch 2.11+cu128 ondersteunt sm_120. Vraag-embeddings in het API-proces op **CPU**. Indexeren (UI-worker en profile `ingest`) op de **GPU**. LLM via Ollama op dezelfde GPU.
 
 ### 1.4 Vector database (Chroma)
 
@@ -513,7 +513,7 @@ Onderwerpen die alle views raken.
 | Onderwerp | Richting |
 |-----------|----------|
 | Chunking | Heading/token-aware |
-| Embeddings | GPU op de productiehost wanneer PyTorch sm_120 ondersteunt |
+| Embeddings | Vraag-embeddings op GPU alleen als één vector per beurt te traag wordt |
 | Streaming | Echte LLM token-stream van Ollama |
 | Auth | API-key of SSO voor productie |
 

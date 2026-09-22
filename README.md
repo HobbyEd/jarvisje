@@ -22,7 +22,7 @@ Natuurlijke gesprekken voeren, altijd met concrete citations naar die twee blogs
 | **LAN / SSH** | `DEPLOY_HOST` / `DEPLOY_USER` in gitignored `.env` |
 | **GPU** | NVIDIA RTX 5060 Ti 16 GB |
 | **LLM** | Ollama `gemma3:4b` (lokaal, OpenAI-compatible op `:11434`) |
-| **Embeddings** | BGE-M3 (CPU; Blackwell sm_120 nog niet in PyTorch 2.6+cu124) |
+| **Embeddings** | BGE-M3 (vraag op CPU, indexeren op GPU; torch 2.11+cu128, sm_120) |
 | **Stack** | Docker Compose: `ollama` + `app` |
 | **Image / app** | `jarvisje:<tag>` / container `jarvisje-chatbot-app` |
 | **Paden** | `~/jarvisje-chatbot`, `~/jarvisje-chatbot-data` |
@@ -92,6 +92,6 @@ Werkwijze en domeinkennis staan in **`context-space/`**. Start met [`context-spa
 - jeroenteunisse.nl  
 
 ## Status
-Productie met lokaal Gemma 3 4B + Cloudflare. Indexering via UI; embeddings op CPU tot PyTorch Blackwell-support. Host-identiteit staat in `.env`.
+Productie met lokaal Gemma 3 4B + Cloudflare. Indexering via UI op de GPU; vraag-embeddings op CPU. Host-identiteit staat in `.env`.
 
-Laatst bijgewerkt: 2026-09-14
+Laatst bijgewerkt: 2026-09-22

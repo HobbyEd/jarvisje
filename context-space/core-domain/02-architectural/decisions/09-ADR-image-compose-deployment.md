@@ -15,7 +15,7 @@ traces_to:
 Accepted (geactualiseerd 2026-09-14). Hostpaden, image en app-container zijn Jarvisje ([ADR-012](12-ADR-jarvisje-rebrand.md)); compose-projectnaam + Ollama-container blijven `sogyo-*` voor het bestaande Gemma-netwerk.
 
 ## Datum
-2026-06-27 · update 2026-08-08 · update 2026-09-14
+2026-06-27 · update 2026-08-08 · update 2026-09-14 · update 2026-09-22
 
 ## Context
 
@@ -57,8 +57,8 @@ Productie-compose: `infra/ubuntu-x64/docker-compose.prod-local.yaml`.
 
 ### Negatief / aandachtspunten
 
-- Grote images (torch + BGE-M3).
-- Embeddings tijdelijk op CPU (Blackwell sm_120 vs. torch cu124).
+- Grote images (torch cu128 + BGE-M3).
+- De app-container heeft de GPU zichtbaar voor de ingest-worker. Het API-proces embedt vragen op CPU (ADR-004). `torchvision`/`torchaudio` niet in de image.
 - Twee compose-services + drie systemd units om te beheren.
 - Ingest in dezelfde app-container blokkeert chat (op te lossen via ADR-010; worker mag apart proces/container zijn).
 

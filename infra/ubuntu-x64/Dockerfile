@@ -9,18 +9,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install CUDA-enabled PyTorch for GPU embeddings when the host arch is supported.
-# Production LLM is local Ollama (gemma3:4b), not this image.
-# On RTX 50 / Blackwell (sm_120), set EMBEDDING_DEVICE=cpu until torch ships sm_120 kernels.
-#
-# Host needs recent NVIDIA drivers + nvidia-container-toolkit only if using GPU embeddings.
-#
-# Must be torch >= 2.6 (transformers CVE-2025-32434). Pin cu124 wheels for reproducibility.
+# CUDA wheels with sm_120 (Blackwell / RTX 50). Verified 2026-09-22 on the
+# production host: torch 2.11.0+cu128, capability (12, 0), BGE-M3 encode.
+# torchvision and torchaudio are unused. A mismatched torchvision breaks
+# transformers' optional vision import, so they stay out of the image.
+# Chat keeps EMBEDDING_DEVICE=cpu. The ingest worker sets cuda.
+# Must be torch >= 2.6 (transformers CVE-2025-32434).
 RUN pip install --no-cache-dir --timeout 600 \
-    torch==2.6.0+cu124 \
-    torchvision==0.21.0+cu124 \
-    torchaudio==2.6.0+cu124 \
-    --index-url https://download.pytorch.org/whl/cu124
+    torch==2.11.0+cu128 \
+    --index-url https://download.pytorch.org/whl/cu128
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

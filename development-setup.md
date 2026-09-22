@@ -130,7 +130,7 @@ for r in results:
 
 ## Tips
 
-- `EMBEDDING_DEVICE=cpu` op productie (Blackwell); lokaal mag `cuda` als je GPU + passende torch hebt.
+- Productie: de app zet `EMBEDDING_DEVICE=cpu` (vragen). De ingest-worker zet `cuda` (torch 2.11+cu128, sm_120). Lokaal zonder die GPU: `cpu`.
 - Ingest blokkeert de event loop deels — health kan tijdens zware scrape traag zijn.
 - `data/raw/` en `data/chroma/` voor debugging; op server: `~/jarvisje-chatbot-data`.
 
@@ -139,6 +139,6 @@ for r in results:
 | Rol | Model | Waar |
 |-----|--------|------|
 | LLM | `gemma3:4b` (Ollama Q4) | Productiehost, GPU |
-| Embeddings | `BAAI/bge-m3` | App-container, CPU |
+| Embeddings | `BAAI/bge-m3` | Vraag: app-proces CPU. Indexeren: GPU |
 
-Laatst bijgewerkt: 2026-09-14
+Laatst bijgewerkt: 2026-09-22

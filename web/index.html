@@ -405,7 +405,7 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
         </button>
-        <span class="version-badge">v1.1.0</span>
+        <span class="version-badge">v1.1.1</span>
       </div>
     </div>
   </header>
@@ -646,7 +646,7 @@
       <details class="how-tech">
         <summary>Technisch</summary>
         <ul>
-          <li>Embedding in de app (CPU); zoeken op betekenis in de vector-index.</li>
+          <li>De vraag wordt in de app geëmbed (CPU). Indexeren gebruikt de GPU. Zoeken gaat op betekenis in de vector-index.</li>
           <li>Gemma draait in een aparte container op de GPU en krijgt alleen de opgehaalde fragmenten.</li>
           <li>Antwoord in een vast formaat: tekst, lijst met bronnen (titel + url), hints.</li>
         </ul>
@@ -722,7 +722,7 @@
         <div class="stack-row">
           <div class="stack-box">
             <h4>App</h4>
-            <p>UI, orchestratie, embeddings (CPU), kennisbank. De crawler-worker is een apart proces in dezelfde image.</p>
+            <p>UI, orchestratie, vraag-embeddings (CPU), kennisbank. Indexeren draait in een apart proces op de GPU.</p>
           </div>
           <div class="stack-http">HTTP →</div>
           <div class="stack-box gpu">

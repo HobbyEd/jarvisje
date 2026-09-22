@@ -1,5 +1,9 @@
 # Context Space Update Log
 
+## 2026-09-22
+
+* **Embeddings:** torch 2.11.0+cu128 (sm_120). Indexeren op de GPU; vraag-embeddings blijven CPU. Geen torchvision/torchaudio. ADR-004 en ADR-009 bijgewerkt. UI **v1.1.1**.
+
 ## 2026-09-15
 
 * **Uitlegpagina gebouwd:** tab *Hoe Jarvisje werkt* vervangt Chatbot Opbouw — zeven blokken, drie CSS-tekeningen, walker, live artikel-aantal. Mermaid verwijderd. UI **v1.1.0**.

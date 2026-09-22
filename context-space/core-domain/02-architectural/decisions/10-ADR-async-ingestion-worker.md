@@ -110,7 +110,7 @@ Cron kan `docker compose run --rm ingest ...` of host-venv worker tegen het data
 ### Negatief / aandachtspunten
 - Extra proces/container en status-contract te onderhouden.
 - Chroma concurrent read/write vereist aandacht (één writer).
-- Embeddings CPU + Ollama GPU op één host: worker mag LLM niet “verhongeren” (CPU-shares / nice).
+- Indexering en Gemma delen de GPU (ADR-004). De worker mag het 4B-model niet uit het geheugen drukken.
 - API mag niet per ongeluk weer zware ingest in-process doen (guard in code reviews).
 
 ## Alternatives Considered

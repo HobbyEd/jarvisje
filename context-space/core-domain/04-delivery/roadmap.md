@@ -19,7 +19,7 @@ traces_to:
 | Productiehost | `<host>`  |
 | Publiek | https://jarvisje.com (Cloudflare Tunnel) |
 | LLM | Ollama `gemma3:4b` (GPU, lokaal) |
-| Embeddings | BGE-M3 (CPU tot Blackwell/torch-support) |
+| Embeddings | BGE-M3 — vraag op CPU, indexeren op GPU (torch 2.11+cu128, sm_120) |
 | Indexering | ADR-010 async worker; ADR-011 `INGEST_TOKEN` via `.env`; sitemap-first |
 | Deploy | Docker Compose + systemd (`sogyo-ollama`, `sogyo-chatbot`, `cloudflared`); paden `~/jarvisje-chatbot` |
 | UI-versie | zie badge in `web/index.html` |
@@ -44,7 +44,7 @@ MVP end-to-end is **operationeel**. Verdere fasen zijn kwaliteit, onderhoud en s
 
 ### P1 — kwaliteit
 - [ ] Evaluatieset (20–25 vragen) + handmatige scoring
-- [ ] PyTorch met sm_120 → embeddings weer op GPU
+- [x] PyTorch 2.11+cu128 (sm_120) → indexering op GPU; vraag-embeddings blijven CPU
 - [ ] Eventueel groter lokaal model als VRAM/kwaliteit dat toelaat
 - [x] Publieke uitlegpagina *Hoe Jarvisje werkt* (tab Chatbot Opbouw vervangen) — opzet: [pagina-hoe-jarvisje-werkt.md](pagina-hoe-jarvisje-werkt.md)
 

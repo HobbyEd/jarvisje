@@ -160,4 +160,6 @@ LLM_MODEL=gemma3:4b
 EMBEDDING_DEVICE=cpu
 ```
 
-Laatst bijgewerkt: 2026-09-14
+De app embedt vragen op CPU. Indexeren (UI-worker en profile `ingest`) zet `EMBEDDING_DEVICE=cuda`.
+
+Laatst bijgewerkt: 2026-09-22

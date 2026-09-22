@@ -314,6 +314,12 @@ def _spawn_ingest_worker(max_pages: int | None, reset: bool) -> subprocess.Popen
     src = str(Path(__file__).resolve().parents[2])  # .../src
     prev = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = src if not prev else f"{src}{os.pathsep}{prev}"
+    # Indexing embeds on the GPU. This process keeps EMBEDDING_DEVICE=cpu so
+    # chat does not keep BGE-M3 resident next to Gemma. An empty
+    # CUDA_VISIBLE_DEVICES hides every device from the child.
+    env["EMBEDDING_DEVICE"] = "cuda"
+    if env.get("CUDA_VISIBLE_DEVICES") == "":
+        env.pop("CUDA_VISIBLE_DEVICES")
 
     from jarvisje.config import settings
 
