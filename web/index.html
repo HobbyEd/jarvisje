@@ -405,7 +405,7 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
         </button>
-        <span class="version-badge">v1.1.1</span>
+        <span class="version-badge">v1.1.2</span>
       </div>
     </div>
   </header>
@@ -889,10 +889,10 @@ async function sendMessage() {
             if (streamDiv && streamDiv.parentNode) streamDiv.parentNode.removeChild(streamDiv);
             streamDiv = null;
 
-            let html = (payload.answer || "").replace(/\n/g, "<br>");
+            let html = escapeHtml(payload.answer || "").replace(/\n/g, "<br>");
             if (payload.citations && payload.citations.length) {
               html += '<div class="text-[10px] mt-2 text-slate-500"><strong>Bronnen:</strong><br>' +
-                payload.citations.map(c => `<a class="underline" href="${c.url}" target="_blank">${c.title || c.url}</a>`).join("<br>") + "</div>";
+                payload.citations.map((c, i) => `${i + 1}. <a class="underline" href="${escapeHtml(c.url)}" target="_blank" rel="noopener">${escapeHtml(c.title || c.url)}</a>`).join("<br>") + "</div>";
             }
             if (payload.hints && payload.hints.length) {
               html += '<div class="text-[10px] mt-1 text-slate-500"><strong>Mogelijke vervolgvragen:</strong><br>' +

@@ -149,7 +149,7 @@
 <li class="text-slate-600 text-sm mb-1"><strong>Retrieval</strong> — <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">retrieve(message, top_k=6)</code>  </li>
 <li class="text-slate-600 text-sm mb-1"><strong>Promptbouw</strong> — system prompt met bronfragmenten + user prompt met history  </li>
 <li class="text-slate-600 text-sm mb-1"><strong>LLM-call</strong> — OpenAI-compatible <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST /v1/chat/completions</code> met <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">response_format: json_object</code>  </li>
-<li class="text-slate-600 text-sm mb-1"><strong>Parsing</strong> — <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ChatResponse</code> (Pydantic); fallback bij ongeldige JSON  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Parsing</strong> — <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ChatResponse</code> (Pydantic); fallback bij ongeldige JSON. <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">[n]</code> in het antwoord wijst naar retrieval-slot n en wordt hernummerd naar de bronnenlijst die de UI toont.  </li>
 <li class="text-slate-600 text-sm mb-1"><strong>Sessie-update</strong> — turns bijwerken in memory  </li>
 </ul><p class="text-slate-600 mb-3"><strong>Structured output</strong> (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">chat/models.py</code>):</p>
 <pre class="bg-slate-900 text-emerald-300 p-4 rounded-lg text-xs overflow-auto mb-4"><code>{

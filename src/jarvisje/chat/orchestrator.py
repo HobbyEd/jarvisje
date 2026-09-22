@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from ..config import settings
 from ..ingestion.status import read_status
 from ..retrieval.retriever import retrieve
+from .citations import align_answer_citations
 from .models import ChatResponse
 from .prompts import build_system_prompt, build_user_prompt
 
@@ -52,17 +53,6 @@ class ChatSession:
 class ChatOrchestrator:
     def __init__(self):
         self.session = ChatSession()
-
-    def _filter_citations(self, response: ChatResponse) -> ChatResponse:
-        kept = []
-        for c in response.citations:
-            url = (c.url or "").lower()
-            if url.endswith((".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".pdf")):
-                continue
-            if settings.is_allowed_url(c.url):
-                kept.append(c)
-        response.citations = kept
-        return response
 
     def _parse_llm_response(self, raw: str) -> ChatResponse:
         """Parse model JSON; never show raw JSON as the chat answer."""
@@ -176,7 +166,9 @@ class ChatOrchestrator:
         raw = self._call_llm(system, user_prompt)
         response = self._parse_llm_response(raw)
 
-        response = self._filter_citations(response)
+        response.answer, response.citations = align_answer_citations(
+            response.answer, response.citations, retrieved
+        )
 
         if ingest_running:
             response.answer = INGEST_INCOMPLETE_NOTE + "\n\n" + response.answer

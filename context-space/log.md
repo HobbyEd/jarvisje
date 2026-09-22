@@ -2,6 +2,7 @@
 
 ## 2026-09-22
 
+* **Citatienummers:** `[n]` in het antwoord volgt de getoonde bronnenlijst (retrieval-slot wordt hernummerd). UI **v1.1.2**.
 * **Embeddings:** torch 2.11.0+cu128 (sm_120). Indexeren op de GPU; vraag-embeddings blijven CPU. Geen torchvision/torchaudio. ADR-004 en ADR-009 bijgewerkt. UI **v1.1.1**.
 
 ## 2026-09-15

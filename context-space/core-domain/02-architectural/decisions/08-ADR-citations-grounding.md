@@ -15,7 +15,7 @@ traces_to:
 Accepted
 
 ## Datum
-2026-06-26 · reality check 2026-08-08: nog geldig (Pydantic ChatResponse + citations in UI).
+2026-06-26 · reality check 2026-08-08: nog geldig (Pydantic ChatResponse + citations in UI). · 2026-09-22: nummers in het antwoord ([n] van het retrieval-slot) worden hernummerd naar de getoonde bronnenlijst. Een url die niet in de opgehaalde fragmenten staat, valt weg.
 
 ## Context
 Een van de belangrijkste doelen is dat de chatbot **actief verwijst naar blogposts en tools**.

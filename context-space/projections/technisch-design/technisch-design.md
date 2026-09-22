@@ -204,7 +204,7 @@ De `ChatOrchestrator` voert per bericht uit:
 2. **Retrieval** — `retrieve(message, top_k=6)`  
 3. **Promptbouw** — system prompt met bronfragmenten + user prompt met history  
 4. **LLM-call** — OpenAI-compatible `POST /v1/chat/completions` met `response_format: json_object`  
-5. **Parsing** — `ChatResponse` (Pydantic); fallback bij ongeldige JSON  
+5. **Parsing** — `ChatResponse` (Pydantic); fallback bij ongeldige JSON. `[n]` in het antwoord wijst naar retrieval-slot n en wordt hernummerd naar de bronnenlijst die de UI toont.  
 6. **Sessie-update** — turns bijwerken in memory  
 
 **Structured output** (`chat/models.py`):
