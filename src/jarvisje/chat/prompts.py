@@ -49,7 +49,7 @@ def build_system_prompt(role_context: str, retrieved: List[Dict]) -> str:
     context_text = ""
     for i, r in enumerate(retrieved[:6], 1):
         meta = r.get("metadata", {})
-        text = r.get("text", "")[:800]
+        text = r.get("text", "")[:2500]
         context_text += f"[{i}] {meta.get('title', 'Bron')} ({meta.get('url', '')})\n{text}\n\n"
 
     return BASE_SYSTEM.format(

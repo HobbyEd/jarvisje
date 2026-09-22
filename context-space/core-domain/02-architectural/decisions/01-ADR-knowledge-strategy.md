@@ -15,7 +15,7 @@ traces_to:
 Accepted — **bronnenlijst superseded** door [ADR-012](12-ADR-jarvisje-rebrand.md) (alleen edwinvandillen.nl en jeroenteunisse.nl). RAG-first zonder fine-tuning blijft.
 
 ## Datum
-2026-06-26 · reality check 2026-08-08: RAG + Chroma geldig · 2026-09-13: zes sites → twee blogs (ADR-012).
+2026-06-26 · reality check 2026-08-08: RAG + Chroma geldig · 2026-09-13: zes sites → twee blogs (ADR-012). · 2026-09-22: chunks volgen kopjes (metadata `section`); een volledige herindex is nodig omdat de oude vensters van 800 tekens anders blijven staan.
 
 ## Context
 Oorspronkelijk: chatbot die verwijst naar content op sogyo.nl, jeroenteunisse.nl, edwinvandillen.nl, augmentedorganisation.nl, intentdriven.nl en augmentedengineering.nl. Sinds ADR-012 alleen de twee blogs.

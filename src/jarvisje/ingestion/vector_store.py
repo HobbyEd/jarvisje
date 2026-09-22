@@ -118,6 +118,18 @@ def upsert_chunks(chunk_docs: List[Dict[str, Any]], embeddings: List[List[float]
 
     collection = get_chroma_store()
 
+    # A page that now has fewer sections must not keep the old tail chunks.
+    seen_urls: List[str] = []
+    for doc in chunk_docs:
+        url = doc.get("url")
+        if url and url not in seen_urls:
+            seen_urls.append(str(url))
+    for url in seen_urls:
+        try:
+            collection.delete(where={"url": url})
+        except Exception:
+            pass
+
     ids = [_make_id(d) for d in chunk_docs]
     texts = [d["text"] for d in chunk_docs]
     metadatas = [
@@ -126,6 +138,7 @@ def upsert_chunks(chunk_docs: List[Dict[str, Any]], embeddings: List[List[float]
             "title": d.get("title"),
             "source": d.get("source"),
             "chunk_id": d.get("chunk_id"),
+            "section": (d.get("section") or "")[:500],
             "ingested_at": d.get("ingested_at") or "",
             "article_date": d.get("article_date") or d.get("lastmod") or "",
             "lastmod": d.get("lastmod") or "",

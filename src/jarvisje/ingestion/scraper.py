@@ -194,7 +194,16 @@ def _collect_pages_from_sitemaps(
 def _extract_page(url: str, html: str, lastmod: Optional[str] = None) -> Optional[Document]:
     """Use trafilatura for clean main-content extraction."""
     try:
-        extracted = trafilatura.extract(
+        markdown = trafilatura.extract(
+            html,
+            url=url,
+            output_format="markdown",
+            include_comments=False,
+            include_tables=True,
+            include_links=False,
+            favor_recall=True,
+        )
+        plain = trafilatura.extract(
             html,
             url=url,
             include_comments=False,
@@ -202,6 +211,11 @@ def _extract_page(url: str, html: str, lastmod: Optional[str] = None) -> Optiona
             include_links=False,
             favor_recall=True,
         )
+        # Headings survive in markdown. Fall back to plain text when markdown is empty.
+        if markdown and len(markdown.strip()) >= 120:
+            extracted = markdown
+        else:
+            extracted = plain
         metadata = trafilatura.extract_metadata(html)
         title = (getattr(metadata, "title", None) if metadata else None) or url
         published = None

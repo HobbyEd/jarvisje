@@ -31,7 +31,7 @@ Het document volgt het **4+1 architectuurmodel** van Philippe Kruchten. Dat mode
 | Term | Betekenis |
 |------|-----------|
 | **RAG** | Retrieval-Augmented Generation: eerst relevante bronnen ophalen, dan LLM-antwoord genereren |
-| **Chunk** | Tekstfragment (~800 tekens) uit een webpagina, met metadata |
+| **Chunk** | Eén kopjesblok uit een pagina (of een alinea-deel daarvan), met metadata |
 | **Embedding** | Float-vector die de semantische betekenis van tekst vastlegt |
 | **Collection** | Chroma-logische index; één per embedding-model |
 | **Upsert** | Insert of update: bestaande chunk-id wordt overschreven |
@@ -108,7 +108,8 @@ De logical view beschrijft **wat** het systeem doet, los van deployment en besta
 |------|------|--------------|
 | `url` | string | Bron-URL |
 | `chunk_id` | int | Volgnummer binnen de pagina (0, 1, 2, …) |
-| `text` | string | Chunk-inhoud (~800 tekens) |
+| `text` | string | Kopjespad plus de tekst van dat blok |
+| `section` | string | Kopjespad, bijvoorbeeld `Titel > De stelling` |
 | `title`, `source`, `ingested_at` | | Overgenomen van parent document |
 
 **Chroma-document-id:** `{url}::chunk-{chunk_id}` — deterministisch, geschikt voor upsert bij herindexering.
@@ -170,6 +171,7 @@ Chroma is de **persistente vector store** voor MVP.
   "title": "Voorbeeldartikel",
   "source": "edwinvandillen.nl",
   "chunk_id": 0,
+  "section": "Voorbeeldartikel > De stelling",
   "ingested_at": "2026-07-01T12:00:00"
 }
 ```
@@ -178,14 +180,14 @@ MVP blijft bij Chroma vanwege eenvoud en embedded persistent storage.
 
 ### 1.5 Chunking-strategie
 
-MVP gebruikt **character-based chunking** met overlap (`ingestion/chunker.py`):
+Chunking volgt de kopjes van de pagina (`ingestion/chunker.py`). De scraper levert markdown, zodat `#` / `##` blijven staan.
 
 | Parameter | Default | Betekenis |
 |-----------|---------|-----------|
-| `chunk_size` | 800 | Tekens per chunk |
-| `chunk_overlap` | 150 | Overlap tussen opeenvolgende chunks |
+| `chunk_size` | 2000 | Plafond van een blok, in tekens |
+| `chunk_overlap` | 200 | Alleen binnen een kopje dat langer is dan het plafond |
 
-Korte pagina's worden als één chunk opgeslagen. Toekomstige verbetering: heading-aware of token-aware chunking.
+Een kopje onder het plafond blijft één chunk. Een langer kopje breekt op alinea's. Korte pagina's zonder kopjes blijven één chunk. Het kopjespad gaat mee de embedding in en staat in metadata `section`. Bij een kortere pagina worden de oude staart-chunks van die URL verwijderd vóór de upsert.
 
 ### 1.6 Bronnen (sources)
 
@@ -512,7 +514,7 @@ Onderwerpen die alle views raken.
 
 | Onderwerp | Richting |
 |-----------|----------|
-| Chunking | Heading/token-aware |
+| Chunking | Kopjesblokken zijn live; token-grenzen alleen als een alinea het plafond overschrijdt |
 | Embeddings | Vraag-embeddings op GPU alleen als één vector per beurt te traag wordt |
 | Streaming | Echte LLM token-stream van Ollama |
 | Auth | API-key of SSO voor productie |
@@ -613,7 +615,7 @@ sequenceDiagram
 1. **Start** — UI roept `/ingest/start` aan; API weigert als er al een ingest loopt.  
 2. **Reset (optioneel)** — Verwijdert de collection zodat geen oude chunk-ids blijven hangen bij gewijzigd embedding-model.  
 3. **Scrape per domein** — `scrape_domain` volgt interne links tot `max_pages`. Progress callback voedt live UI-status.  
-4. **Chunk** — Elke pagina wordt gesplitst in overlappende stukken van ~800 tekens.  
+4. **Chunk** — Elke pagina wordt gesplitst op kopjes. Een lang kopje breekt op alinea's.  
 5. **Embed** — Alle chunk-teksten worden naar vectoren omgezet; zelfde model als bij retrieval.  
 6. **Upsert** — Chroma slaat id, tekst, embedding en metadata op. Bestaande ids worden overschreven.  
 7. **Afronding** — Optionele testquery; status `completed`; UI ververst bronnentabel.  
@@ -689,7 +691,7 @@ sequenceDiagram
 
 1. **Client** — `session_id` in `sessionStorage`; history array wordt meegegeven.  
 2. **Retrieval** — Vraag wordt geëmbed; Chroma zoekt 6 dichtstbijzijnde chunks (cosine).  
-3. **Prompt** — System prompt bevat rolcontext + tot 6 bronfragmenten (max ~800 tekens elk in prompt). LLM moet JSON teruggeven met antwoord, citaten en hints.  
+3. **Prompt** — System prompt bevat rolcontext + tot 6 bronfragmenten (een kopjesblok, afgekapt rond 2500 tekens). LLM moet JSON teruggeven met antwoord, citaten en hints.  
 4. **LLM** — Call naar Ollama (`LLM_BASE_URL`); timeout configureerbaar (`LLM_TIMEOUT`, default 180s).  
 5. **Streaming** — Antwoord wordt na afloop in stukken gestuurd voor UX; geen echte token-stream van Ollama.  
 6. **Final** — Client ontvangt gestructureerde citaten voor weergave onder het antwoord.  

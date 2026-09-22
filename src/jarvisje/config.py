@@ -109,9 +109,9 @@ class Settings(BaseModel):
     # Embedding model (local via sentence-transformers)
     embedding_model: str = "BAAI/bge-m3"
 
-    # Chunking (simple but effective for MVP)
-    chunk_size: int = 800
-    chunk_overlap: int = 150
+    # Section body ceiling. Overlap applies only when one section is split.
+    chunk_size: int = 2000
+    chunk_overlap: int = 200
 
     embedding_batch_size: int = 32
 
