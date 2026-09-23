@@ -1,5 +1,9 @@
 # Context Space Update Log
 
+## 2026-09-23
+
+* **Gemma-context:** `OLLAMA_CONTEXT_LENGTH=8192` (was de 4096-standaard). Bronnen-labels: pagina's, niet artikelen of blokken. UI **v1.1.4**.
+
 ## 2026-09-22
 
 * **Chunking:** kopjesblokken in plaats van vensters van 800 tekens. Metadata `section`. UI **v1.1.3**.

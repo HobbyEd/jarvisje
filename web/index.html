@@ -405,7 +405,7 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
         </button>
-        <span class="version-badge">v1.1.3</span>
+        <span class="version-badge">v1.1.4</span>
       </div>
     </div>
   </header>
@@ -477,10 +477,10 @@
           <p class="text-[10px] text-slate-400 mt-0.5">Alleen geautoriseerde gebruikers. Wordt meegegeven aan de API.</p>
         </div>
         <div class="min-w-0">
-          <label class="block text-xs font-medium text-slate-600 mb-1" for="max-pages">Max artikelen per bron</label>
+          <label class="block text-xs font-medium text-slate-600 mb-1" for="max-pages">Max pagina's per bron</label>
           <input id="max-pages" type="number" value="500" min="0" max="2000" step="50"
                  class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[var(--blue)]">
-          <p class="text-[10px] text-slate-400 mt-0.5">0 = maximaal (hard cap 2000). Sitemap-first crawl.</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">Unieke pagina's per domein. 0 = hard cap 2000.</p>
         </div>
         <label class="flex items-start gap-2 text-sm pb-1">
           <input id="reset-check" type="checkbox" class="mt-0.5" style="accent-color: var(--blue)">
@@ -539,8 +539,8 @@
             <thead class="bg-slate-50">
               <tr>
                 <th class="text-left px-4 py-3 font-medium text-slate-600">Bron (domein)</th>
-                <th class="text-right px-4 py-3 font-medium text-slate-600">Artikelen</th>
-                <th class="text-left px-4 py-3 font-medium text-slate-600">Nieuwste artikel</th>
+                <th class="text-right px-4 py-3 font-medium text-slate-600">Pagina's</th>
+                <th class="text-left px-4 py-3 font-medium text-slate-600">Nieuwste pagina</th>
                 <th class="text-left px-4 py-3 font-medium text-slate-600">Laatst geïndexeerd</th>
               </tr>
             </thead>
@@ -1051,7 +1051,7 @@ function updateHowItWorksStats(data) {
   const n = data && typeof data.total_unique_pages === "number" ? data.total_unique_pages : 0;
   const blogs = ((data && data.sources) || []).length || 2;
   if (n > 0) {
-    el.textContent = "Nu in de kennisbank: " + n + " artikelen van " + blogs + " blogs.";
+    el.textContent = "Nu in de kennisbank: " + n + " pagina's van " + blogs + " blogs.";
   } else {
     el.textContent = "De kennisbank is nog leeg — indexeren gebeurt onder Bronnen.";
   }
@@ -1067,7 +1067,7 @@ function onHowItWorksShown() {
     else {
       const el = document.getElementById("how-index-stat");
       if (el && el.textContent.indexOf("geladen") !== -1) {
-        el.textContent = "Aantal artikelen is nu niet op te halen.";
+        el.textContent = "Aantal pagina's is nu niet op te halen.";
       }
     }
   });
@@ -1153,7 +1153,7 @@ function renderSourcesTable(data) {
         tr.innerHTML = `
           <td class="px-4 py-3 font-medium text-slate-700"></td>
           <td class="px-4 py-3 text-right font-semibold tabular-nums"></td>
-          <td class="px-4 py-3 text-slate-600" title="Publicatie- of sitemap-lastmod van het nieuwste artikel"></td>
+          <td class="px-4 py-3 text-slate-600" title="Publicatie- of sitemap-lastmod van de nieuwste pagina"></td>
           <td class="px-4 py-3 text-slate-600" title="Moment van de laatste indexeringsrun"></td>
         `;
         usedFragment = true;

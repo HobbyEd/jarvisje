@@ -392,6 +392,8 @@ Centraal in `config.py` (`Settings`), overschrijfbaar via environment variables:
 | `EMBEDDING_API_BASE` | (leeg) | Remote embeddings |
 | `embedding_model` | `BAAI/bge-m3` | In code (Settings field) |
 
+Ollama zelf: `OLLAMA_CONTEXT_LENGTH=8192` (dubbel de 4096-standaard op een 16 GB-kaart).
+
 Data-paden (relatief t.o.v. werkdirectory):
 
 - `data/raw/` — ruwe scrape (optioneel)  

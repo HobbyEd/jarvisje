@@ -81,6 +81,7 @@ alias ollama='docker exec -it sogyo-ollama ollama'
 |----------|-----------------|
 | `LLM_BASE_URL` | `http://ollama:11434/v1` |
 | `LLM_MODEL` | `gemma3:4b` |
+| `OLLAMA_CONTEXT_LENGTH` | `8192` (dubbel de 4k-standaard op deze kaart) |
 | `EMBEDDING_DEVICE` | `cpu` in de app; de UI-worker zet `cuda` |
 | Data mount | `~/jarvisje-chatbot-data:/app/data` |
 

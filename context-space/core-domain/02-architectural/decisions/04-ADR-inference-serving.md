@@ -15,7 +15,7 @@ traces_to:
 Accepted (geactualiseerd 2026-09-14)
 
 ## Datum
-2026-06-26 · update 2026-08-08 · update 2026-09-14 · update 2026-09-22
+2026-06-26 · update 2026-08-08 · update 2026-09-14 · update 2026-09-22 · update 2026-09-23
 
 ## Context
 We willen lokaal infereren: volledige controle, geen cloud-API voor de kern, flexibele modelkeuze, streaming en bruikbare structured output.
@@ -28,6 +28,7 @@ Sinds 2026-08 draait **Jarvisje** op host **`<host>`** (RTX 5060 Ti 16 GB). De D
 ### Productie (Jarvisje, 2026-08+)
 - **Ollama** op dezelfde host als de app (de productiehost).
 - Model: **`gemma3:4b`** (OpenAI-compatible API op poort 11434).
+- Contextvenster: **8192** tokens via `OLLAMA_CONTEXT_LENGTH`. De kaart (16 GB) valt anders in Ollama’s 4096-standaard. Het model zelf kan 131072; 8192 is het dubbele van de standaard, zonder de KV-cache naast Gemma te laten ontsporen.
 - Backend configureert `LLM_BASE_URL` + `LLM_MODEL` via compose-env (niet hard in image).
 - Embeddings: **BGE-M3** lokaal in de app-image (sentence-transformers, torch **2.11.0+cu128**, sm_120).
   - Vraag-embedding in het API-proces: **CPU** (`EMBEDDING_DEVICE=cpu`). Eén vector per beurt; BGE blijft niet resident naast Gemma.
