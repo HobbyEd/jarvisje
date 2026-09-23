@@ -23,6 +23,8 @@ from urllib.robotparser import RobotFileParser
 
 import httpx
 import trafilatura
+
+from .sitemap_xml import xml_find, xml_text
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from tqdm import tqdm
 
@@ -159,24 +161,21 @@ def _collect_pages_from_sitemaps(
             sitemaps = root.findall(".//s:sitemap", ns) + root.findall(".//sitemap")
             if sitemaps:
                 for sm in sitemaps:
-                    loc_el = sm.find("s:loc", ns) or sm.find("loc")
-                    if loc_el is not None and loc_el.text:
-                        loc = _clean_url(loc_el.text.strip())
+                    loc = xml_text(xml_find(sm, "s:loc", "loc", ns))
+                    if loc:
+                        loc = _clean_url(loc)
                         if loc.startswith("http") and loc not in processed:
                             to_process.append(loc)
             else:
                 urls = root.findall(".//s:url", ns) + root.findall(".//url")
                 for u in urls:
-                    loc_el = u.find("s:loc", ns) or u.find("loc")
-                    if loc_el is None or not loc_el.text:
+                    loc = xml_text(xml_find(u, "s:loc", "loc", ns))
+                    if not loc:
                         continue
-                    loc = _clean_url(loc_el.text.strip())
+                    loc = _clean_url(loc)
                     if not loc.startswith("http") or loc.endswith(".xml"):
                         continue
-                    lastmod_el = u.find("s:lastmod", ns) or u.find("lastmod")
-                    lastmod = None
-                    if lastmod_el is not None and lastmod_el.text:
-                        lastmod = lastmod_el.text.strip()
+                    lastmod = xml_text(xml_find(u, "s:lastmod", "lastmod", ns))
                     # Keep newest lastmod if duplicate
                     prev = page_map.get(loc)
                     if prev is None or (lastmod and lastmod > (prev or "")):
