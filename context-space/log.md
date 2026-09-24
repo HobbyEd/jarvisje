@@ -2,6 +2,7 @@
 
 ## 2026-09-24
 
+* **Edwin-pagina's in bronpassing:** archief (`/page/`, `?paged=`), bijlagen en de sitenaam "… - Part N" tellen niet meer als artikel. De getoonde titel is de artikelkop, zonder het WordPress-achtervoegsel. UI **v1.1.8**. Geen nieuwe ADR.
 * **Namen in de prompt:** edwinvandillen.nl is van Edwin van Dillen, jeroenteunisse.nl is van Jeroen Teunisse. Het model moet die spelling overnemen. UI **v1.1.7**. Geen nieuwe ADR.
 * **Bronpassing:** na het antwoord een balk (1 − cosinusafstand), het aantal getoonde bronnen, en soms een zin als het antwoord naar een naburig artikel schuift. Klik opent de uitleg op *Hoe Jarvisje werkt*. ADR-013. UI **v1.1.6**.
 

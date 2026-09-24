@@ -24,6 +24,8 @@ from urllib.robotparser import RobotFileParser
 import httpx
 import trafilatura
 
+from .reader_pages import indexable_page
+
 from .sitemap_xml import xml_find, xml_text
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
 from tqdm import tqdm
@@ -347,6 +349,8 @@ def scrape_domain(
     def _enqueue(u: str, front: bool = False) -> None:
         cu = _clean_url(u)
         if cu in seen_q or cu in visited:
+            return
+        if not indexable_page(cu) and cu.rstrip("/") != _clean_url(start_url).rstrip("/"):
             return
         # Incremental: never queue pages we will skip (keeps crawl short)
         if incremental and known and not _needs_refetch(

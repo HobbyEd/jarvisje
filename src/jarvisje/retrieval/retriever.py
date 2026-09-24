@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 from ..config import settings
 from ..ingestion.embedder import get_embedder
+from ..ingestion.reader_pages import indexable_page, present_title
 from ..ingestion.vector_store import get_chroma_store, invalidate_collection_cache
 
 
@@ -41,7 +42,9 @@ def retrieve(query: str, top_k: int = 6) -> List[Dict[str, Any]]:
     embedder = get_embedder()
 
     q_vec = embedder.encode([query], normalize_embeddings=True).tolist()
-    fetch_k = max(top_k * 3, top_k)
+    # Archives and attachments sit close to real posts on edwinvandillen.nl.
+    # Fetch a wider set so the articles survive that filter.
+    fetch_k = max(top_k * 20, 60)
 
     query_kwargs: Dict[str, Any] = {
         "query_embeddings": q_vec,
@@ -85,9 +88,12 @@ def retrieve(query: str, top_k: int = 6) -> List[Dict[str, Any]]:
         results["metadatas"][0],
         results["distances"][0],
     ):
-        meta = meta or {}
+        meta = dict(meta or {})
         if not _is_allowed_hit(meta):
             continue
+        if not indexable_page(str(meta.get("url") or "")):
+            continue
+        meta["title"] = present_title(str(meta.get("title") or ""), str(meta.get("section") or ""))
         hits.append(
             {
                 "text": text,
