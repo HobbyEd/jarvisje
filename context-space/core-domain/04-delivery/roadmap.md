@@ -43,7 +43,8 @@ MVP end-to-end is **operationeel**. Verdere fasen zijn kwaliteit, onderhoud en s
 - [ ] Backup van `jarvisje-chatbot-data` documenteren/automatiseren
 
 ### P1 — kwaliteit
-- [ ] Evaluatieset (20–25 vragen) + handmatige scoring
+- [ ] Evaluatieset (20–25 vragen) + handmatige scoring — kan de voorlopige bronpassing-grenzen uit ADR-013 verschuiven
+- [x] Bronpassing in de chat (ADR-013): band, aantal bronnen, klik naar de uitlegpagina
 - [x] PyTorch 2.11+cu128 (sm_120) → indexering op GPU; vraag-embeddings blijven CPU
 - [ ] Eventueel groter lokaal model als VRAM/kwaliteit dat toelaat
 - [x] Publieke uitlegpagina *Hoe Jarvisje werkt* (tab Chatbot Opbouw vervangen) — opzet: [pagina-hoe-jarvisje-werkt.md](pagina-hoe-jarvisje-werkt.md)

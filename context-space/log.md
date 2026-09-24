@@ -1,5 +1,9 @@
 # Context Space Update Log
 
+## 2026-09-24
+
+* **Bronpassing:** na het antwoord een balk (1 − cosinusafstand), het aantal getoonde bronnen, en soms een zin als het antwoord naar een naburig artikel schuift. Klik opent de uitleg op *Hoe Jarvisje werkt*. ADR-013. UI **v1.1.6**.
+
 ## 2026-09-23
 
 * **Sitemapparser:** `<loc>` met alleen tekst werd weggegooid (`find() or find()`). Incrementele index zag daardoor geen nieuwe posts. UI **v1.1.5**.

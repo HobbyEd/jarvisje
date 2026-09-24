@@ -105,6 +105,31 @@
   .user { background: var(--blue); color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
   .bot { background: var(--bg-surface); border: 1px solid var(--s-08); color: var(--text-1); border-bottom-left-radius: 4px; }
   .error { background: rgba(192, 57, 43, .12); color: var(--red); border: 1px solid rgba(192, 57, 43, .35); }
+  a.fit-chip {
+    display: block;
+    margin-top: 0.7rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--s-08);
+    border-radius: 0.7rem;
+    text-decoration: none;
+    color: inherit;
+    white-space: normal;
+  }
+  a.fit-chip:hover { border-color: var(--blue); }
+  .fit-bar {
+    display: block;
+    height: 6px;
+    border-radius: 99px;
+    background: var(--s-08);
+    overflow: hidden;
+    margin-bottom: 0.35rem;
+  }
+  .fit-bar > span { display: block; height: 100%; background: var(--text-3); }
+  a.fit-chip.is-matig .fit-bar > span { background: var(--blue); }
+  a.fit-chip.is-sterk .fit-bar > span { background: var(--green); }
+  .fit-label { display: block; font-size: 0.78rem; color: var(--text-1); line-height: 1.35; }
+  .fit-pivot { display: block; margin-top: 0.25rem; font-size: 0.75rem; color: var(--text-2); line-height: 1.4; }
+  #bronpassing { scroll-margin-top: 4.5rem; }
 
   .chat-card { background: var(--bg-surface); border: 1px solid var(--s-08); border-radius: var(--radius-card); overflow: hidden; }
   .chat-card-head { padding: 12px 16px; border-bottom: 1px solid var(--s-08); background: var(--s-04); }
@@ -405,7 +430,7 @@
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
           </svg>
         </button>
-        <span class="version-badge">v1.1.5</span>
+        <span class="version-badge">v1.1.6</span>
       </div>
     </div>
   </header>
@@ -742,12 +767,53 @@
       </details>
     </div>
 
+    <div class="how-block" id="bronpassing">
+      <h3>Bronpassing</h3>
+      <p class="how-lead">
+        Onder een antwoord staat een balk. Die laat zien hoe dicht de tekst van het antwoord bij een artikel van Edwin of Jeroen ligt.
+        Een vollere balk ligt dichterbij. Een klik op de balk in de chat brengt je naar deze uitleg.
+      </p>
+      <div class="how-got" style="margin-top:0.85rem">
+        <div class="how-mini">
+          <h4>Sterk</h4>
+          <p>0,75 of hoger. Het antwoord ligt bijna op een artikel.</p>
+        </div>
+        <div class="how-mini">
+          <h4>Matig</h4>
+          <p>Vanaf 0,55. Er is een artikel in de buurt, maar het is geen bijna-citaat.</p>
+        </div>
+        <div class="how-mini">
+          <h4>Zwak</h4>
+          <p>Onder 0,55. Het antwoord lijkt weinig op wat er in de blogs staat.</p>
+        </div>
+        <div class="how-mini">
+          <h4>Bronnen</h4>
+          <p>Het getal ernaast is het aantal bronnen dat je onder het antwoord ziet. Nul betekent dat er geen fragmentnummer of passende url aan hing.</p>
+        </div>
+      </div>
+      <p class="how-lead" style="margin-top:0.85rem">
+        Soms staat er een zin bij: het antwoord ligt dichter bij een artikel dan je vraag.
+        Dat verschijnt als je vraag zelf ver van de blogs ligt (onder 0,55) en het antwoord minstens 0,10 dichter naar een artikel is geschoven.
+        Dat artikel is dan niet vanzelf het antwoord op je vraag. Een lege bronnenlijst en een matige balk kunnen samen voorkomen: de tekst lijkt op een artikel, zonder ernaar te verwijzen.
+      </p>
+      <p class="how-note">De balk is geen kans dat de tekst klopt. Hij meet gelijkenis met de kennisbank.</p>
+      <details class="how-tech">
+        <summary>Technisch</summary>
+        <ul>
+          <li>Na het antwoord embedt de app die tekst opnieuw, met hetzelfde model als de vraag, op de CPU.</li>
+          <li>De kennisbank geeft de cosinusafstand tot het dichtstbijzijnde fragment. Bronpassing is 1 min die afstand, begrensd tussen 0 en 1.</li>
+          <li>De grenzen 0,75 en 0,55 zijn voorlopig. Ze liggen tussen drie gemeten antwoorden: een glossarium-antwoord op 0,87, een navertelling van een naburig artikel op 0,62, en een antwoord uit het model zelf op 0,48.</li>
+          <li>De afstand van de vraag wordt alleen gebruikt voor die extra zin, niet als tweede balk.</li>
+        </ul>
+      </details>
+    </div>
+
     <div class="how-block">
       <h3>Wat je terugkrijgt — en wat bewust ontbreekt</h3>
       <div class="how-got">
         <div class="how-mini">
           <h4>Wel</h4>
-          <p>Een lopend antwoord, een eigen lijst met bronnen (niet alleen linkjes in de tekst), en hints die terugleiden naar de blogs.</p>
+          <p>Een lopend antwoord, een balk voor bronpassing, een eigen lijst met bronnen (niet alleen linkjes in de tekst), en hints die terugleiden naar de blogs.</p>
         </div>
         <div class="how-mini">
           <h4>Niet</h4>
@@ -770,6 +836,54 @@ function addMessage(text, isUser) {
   div.textContent = text;
   chatEl.appendChild(div);
   chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function formatFit(value) {
+  if (typeof value !== "number" || Number.isNaN(value)) return null;
+  return value.toFixed(2).replace(".", ",");
+}
+
+function bronCountLabel(count) {
+  const n = Number(count) || 0;
+  return n === 1 ? "1 bron" : n + " bronnen";
+}
+
+function renderSourceFit(fit) {
+  if (!fit || typeof fit !== "object") return "";
+  const band = fit.band || "onbekend";
+  const bandLabel = band.charAt(0).toUpperCase() + band.slice(1);
+  const shown = formatFit(fit.answer_fit);
+  const embed = document.documentElement.classList.contains("embed");
+  const href = "/?tab=architecture#bronpassing";
+  const target = embed ? ' target="_blank" rel="noopener"' : "";
+  let label;
+  let bar = "";
+  if (shown) {
+    const width = Math.max(0, Math.min(100, Math.round(fit.answer_fit * 100)));
+    bar = '<span class="fit-bar" aria-hidden="true"><span style="width:' + width + '%"></span></span>';
+    label = bandLabel + " · bronpassing " + shown + " · " + bronCountLabel(fit.source_count);
+  } else {
+    label = "Bronpassing niet berekend · " + bronCountLabel(fit.source_count);
+  }
+  let pivot = "";
+  if (fit.pivot) {
+    const title = (fit.nearest_title || "").trim();
+    pivot = "<span class=\"fit-pivot\">Dit antwoord ligt dichter bij een artikel dan je vraag"
+      + (title ? ": " + escapeHtml(title) + "." : ".")
+      + "</span>";
+  }
+  return '<a class="fit-chip is-' + escapeHtml(band) + '" href="' + href + '"' + target
+    + ' aria-label="' + escapeHtml(label) + '. Uitleg over bronpassing.">'
+    + bar + '<span class="fit-label">' + escapeHtml(label) + "</span>" + pivot + "</a>";
+}
+
+function openBronpassing(event) {
+  if (document.documentElement.classList.contains("embed")) return;
+  if (event) event.preventDefault();
+  showTab("architecture");
+  const section = document.getElementById("bronpassing");
+  if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+  try { history.replaceState(null, "", "/?tab=architecture#bronpassing"); } catch (e) {}
 }
 
 function addHtml(html) {
@@ -890,6 +1004,7 @@ async function sendMessage() {
             streamDiv = null;
 
             let html = escapeHtml(payload.answer || "").replace(/\n/g, "<br>");
+            html += renderSourceFit(payload.source_fit);
             if (payload.citations && payload.citations.length) {
               html += '<div class="text-[10px] mt-2 text-slate-500"><strong>Bronnen:</strong><br>' +
                 payload.citations.map((c, i) => `${i + 1}. <a class="underline" href="${escapeHtml(c.url)}" target="_blank" rel="noopener">${escapeHtml(c.title || c.url)}</a>`).join("<br>") + "</div>";
@@ -957,6 +1072,17 @@ window.onload = () => {
   const tab = params.get('tab');
   if (tab === 'architecture' || tab === 'sources' || tab === 'chat') showTab(tab);
   if (tab === 'architecture' && params.get('walk') === '1') startHowWalk();
+  if ((tab === 'architecture' || !tab) && location.hash === '#bronpassing') {
+    showTab('architecture');
+    const section = document.getElementById('bronpassing');
+    if (section) section.scrollIntoView({ block: 'start' });
+  }
+  if (chatEl) {
+    chatEl.addEventListener('click', function (event) {
+      const link = event.target.closest && event.target.closest('a.fit-chip');
+      if (link) openBronpassing(event);
+    });
+  }
 };
 
 // ========================

@@ -57,6 +57,7 @@ De chatbot is **geen algemene AI-assistent**. Hij verwijst alleen naar:
 ### Functioneel
 - Conversational interface met goede UX (bij voorkeur streaming).
 - Actieve verwijzingen naar bronnen met directe links.
+- Bronpassing naast het antwoord: hoe dicht de tekst bij een artikel ligt, plus het aantal getoonde bronnen. Geen weigering op afstand (ADR-013).
 - Ondersteuning voor lange gesprekken (meerdere turns).
 - Compacte embed-view voor iframe op edwinvandillen.nl.
 

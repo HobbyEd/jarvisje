@@ -84,6 +84,17 @@ def _format_sse(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+def _public_chat(response: ChatResponse) -> dict:
+    fit = response.source_fit.model_dump() if response.source_fit else None
+    return {
+        "answer": response.answer,
+        "citations": [c.model_dump() for c in response.citations],
+        "hints": response.hints,
+        "role_context": response.role_context,
+        "source_fit": fit,
+    }
+
+
 async def _stream_chat(req: ChatRequest) -> AsyncGenerator[str, None]:
     orchestrator = _sessions.setdefault(req.session_id, ChatOrchestrator())
 
@@ -114,14 +125,7 @@ async def _stream_chat(req: ChatRequest) -> AsyncGenerator[str, None]:
         part = answer[i : i + chunk_size]
         yield _format_sse("delta", {"content": part})
 
-    # Send final payload with citations + hints
-    final = {
-        "answer": answer,
-        "citations": [c.model_dump() for c in response.citations],
-        "hints": response.hints,
-        "role_context": response.role_context,
-    }
-    yield _format_sse("final", final)
+    yield _format_sse("final", _public_chat(response))
 
 
 @app.post("/chat")
@@ -144,12 +148,7 @@ async def chat_sync(req: ChatRequest):
     orchestrator = _sessions.setdefault(req.session_id, ChatOrchestrator())
     try:
         response: ChatResponse = orchestrator.chat(req.message, history=req.history)
-        return {
-            "answer": response.answer,
-            "citations": [c.model_dump() for c in response.citations],
-            "hints": response.hints,
-            "role_context": response.role_context,
-        }
+        return _public_chat(response)
     except Exception as e:
         err = str(e)
         lower = err.lower()

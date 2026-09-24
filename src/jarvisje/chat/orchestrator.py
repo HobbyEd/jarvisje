@@ -11,10 +11,11 @@ from pydantic import ValidationError
 
 from ..config import settings
 from ..ingestion.status import read_status
-from ..retrieval.retriever import retrieve
+from ..retrieval.retriever import nearest_hit, retrieve
 from .citations import align_answer_citations
 from .models import ChatResponse
 from .prompts import build_system_prompt, build_user_prompt
+from .source_fit import assess_source_fit, best_distance
 
 INGEST_INCOMPLETE_NOTE = (
     "De kennisindex wordt nu opnieuw opgebouwd. Antwoorden kunnen daardoor "
@@ -169,6 +170,7 @@ class ChatOrchestrator:
         response.answer, response.citations = align_answer_citations(
             response.answer, response.citations, retrieved
         )
+        response.source_fit = _source_fit(response, retrieved)
 
         if ingest_running:
             response.answer = INGEST_INCOMPLETE_NOTE + "\n\n" + response.answer
@@ -180,6 +182,22 @@ class ChatOrchestrator:
         response.role_context = "onbekend"
 
         return response
+
+
+def _source_fit(response: ChatResponse, retrieved: List[Dict[str, Any]]):
+    question_distance = best_distance([hit.get("distance") for hit in retrieved])
+    answer_distance = None
+    nearest_title = None
+    try:
+        answer_distance, nearest_title = nearest_hit(response.answer)
+    except Exception as exc:
+        logger.warning("Bronpassing van het antwoord lukte niet: %s", exc)
+    return assess_source_fit(
+        question_distance=question_distance,
+        answer_distance=answer_distance,
+        source_count=len(response.citations),
+        nearest_title=nearest_title,
+    )
 
 
 def _extract_json_object(raw: str) -> dict | None:

@@ -151,13 +151,22 @@
 <li class="text-slate-600 text-sm mb-1"><strong>Promptbouw</strong> — system prompt met bronfragmenten + user prompt met history  </li>
 <li class="text-slate-600 text-sm mb-1"><strong>LLM-call</strong> — OpenAI-compatible <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">POST /v1/chat/completions</code> met <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">response_format: json_object</code>  </li>
 <li class="text-slate-600 text-sm mb-1"><strong>Parsing</strong> — <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">ChatResponse</code> (Pydantic); fallback bij ongeldige JSON. <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">[n]</code> in het antwoord wijst naar retrieval-slot n en wordt hernummerd naar de bronnenlijst die de UI toont.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Bronpassing</strong> — het antwoord wordt opnieuw geëmbed (CPU). <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">answer_fit = 1 −</code> cosinusafstand tot het dichtstbijzijnde fragment. Band sterk ≥ 0,75, matig ≥ 0,55, anders zwak. <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">source_count</code> is het aantal citaties na uitlijning. <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">pivot</code> is waar als de vraag onder 0,55 zit en het antwoord minstens 0,10 dichterbij ligt (ADR-013).  </li>
 <li class="text-slate-600 text-sm mb-1"><strong>Sessie-update</strong> — turns bijwerken in memory  </li>
 </ul><p class="text-slate-600 mb-3"><strong>Structured output</strong> (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">chat/models.py</code>):</p>
 <pre class="bg-slate-900 text-emerald-300 p-4 rounded-lg text-xs overflow-auto mb-4"><code>{
   &quot;answer&quot;: &quot;…&quot;,
   &quot;citations&quot;: [{&quot;title&quot;: &quot;…&quot;, &quot;url&quot;: &quot;…&quot;, &quot;source&quot;: &quot;…&quot;}],
   &quot;hints&quot;: [&quot;…&quot;, &quot;…&quot;],
-  &quot;role_context&quot;: &quot;sollicitant&quot;
+  &quot;role_context&quot;: &quot;onbekend&quot;,
+  &quot;source_fit&quot;: {
+    &quot;answer_fit&quot;: 0.87,
+    &quot;question_fit&quot;: 0.65,
+    &quot;band&quot;: &quot;sterk&quot;,
+    &quot;source_count&quot;: 2,
+    &quot;nearest_title&quot;: null,
+    &quot;pivot&quot;: false
+  }
 }</code></pre>
 <p class="text-slate-600 mb-3">Citaten en hints komen in <strong>één</strong> LLM-call (geen aparte follow-up).</p>
 <h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">1.8 Web-app (logische opbouw)</h3>
@@ -397,7 +406,7 @@
 <li class="text-slate-600 text-sm mb-1">Chroma bevat geïndexeerde chunks</li>
 <li class="text-slate-600 text-sm mb-1">Ollama bereikbaar op <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">LLM_BASE_URL</code></li>
 </ul><p class="text-slate-600 mb-3"><strong>Postcondities:</strong></p>
-<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Gebruiker ziet antwoord + citaten + hints</li>
+<ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1">Gebruiker ziet antwoord + bronpassing + citaten + hints</li>
 <li class="text-slate-600 text-sm mb-1">Sessie-history in memory bijgewerkt (tot container-restart)</li>
 </ul><h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Sequence diagram — chat via UI</h4>
 <div class="bg-white border border-slate-200 rounded-2xl p-6 mb-6"><div class="mermaid">sequenceDiagram
@@ -431,15 +440,20 @@
     LLM-->>Orch: JSON string
 
     Orch->>Orch: parse ChatResponse (of fallback)
-    Orch-->>API: ChatResponse
+    Orch->>Ret: nearest_hit(antwoord)
+    Ret->>Emb: encode([antwoord])
+    Ret->>Chroma: query dichtstbijzijnde fragment
+    Chroma-->>Orch: afstand + titel
+    Orch->>Orch: bronpassing (band, bronnen, pivot)
+    Orch-->>API: ChatResponse + source_fit
 
     loop Gesimuleerde streaming (chunks van 40 tekens)
         API-->>UI: SSE event:delta {content}
         UI->>UI: Append aan chat-bubble
     end
 
-    API-->>UI: SSE event:final {answer, citations, hints, role_context}
-    UI->>UI: Render citaten + hints
+    API-->>UI: SSE event:final {answer, citations, hints, role_context, source_fit}
+    UI->>UI: Render bronpassing, citaten + hints
     UI-->>Gebruiker: Volledig antwoord zichtbaar</div></div>
 <h4 class="font-medium text-base text-slate-700 mt-4 mb-2">Narratief per stap</h4>
 <ul class="list-disc pl-5 mb-4 space-y-1"><li class="text-slate-600 text-sm mb-1"><strong>Client</strong> — <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">session_id</code> in <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">sessionStorage</code>; history array wordt meegegeven.  </li>
@@ -447,7 +461,8 @@
 <li class="text-slate-600 text-sm mb-1"><strong>Prompt</strong> — System prompt bevat rolcontext + tot 6 bronfragmenten (een kopjesblok, afgekapt rond 2500 tekens). LLM moet JSON teruggeven met antwoord, citaten en hints.  </li>
 <li class="text-slate-600 text-sm mb-1"><strong>LLM</strong> — Call naar Ollama (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">LLM_BASE_URL</code>); timeout configureerbaar (<code class="text-sm bg-slate-100 px-1 py-0.5 rounded">LLM_TIMEOUT</code>, default 180s).  </li>
 <li class="text-slate-600 text-sm mb-1"><strong>Streaming</strong> — Antwoord wordt na afloop in stukken gestuurd voor UX; geen echte token-stream van Ollama.  </li>
-<li class="text-slate-600 text-sm mb-1"><strong>Final</strong> — Client ontvangt gestructureerde citaten voor weergave onder het antwoord.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Bronpassing</strong> — Tweede embedding van het antwoord; band en bronnenaantal gaan mee in <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">source_fit</code>.  </li>
+<li class="text-slate-600 text-sm mb-1"><strong>Final</strong> — Client toont de balk (klik naar <code class="text-sm bg-slate-100 px-1 py-0.5 rounded">#bronpassing</code> op *Hoe Jarvisje werkt*) en de citaten onder het antwoord.  </li>
 </ul><hr class="my-8 border-slate-200">
 <h3 class="font-semibold text-lg text-[#003366] mt-6 mb-3">6.3 Use case (secundair): Alleen retrieval testen</h3>
 <p class="text-slate-600 mb-3">Voor debugging zonder LLM-kosten:</p>

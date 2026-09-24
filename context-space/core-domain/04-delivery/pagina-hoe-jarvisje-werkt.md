@@ -117,11 +117,26 @@ Kort, voor de bouwer in iedereen:
 ### Blok 7 — Wat je terugkrijgt, en wat bewust ontbreekt
 
 - Citations als eigen lijst, niet alleen in de lopende tekst.
+- Bronpassing: balk onder het antwoord, met band en aantal bronnen. Klik opent blok 8.
 - Hints die terugleiden naar de blogs.
 - Geen permanente chatgeschiedenis.
 - Geen fine-tuning: nieuwe posts komen binnen via indexeren, niet via hertrainen.
 
 Optioneel één kleine noot, niet in de hoofdstroom: het antwoord komt in de UI binnen in stukjes; het model zelf streamt nog niet token-voor-token.
+
+### Blok 8 — Bronpassing
+
+Anker: `#bronpassing`. De balk in de chat linkt hierheen (`/?tab=architecture#bronpassing`). In de embed-weergave opent die url in een nieuw tabblad.
+
+Vertellen:
+
+- De balk is de gelijkenis van het **antwoord** met het dichtstbijzijnde artikel. Hoger is dichterbij.
+- Sterk vanaf 0,75, matig vanaf 0,55, daaronder zwak. Grenzen voorlopig (ADR-013).
+- Daarnaast het aantal bronnen dat de lezer ziet. Nul bronnen is niet hetzelfde als "de tekst lijkt nergens op".
+- De extra zin alleen als de vraag onder 0,55 zit en het antwoord minstens 0,10 dichterbij schuift.
+- Geen kans dat de tekst klopt.
+
+Inklappen: `bronpassing = 1 − cosinusafstand`, tweede embedding van het antwoord op de CPU, de drie ijkpunten 0,87 / 0,62 / 0,48.
 
 ## Tekening 1 — Vraag → antwoord (query-time)
 
@@ -256,6 +271,7 @@ Aanbevolen derde tekening. Beantwoordt: Gemma zit niet in de app-container.
 - Twee blogs als enige bronnen ([ADR-012](../02-architectural/decisions/12-ADR-jarvisje-rebrand.md)).
 - Retrieval vóór het taalmodel.
 - Citations en hints.
+- Bronpassing onder het antwoord ([ADR-013](../02-architectural/decisions/13-ADR-bronpassing.md)).
 - Lokaal Gemma, embeddings in de app, kennisbank persistent.
 - Crawler + embedding als de leer-loop.
 - Twee containers. Gemma op de GPU. Vraag-embeddings op CPU, indexeren op dezelfde GPU.
@@ -268,7 +284,7 @@ Aanbevolen derde tekening. Beantwoordt: Gemma zit niet in de app-container.
 
 **Bewust niet vertellen** (klopt niet met de runtime of is te veel keuken)
 
-- Guardrail-classifiers die we niet hebben. Begrenzing is: alleen twee hosts, prompt-regels, citation-filter.
+- Een classifier die off-topic vragen weigert. Die is er niet. Wel bronpassing: de lezer ziet de gelijkenis, de chat haalt het antwoord niet weg.
 - Fine-tuning, DGX/vLLM als productiestandaard, Qdrant, hybride BM25.
 - Live peek van retrieval-endpoints.
 
@@ -294,4 +310,4 @@ Aanbevolen derde tekening. Beantwoordt: Gemma zit niet in de app-container.
 
 ## Bouwnotitie
 
-Implementatie zit in Software Space (`web/index.html`, tab `architecture`, label *Hoe Jarvisje werkt*). Dit document blijft de bron voor *wat* de tab moet vertellen. Geen nieuwe ADR: uitleg van bestaande keuzes, geen architectuurwijziging.
+Implementatie zit in Software Space (`web/index.html`, tab `architecture`, label *Hoe Jarvisje werkt*). Dit document blijft de bron voor *wat* de tab moet vertellen. Bronpassing is een architectuurkeuze: [ADR-013](../02-architectural/decisions/13-ADR-bronpassing.md). UI v1.1.6.

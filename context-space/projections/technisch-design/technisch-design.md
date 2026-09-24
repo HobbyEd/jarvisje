@@ -207,7 +207,8 @@ De `ChatOrchestrator` voert per bericht uit:
 3. **Promptbouw** — system prompt met bronfragmenten + user prompt met history  
 4. **LLM-call** — OpenAI-compatible `POST /v1/chat/completions` met `response_format: json_object`  
 5. **Parsing** — `ChatResponse` (Pydantic); fallback bij ongeldige JSON. `[n]` in het antwoord wijst naar retrieval-slot n en wordt hernummerd naar de bronnenlijst die de UI toont.  
-6. **Sessie-update** — turns bijwerken in memory  
+6. **Bronpassing** — het antwoord wordt opnieuw geëmbed (CPU). `answer_fit = 1 −` cosinusafstand tot het dichtstbijzijnde fragment. Band sterk ≥ 0,75, matig ≥ 0,55, anders zwak. `source_count` is het aantal citaties na uitlijning. `pivot` is waar als de vraag onder 0,55 zit en het antwoord minstens 0,10 dichterbij ligt (ADR-013).  
+7. **Sessie-update** — turns bijwerken in memory  
 
 **Structured output** (`chat/models.py`):
 
@@ -216,7 +217,15 @@ De `ChatOrchestrator` voert per bericht uit:
   "answer": "…",
   "citations": [{"title": "…", "url": "…", "source": "…"}],
   "hints": ["…", "…"],
-  "role_context": "sollicitant"
+  "role_context": "onbekend",
+  "source_fit": {
+    "answer_fit": 0.87,
+    "question_fit": 0.65,
+    "band": "sterk",
+    "source_count": 2,
+    "nearest_title": null,
+    "pivot": false
+  }
 }
 ```
 
@@ -640,7 +649,7 @@ sequenceDiagram
 
 **Postcondities:**
 
-- Gebruiker ziet antwoord + citaten + hints  
+- Gebruiker ziet antwoord + bronpassing + citaten + hints  
 - Sessie-history in memory bijgewerkt (tot container-restart)  
 
 #### Sequence diagram — chat via UI
@@ -677,15 +686,20 @@ sequenceDiagram
     LLM-->>Orch: JSON string
 
     Orch->>Orch: parse ChatResponse (of fallback)
-    Orch-->>API: ChatResponse
+    Orch->>Ret: nearest_hit(antwoord)
+    Ret->>Emb: encode([antwoord])
+    Ret->>Chroma: query dichtstbijzijnde fragment
+    Chroma-->>Orch: afstand + titel
+    Orch->>Orch: bronpassing (band, bronnen, pivot)
+    Orch-->>API: ChatResponse + source_fit
 
     loop Gesimuleerde streaming (chunks van 40 tekens)
         API-->>UI: SSE event:delta {content}
         UI->>UI: Append aan chat-bubble
     end
 
-    API-->>UI: SSE event:final {answer, citations, hints, role_context}
-    UI->>UI: Render citaten + hints
+    API-->>UI: SSE event:final {answer, citations, hints, role_context, source_fit}
+    UI->>UI: Render bronpassing, citaten + hints
     UI-->>Gebruiker: Volledig antwoord zichtbaar
 ```
 
@@ -696,7 +710,8 @@ sequenceDiagram
 3. **Prompt** — System prompt bevat rolcontext + tot 6 bronfragmenten (een kopjesblok, afgekapt rond 2500 tekens). LLM moet JSON teruggeven met antwoord, citaten en hints.  
 4. **LLM** — Call naar Ollama (`LLM_BASE_URL`); timeout configureerbaar (`LLM_TIMEOUT`, default 180s).  
 5. **Streaming** — Antwoord wordt na afloop in stukken gestuurd voor UX; geen echte token-stream van Ollama.  
-6. **Final** — Client ontvangt gestructureerde citaten voor weergave onder het antwoord.  
+6. **Bronpassing** — Tweede embedding van het antwoord; band en bronnenaantal gaan mee in `source_fit`.  
+7. **Final** — Client toont de balk (klik naar `#bronpassing` op *Hoe Jarvisje werkt*) en de citaten onder het antwoord.  
 
 ---
 

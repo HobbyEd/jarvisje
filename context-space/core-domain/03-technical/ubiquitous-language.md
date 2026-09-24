@@ -19,6 +19,7 @@ Termen in de **Kennis-Chatbot** bounded context. Gebruik deze definities in prom
 | **Chunk** | Een tekstfragment uit een kennisbron met metadata (url, title, section) |
 | **Retrieval** | Zoeken van relevante chunks bij een gebruikersvraag (alleen toegestane hosts) |
 | **Citation** | Verplichte bronverwijzing (minimaal `title` + `url`) bij een bewering; host moet een kennisbron zijn |
+| **Bronpassing** | 1 min de cosinusafstand van het geformuleerde antwoord tot het dichtstbijzijnde chunk. Band: sterk (≥ 0,75), matig (≥ 0,55), zwak. Geen waarheidskans. Zie ADR-013 |
 | **Grounding** | Antwoord baseren op opgehaalde chunks; hallucinaties minimaliseren |
 | **Hint** | 3–5 korte vervolgvragen of onderwerpen na elk assistant-antwoord |
 | **Welkom** | Korte begroeting zonder rolvragen (geen sollicitant/bedrijf) |
@@ -37,5 +38,6 @@ Termen in de **Kennis-Chatbot** bounded context. Gebruik deze definities in prom
 ## Relatie tot ADRs
 
 - Citations → [ADR-008](/core-domain/02-architectural/decisions/08-ADR-citations-grounding.md)
+- Bronpassing → [ADR-013](/core-domain/02-architectural/decisions/13-ADR-bronpassing.md)
 - Guardrails → [ADR-002](/core-domain/02-architectural/decisions/02-ADR-guardrails.md)
 - Taal → [ADR-003](/core-domain/02-architectural/decisions/03-ADR-primary-language.md)

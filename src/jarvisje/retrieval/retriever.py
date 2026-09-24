@@ -98,3 +98,17 @@ def retrieve(query: str, top_k: int = 6) -> List[Dict[str, Any]]:
         if len(hits) >= top_k:
             break
     return hits
+
+
+def nearest_hit(text: str) -> tuple[float | None, str | None]:
+    """Best cosine distance of this text, and the title of that chunk."""
+    cleaned = (text or "").strip()
+    if not cleaned:
+        return None, None
+    hits = retrieve(cleaned, top_k=1)
+    if not hits:
+        return None, None
+    meta = hits[0].get("metadata") or {}
+    title = str(meta.get("title") or "").strip() or None
+    distance = hits[0].get("distance")
+    return (float(distance) if distance is not None else None), title
