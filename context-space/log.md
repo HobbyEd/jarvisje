@@ -2,6 +2,7 @@
 
 ## 2026-09-24
 
+* **Namen in de prompt:** edwinvandillen.nl is van Edwin van Dillen, jeroenteunisse.nl is van Jeroen Teunisse. Het model moet die spelling overnemen. UI **v1.1.7**. Geen nieuwe ADR.
 * **Bronpassing:** na het antwoord een balk (1 − cosinusafstand), het aantal getoonde bronnen, en soms een zin als het antwoord naar een naburig artikel schuift. Klik opent de uitleg op *Hoe Jarvisje werkt*. ADR-013. UI **v1.1.6**.
 
 ## 2026-09-23
